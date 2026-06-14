@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="ACST.Api/ACST.Api.csproj" />
+  <Project Path="ACST.Database/ACST.Database.csproj" />
+  <Project Path="ACST.Domain.Tests/ACST.Domain.Tests.csproj" />
+  <Project Path="ACST.Domain/ACST.Domain.csproj" />
+  <Project Path="ACST.Shared/ACST.Shared.csproj" />
+  <Project Path="ACST.WebApp/ACST.WebApp.csproj" />
+</Solution>
