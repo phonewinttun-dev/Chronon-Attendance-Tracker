@@ -1,0 +1,426 @@
+@page "/calendar"
+@using ACST.WebApp.Models
+@using System.Globalization
+@inject HttpClient Http
+
+<PageTitle>Calendar</PageTitle>
+
+<!-- Header Row -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-on-surface">Schedule Calendar</h1>
+        <p class="text-on-surface-variant text-sm mt-1">View monthly schedules, class sessions, and holidays.</p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+        <!-- Google Calendar Sync Notice Badge -->
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-primary/10 border border-primary/20 text-primary">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            Local Mode (Google Calendar coming soon)
+        </span>
+    </div>
+</div>
+
+<!-- Controls Panel -->
+<div class="bg-surface-container border border-outline-variant p-4 rounded-md mb-6 flex flex-wrap justify-between items-center gap-4">
+    <!-- Month Navigation -->
+    <div class="flex items-center gap-3">
+        <button class="bg-surface hover:bg-surface-variant text-on-surface p-2 border border-outline-variant rounded-md transition-colors" @onclick="PrevMonth">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <span class="text-xl font-bold font-mono min-w-[160px] text-center">@_viewDate.ToString("MMMM yyyy")</span>
+        <button class="bg-surface hover:bg-surface-variant text-on-surface p-2 border border-outline-variant rounded-md transition-colors" @onclick="NextMonth">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+        
+        <button class="bg-surface hover:bg-surface-variant text-on-surface px-4 py-2 border border-outline-variant rounded-md transition-colors text-sm font-semibold" @onclick="GoToToday">
+            Today
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex items-center gap-3">
+        <select class="p-2.5 bg-surface border border-outline-variant rounded-md text-on-surface text-sm focus:outline-none focus:border-primary" @bind:get="_selectedSemesterId" @bind:set="OnSemesterChanged">
+            <option value="0">All Semesters</option>
+            @if (_semesters != null)
+            {
+                @foreach (var sem in _semesters)
+                {
+                    <option value="@sem.Id">@sem.Name</option>
+                }
+            }
+        </select>
+    </div>
+</div>
+
+<!-- Message Notification -->
+@if (!string.IsNullOrEmpty(_message))
+{
+    <div class="bg-surface-container border @(_isError ? "border-error text-error" : "border-primary text-primary") p-4 rounded-md mb-6 flex justify-between items-center">
+        <span>@_message</span>
+        <button class="hover:text-on-surface focus:outline-none text-lg font-bold" @onclick="() => _message = string.Empty">×</button>
+    </div>
+}
+
+<!-- Calendar Container -->
+<div class="bg-surface-container border border-outline-variant rounded-md shadow-md overflow-hidden flex flex-col">
+    <!-- Days of Week Header -->
+    <div class="grid grid-cols-7 border-b border-outline-variant bg-surface-variant text-center font-semibold text-xs text-on-surface-variant uppercase tracking-wider">
+        <div class="py-3 border-r border-outline-variant">Monday</div>
+        <div class="py-3 border-r border-outline-variant">Tuesday</div>
+        <div class="py-3 border-r border-outline-variant">Wednesday</div>
+        <div class="py-3 border-r border-outline-variant">Thursday</div>
+        <div class="py-3 border-r border-outline-variant">Friday</div>
+        <div class="py-3 border-r border-outline-variant">Saturday</div>
+        <div class="py-3">Sunday</div>
+    </div>
+
+    <!-- Calendar Grid -->
+    @if (_isLoading)
+    {
+        <div class="p-12 text-center text-on-surface-variant">
+            <svg class="animate-spin h-8 w-8 text-primary mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Loading schedule data...
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-7 auto-rows-fr divide-y divide-x divide-outline-variant">
+            @foreach (var day in _calendarDays)
+            {
+                var isCurrentMonth = day.Month == _viewDate.Month;
+                var isToday = day == DateOnly.FromDateTime(DateTime.Today);
+                var daySessions = GetSessionsForDay(day);
+                var dayHolidays = GetHolidaysForDay(day);
+
+                <div class="min-h-[120px] p-2 flex flex-col bg-surface-container-low transition-colors hover:bg-surface-container-high/40
+                            @(isCurrentMonth ? "" : "bg-surface-container-lowest/30 opacity-40")">
+                    <!-- Day Indicator Header -->
+                    <div class="flex justify-between items-center mb-1">
+                        <div>
+                            @if (dayHolidays.Any())
+                            {
+                                <span class="w-2 h-2 rounded-full bg-tertiary" title="Holiday today"></span>
+                            }
+                        </div>
+                        <span class="font-mono text-sm font-semibold rounded-full w-6 h-6 inline-flex items-center justify-center
+                                     @(isToday ? "bg-primary text-on-primary font-bold shadow-sm" : "text-on-surface-variant")">
+                            @day.Day
+                        </span>
+                    </div>
+
+                    <!-- Holidays Box -->
+                    @foreach (var hol in dayHolidays)
+                    {
+                        <div class="mt-1 px-2 py-1 text-[10px] font-semibold text-tertiary bg-tertiary-container/10 border border-dashed border-tertiary/30 rounded truncate" title="Holiday: @hol.Name">
+                            🎉 @hol.Name
+                        </div>
+                    }
+
+                    <!-- Sessions List -->
+                    <div class="flex-1 flex flex-col gap-1 mt-1 overflow-y-auto">
+                        @foreach (var session in daySessions)
+                        {
+                            <button type="button" 
+                                    class="w-full text-left p-1.5 rounded border text-xs transition-all hover:scale-[1.02] focus:outline-none @GetSessionStyleClass(session.Status)"
+                                    @onclick="() => OpenSessionDetails(session)">
+                                <div class="font-semibold truncate">@session.ModuleName</div>
+                                <div class="font-mono text-[9px] mt-0.5 opacity-80">
+                                    @FormatTime(session.StartDatetime) - @FormatTime(session.EndDatetime)
+                                </div>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Attendance/Status Update Modal -->
+@if (_showDetailsModal && _selectedSession != null)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50" @onclick="CloseDetailsModal">
+        <div class="bg-surface-container border border-outline-variant rounded-md p-6 max-w-sm w-full shadow-xl" @onclick:stopPropagation>
+            <!-- Modal Header -->
+            <div class="flex justify-between items-start border-b border-outline-variant pb-3 mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-on-surface">Update Session</h3>
+                    <p class="text-xs text-on-surface-variant mt-0.5">Date: @_selectedSession.SessionDate.ToString("dd-MM-yyyy")</p>
+                </div>
+                <button type="button" class="text-on-surface-variant hover:text-on-surface font-bold text-xl" @onclick="CloseDetailsModal">×</button>
+            </div>
+
+            <!-- Session Info -->
+            <div class="mb-5 bg-surface-container-low border border-outline-variant p-4 rounded-md">
+                <div class="text-sm font-semibold text-on-surface-variant">Module</div>
+                <div class="text-base font-bold text-primary mb-3">@_selectedSession.ModuleName</div>
+                
+                <div class="text-sm font-semibold text-on-surface-variant">Scheduled Time</div>
+                <div class="text-sm font-mono text-on-surface">
+                    @FormatTime(_selectedSession.StartDatetime) - @FormatTime(_selectedSession.EndDatetime)
+                </div>
+                
+                <div class="mt-3 flex items-center gap-2">
+                    <span class="text-sm font-semibold text-on-surface-variant">Current Status:</span>
+                    <span class="@GetBadgeClass(_selectedSession.Status)">@_selectedSession.Status</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-2">
+                <button class="bg-primary/20 hover:bg-primary text-primary hover:text-on-primary border border-primary px-4 py-2.5 rounded-md font-semibold text-sm transition-all" 
+                        @onclick='() => UpdateSessionStatus("Present")' disabled="@_isUpdating">
+                    Mark Present
+                </button>
+                <button class="bg-error/20 hover:bg-error text-error hover:text-on-error border border-error px-4 py-2.5 rounded-md font-semibold text-sm transition-all" 
+                        @onclick='() => UpdateSessionStatus("Absent")' disabled="@_isUpdating">
+                    Mark Absent
+                </button>
+                <button class="bg-secondary/20 hover:bg-secondary text-secondary hover:text-on-secondary border border-secondary px-4 py-2.5 rounded-md font-semibold text-sm transition-all" 
+                        @onclick='() => UpdateSessionStatus("Late")' disabled="@_isUpdating">
+                    Mark Late
+                </button>
+                <button class="bg-surface hover:bg-surface-variant border border-outline px-4 py-2.5 rounded-md font-semibold text-sm transition-all text-on-surface" 
+                        @onclick='() => UpdateSessionStatus("Cancelled")' disabled="@_isUpdating">
+                    Mark Cancelled
+                </button>
+                <button class="border border-dashed border-outline-variant/60 hover:bg-surface-variant/40 px-4 py-2.5 rounded-md font-medium text-xs transition-all text-on-surface-variant" 
+                        @onclick='() => UpdateSessionStatus("Not Marked")' disabled="@_isUpdating">
+                    Reset to Not Marked
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _isLoading = true;
+    private bool _isUpdating = false;
+    private string _message = string.Empty;
+    private bool _isError = false;
+
+    private DateOnly _viewDate = DateOnly.FromDateTime(DateTime.Today);
+    private List<DateOnly> _calendarDays = new();
+    
+    private List<SemesterDto>? _semesters;
+    private long _selectedSemesterId = 0;
+
+    private List<ClassSessionDto> _sessions = new();
+    private List<HolidayDto> _holidays = new();
+
+    // Modal state
+    private bool _showDetailsModal = false;
+    private ClassSessionDto? _selectedSession;
+
+    private static readonly TimeSpan MyanmarOffset = TimeSpan.FromHours(6.5);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSemesters();
+        UpdateCalendarGrid();
+        await LoadCalendarData();
+    }
+
+    private void UpdateCalendarGrid()
+    {
+        _calendarDays.Clear();
+        var firstDayOfMonth = new DateOnly(_viewDate.Year, _viewDate.Month, 1);
+        
+        // Find Monday of the starting week.
+        int offset = ((int)firstDayOfMonth.DayOfWeek - 1 + 7) % 7;
+        var startDate = firstDayOfMonth.AddDays(-offset);
+
+        for (int i = 0; i < 42; i++)
+        {
+            _calendarDays.Add(startDate.AddDays(i));
+        }
+    }
+
+    private async Task LoadSemesters()
+    {
+        try
+        {
+            var result = await Http.GetFromJsonAsync<ApiResult<List<SemesterDto>>>("api/semesters");
+            if (result != null && result.IsSuccess)
+            {
+                _semesters = result.Data;
+            }
+        }
+        catch
+        {
+            // Fail silently or fallback
+        }
+    }
+
+    private async Task LoadCalendarData()
+    {
+        _isLoading = true;
+        _message = string.Empty;
+        try
+        {
+            // Load holidays
+            var holResult = await Http.GetFromJsonAsync<ApiResult<List<HolidayDto>>>("api/holidays");
+            if (holResult != null && holResult.IsSuccess)
+            {
+                _holidays = holResult.Data ?? new();
+            }
+
+            // Load sessions for the range of dates on calendar
+            var startStr = _calendarDays.First().ToString("yyyy-MM-dd");
+            var endStr = _calendarDays.Last().ToString("yyyy-MM-dd");
+            
+            string url = $"api/classsessions?startDate={startStr}&endDate={endStr}";
+            if (_selectedSemesterId > 0)
+            {
+                url += $"&semesterId={_selectedSemesterId}";
+            }
+
+            var sessResult = await Http.GetFromJsonAsync<ApiResult<List<ClassSessionDto>>>(url);
+            if (sessResult != null && sessResult.IsSuccess)
+            {
+                _sessions = sessResult.Data ?? new();
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = "Error loading schedule data: " + ex.Message;
+            _isError = true;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OnSemesterChanged(long semesterId)
+    {
+        _selectedSemesterId = semesterId;
+        
+        // If they selected a specific semester, auto-navigate calendar to start date of semester
+        if (semesterId > 0 && _semesters != null)
+        {
+            var selectedSem = _semesters.FirstOrDefault(s => s.Id == semesterId);
+            if (selectedSem != null)
+            {
+                _viewDate = new DateOnly(selectedSem.StartDate.Year, selectedSem.StartDate.Month, 1);
+                UpdateCalendarGrid();
+            }
+        }
+
+        await LoadCalendarData();
+    }
+
+    private async Task PrevMonth()
+    {
+        _viewDate = _viewDate.AddMonths(-1);
+        UpdateCalendarGrid();
+        await LoadCalendarData();
+    }
+
+    private async Task NextMonth()
+    {
+        _viewDate = _viewDate.AddMonths(1);
+        UpdateCalendarGrid();
+        await LoadCalendarData();
+    }
+
+    private async Task GoToToday()
+    {
+        _viewDate = DateOnly.FromDateTime(DateTime.Today);
+        UpdateCalendarGrid();
+        await LoadCalendarData();
+    }
+
+    private List<ClassSessionDto> GetSessionsForDay(DateOnly date)
+    {
+        return _sessions.Where(s => s.SessionDate == date).ToList();
+    }
+
+    private List<HolidayDto> GetHolidaysForDay(DateOnly date)
+    {
+        return _holidays.Where(h => h.HolidayDate == date).ToList();
+    }
+
+    private string FormatTime(DateTime utcTime)
+    {
+        // Convert UTC datetime to local Myanmar offset
+        var localTime = utcTime + MyanmarOffset;
+        return localTime.ToString("hh:mm tt");
+    }
+
+    private void OpenSessionDetails(ClassSessionDto session)
+    {
+        _selectedSession = session;
+        _showDetailsModal = true;
+    }
+
+    private void CloseDetailsModal()
+    {
+        _showDetailsModal = false;
+        _selectedSession = null;
+    }
+
+    private async Task UpdateSessionStatus(string status)
+    {
+        if (_selectedSession == null) return;
+        
+        _isUpdating = true;
+        try
+        {
+            var response = await Http.PatchAsJsonAsync($"api/classsessions/{_selectedSession.Id}/status", new { Status = status });
+            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+
+            if (result != null && result.IsSuccess)
+            {
+                _selectedSession.Status = status;
+                _showDetailsModal = false;
+                _selectedSession = null;
+                _message = "Status updated successfully.";
+                _isError = false;
+                await LoadCalendarData();
+            }
+            else
+            {
+                _message = result?.Message ?? "Failed to update session status.";
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = "Error: " + ex.Message;
+            _isError = true;
+        }
+        finally
+        {
+            _isUpdating = false;
+        }
+    }
+
+    private string GetSessionStyleClass(string status)
+    {
+        return status switch
+        {
+            "Present" => "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20",
+            "Absent" => "bg-error/10 border-error/20 text-error hover:bg-error/15",
+            "Late" => "bg-secondary/10 border-secondary/20 text-secondary hover:bg-secondary/15",
+            "Cancelled" => "bg-surface/30 border-dashed border-outline/30 text-on-surface-variant/50 hover:bg-surface/50",
+            "Holiday" => "bg-surface/30 border-dashed border-outline/30 text-on-surface-variant/50 hover:bg-surface/50",
+            _ => "bg-surface-variant/40 border-outline-variant/60 text-on-surface-variant hover:bg-surface-variant/75"
+        };
+    }
+
+    private string GetBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Present" => "bg-primary/20 text-primary border border-primary px-2 py-0.5 rounded text-xs font-semibold",
+            "Absent" => "bg-error/20 text-error border border-error px-2 py-0.5 rounded text-xs font-semibold",
+            "Late" => "bg-secondary/20 text-secondary border border-secondary px-2 py-0.5 rounded text-xs font-semibold",
+            _ => "bg-surface-variant text-on-surface-variant border border-outline px-2 py-0.5 rounded text-xs font-semibold"
+        };
+    }
+}

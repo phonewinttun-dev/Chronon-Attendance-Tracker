@@ -33,6 +33,8 @@ public class ClassSessionDto
     public string ModuleName { get; set; } = string.Empty;
     public DateOnly SessionDate { get; set; }
     public string Status { get; set; } = string.Empty;
+    public DateTime StartDatetime { get; set; }
+    public DateTime EndDatetime { get; set; }
 }
 
 public class DashboardSummaryDto

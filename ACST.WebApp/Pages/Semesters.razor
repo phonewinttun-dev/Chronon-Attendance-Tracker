@@ -31,11 +31,11 @@
         <div class="grid grid-cols-2 gap-4 mb-6">
             <div>
                 <label class="block text-on-surface-variant mb-2">Start Date</label>
-                <input type="date" class="w-full p-3 bg-surface border border-outline-variant rounded-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" @bind="_newSemester.StartDate" />
+                <DatePicker @bind-Value="_newSemester.StartDate" />
             </div>
             <div>
                 <label class="block text-on-surface-variant mb-2">End Date</label>
-                <input type="date" class="w-full p-3 bg-surface border border-outline-variant rounded-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" @bind="_newSemester.EndDate" />
+                <DatePicker @bind-Value="_newSemester.EndDate" />
             </div>
         </div>
 
