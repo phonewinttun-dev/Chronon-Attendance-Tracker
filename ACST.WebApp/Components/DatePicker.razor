@@ -13,6 +13,7 @@
                 class="p-3 text-on-surface-variant hover:text-primary transition-colors focus:outline-none"
                 @onclick="ToggleCalendar"
                 @onclick:stopPropagation
+                @onmousedown:preventDefault="true"
                 tabindex="-1">
             <!-- Calendar SVG Icon -->
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -25,6 +26,7 @@
     {
         <div class="absolute left-0 right-0 md:right-auto md:w-72 z-50 mt-1 bg-surface-container border border-outline-variant rounded-md shadow-lg p-4" 
              @onclick:stopPropagation
+             @onmousedown:preventDefault="true"
              tabindex="-1">
             <!-- Header: Prev, Month/Year, Next -->
             <div class="flex justify-between items-center mb-4">
