@@ -68,6 +68,21 @@
     private string _message = string.Empty;
     private bool _isError = false;
 
+    [SupplyParameterFromQuery]
+    public long? SemesterId { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? StartDate { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? EndDate { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Status { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int? DayOfWeek { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await LoadSessions();
@@ -78,7 +93,15 @@
         _isLoading = true;
         try
         {
-            var result = await Http.GetFromJsonAsync<ApiResult<List<ClassSessionDto>>>("api/classsessions");
+            var query = new List<string>();
+            if (SemesterId.HasValue) query.Add($"semesterId={SemesterId}");
+            if (!string.IsNullOrEmpty(StartDate)) query.Add($"startDate={StartDate}");
+            if (!string.IsNullOrEmpty(EndDate)) query.Add($"endDate={EndDate}");
+            if (!string.IsNullOrEmpty(Status)) query.Add($"status={Uri.EscapeDataString(Status)}");
+            if (DayOfWeek.HasValue) query.Add($"dayOfWeek={DayOfWeek}");
+
+            var queryString = query.Any() ? "?" + string.Join("&", query) : "";
+            var result = await Http.GetFromJsonAsync<ApiResult<List<ClassSessionDto>>>($"api/classsessions{queryString}");
             if (result != null && result.IsSuccess)
             {
                 _sessions = result.Data;

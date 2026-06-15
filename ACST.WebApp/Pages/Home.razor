@@ -1,6 +1,7 @@
 @page "/"
 @using ACST.WebApp.Models
 @inject HttpClient Http
+@inject NavigationManager Navigation
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -134,31 +135,31 @@ else
                 <div class="border border-outline-variant rounded-lg overflow-hidden">
                     <table class="w-full text-left text-sm font-sans">
                         <tbody>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors">
+                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors cursor-pointer" @onclick='() => Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}")'>
                                 <td class="px-4 py-3 font-semibold text-on-surface-variant">Total Generated Sessions</td>
                                 <td class="px-4 py-3 font-mono text-right text-on-surface font-semibold">@_summary.TotalSessions</td>
                             </tr>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-primary font-semibold">
+                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-primary font-semibold cursor-pointer" @onclick='() => NavigateToStatus("Present")'>
                                 <td class="px-4 py-3">Present Sessions (+)</td>
                                 <td class="px-4 py-3 font-mono text-right font-bold">@_summary.PresentSessions</td>
                             </tr>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-error">
+                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-error cursor-pointer" @onclick='() => NavigateToStatus("Absent")'>
                                 <td class="px-4 py-3 font-semibold">Absent Sessions (+)</td>
                                 <td class="px-4 py-3 font-mono text-right">@_summary.AbsentSessions</td>
                             </tr>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-tertiary">
+                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-tertiary cursor-pointer" @onclick='() => NavigateToStatus("Late")'>
                                 <td class="px-4 py-3 font-semibold">Late Sessions (+)</td>
                                 <td class="px-4 py-3 font-mono text-right">@_summary.LateSessions</td>
                             </tr>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-on-surface-variant">
+                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick='() => NavigateToStatus("Cancelled")'>
                                 <td class="px-4 py-3 font-semibold">Cancelled Sessions (Excluded, -)</td>
                                 <td class="px-4 py-3 font-mono text-right">@_summary.CancelledSessions</td>
                             </tr>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-on-surface-variant">
+                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick='() => NavigateToStatus("Holiday")'>
                                 <td class="px-4 py-3 font-semibold">Holiday Sessions (Excluded, -)</td>
                                 <td class="px-4 py-3 font-mono text-right">@_summary.HolidaySessions</td>
                             </tr>
-                            <tr class="bg-surface-variant/30 hover:bg-surface-variant/50 transition-colors font-bold text-on-surface">
+                            <tr class="bg-surface-variant/30 hover:bg-surface-variant/50 transition-colors font-bold text-on-surface cursor-pointer" @onclick='() => Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}")'>
                                 <td class="px-4 py-3">Total Valid Sessions (Denominator)</td>
                                 <td class="px-4 py-3 font-mono text-right">@_summary.ValidSessions</td>
                             </tr>
@@ -206,7 +207,7 @@ else
                             <tbody class="divide-y divide-outline-variant/50 font-mono text-xs">
                                 @foreach (var day in _summary.DailyAttendance)
                                 {
-                                    <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant">
+                                    <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToDaily(day.DayOfWeek)">
                                         <td class="py-3 font-sans text-sm font-semibold text-on-surface">@day.DayOfWeek</td>
                                         <td class="py-3 text-center">@day.TotalSessions</td>
                                         <td class="py-3 text-center text-primary font-bold">@day.Present</td>
@@ -247,7 +248,7 @@ else
                             <tbody class="divide-y divide-outline-variant/50 font-mono text-xs">
                                 @foreach (var week in _summary.WeeklyAttendance)
                                 {
-                                    <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant">
+                                    <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToWeekly(week.WeekStartDate, week.WeekEndDate)">
                                         <td class="py-3 font-sans text-sm font-semibold text-on-surface">Week @week.WeekNumber</td>
                                         <td class="py-3 text-on-surface-variant">@week.WeekStartDate.ToString("dd-MM-yyyy") ~ @week.WeekEndDate.ToString("dd-MM-yyyy")</td>
                                         <td class="py-3 text-center">@week.TotalSessions</td>
@@ -288,7 +289,7 @@ else
                             <tbody class="divide-y divide-outline-variant/50 font-mono text-xs">
                                 @foreach (var month in _summary.MonthlyAttendance)
                                 {
-                                    <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant">
+                                    <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToMonthly(month.Year, month.Month)">
                                         <td class="py-3 font-sans text-sm font-semibold text-on-surface">@month.MonthName</td>
                                         <td class="py-3 text-center">@month.TotalSessions</td>
                                         <td class="py-3 text-center text-primary font-bold">@month.Present</td>
@@ -401,6 +402,31 @@ else
     private void SetActiveTab(Tab tab)
     {
         _activeTab = tab;
+    }
+
+    private void NavigateToStatus(string status)
+    {
+        Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}&status={Uri.EscapeDataString(status)}");
+    }
+
+    private void NavigateToDaily(string dayOfWeekStr)
+    {
+        if (Enum.TryParse<DayOfWeek>(dayOfWeekStr, out var dayOfWeek))
+        {
+            Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}&dayOfWeek={(int)dayOfWeek}");
+        }
+    }
+
+    private void NavigateToWeekly(DateOnly start, DateOnly end)
+    {
+        Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}&startDate={start.ToString("yyyy-MM-dd")}&endDate={end.ToString("yyyy-MM-dd")}");
+    }
+
+    private void NavigateToMonthly(int year, int month)
+    {
+        var start = new DateOnly(year, month, 1);
+        var end = start.AddMonths(1).AddDays(-1);
+        Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}&startDate={start.ToString("yyyy-MM-dd")}&endDate={end.ToString("yyyy-MM-dd")}");
     }
 
     private string GetHealthColorClass(double rate)

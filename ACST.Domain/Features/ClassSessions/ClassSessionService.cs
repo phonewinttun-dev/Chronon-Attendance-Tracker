@@ -22,7 +22,7 @@ public class ClassSessionService : IClassSessionService
         _googleCalendarService = googleCalendarService;
     }
 
-    public async Task<Result<IEnumerable<ClassSessionDto>>> GetSessionsAsync(long? semesterId, long? moduleId, DateOnly? startDate, DateOnly? endDate, string? status)
+    public async Task<Result<IEnumerable<ClassSessionDto>>> GetSessionsAsync(long? semesterId, long? moduleId, DateOnly? startDate, DateOnly? endDate, string? status, int? dayOfWeek = null)
     {
         try
         {
@@ -37,6 +37,7 @@ public class ClassSessionService : IClassSessionService
             if (startDate.HasValue) query = query.Where(s => s.SessionDate >= startDate.Value);
             if (endDate.HasValue) query = query.Where(s => s.SessionDate <= endDate.Value);
             if (!string.IsNullOrEmpty(status)) query = query.Where(s => s.Status == status);
+            if (dayOfWeek.HasValue) query = query.Where(s => (int)s.SessionDate.DayOfWeek == dayOfWeek.Value);
 
             var sessions = await query
                 .OrderBy(s => s.StartDatetime)
