@@ -1,0 +1,138 @@
+@page "/holidays"
+@using ACST.WebApp.Models
+@inject HttpClient Http
+
+<PageTitle>Holidays</PageTitle>
+
+<div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold">Holidays</h1>
+    <button class="bg-primary hover:bg-primary-fixed-dim text-on-primary font-medium px-4 py-2 rounded-md transition-colors disabled:opacity-50" @onclick="SeedHolidays" disabled="@_isSeeding">
+        @(_isSeeding ? "Seeding..." : "Seed from JSON")
+    </button>
+</div>
+
+@if (!string.IsNullOrEmpty(_message))
+{
+    <div class="bg-surface-container border @(_isError ? "border-error text-error" : "border-primary text-primary") p-4 rounded-md mb-6">
+        @_message
+    </div>
+}
+
+<div class="bg-surface-container border border-outline-variant rounded-md shadow-md overflow-hidden">
+    @if (_isLoading)
+    {
+        <div class="p-6 text-on-surface-variant">Loading...</div>
+    }
+    else if (_holidays == null || !_holidays.Any())
+    {
+        <div class="p-6 text-on-surface-variant">No holidays found.</div>
+    }
+    else
+    {
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-outline-variant bg-surface-variant">
+                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant">
+                @foreach (var holiday in _holidays)
+                {
+                    <tr class="hover:bg-surface-variant/50 transition-colors">
+                        <td class="px-6 py-4">@holiday.Name</td>
+                        <td class="px-6 py-4 font-mono">@holiday.HolidayDate.ToString("dd-MM-yyyy")</td>
+                        <td class="px-6 py-4">
+                            <button class="text-error border border-error px-3 py-1 rounded hover:bg-error hover:text-on-error transition-colors text-sm" @onclick="() => DeleteHoliday(holiday.Id)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    private List<HolidayDto>? _holidays;
+    private bool _isLoading = true;
+    private bool _isSeeding = false;
+    private string _message = string.Empty;
+    private bool _isError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHolidays();
+    }
+
+    private async Task LoadHolidays()
+    {
+        _isLoading = true;
+        try
+        {
+            var result = await Http.GetFromJsonAsync<ApiResult<List<HolidayDto>>>("api/holidays");
+            if (result != null && result.IsSuccess)
+            {
+                _holidays = result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = "Error loading holidays: " + ex.Message;
+            _isError = true;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task SeedHolidays()
+    {
+        _isSeeding = true;
+        _message = string.Empty;
+
+        try
+        {
+            var response = await Http.PostAsync("api/holidays/seed", null);
+            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+
+            if (result != null && result.IsSuccess)
+            {
+                _message = result.Message;
+                _isError = false;
+                await LoadHolidays();
+            }
+            else
+            {
+                _message = result?.Message ?? "Unknown error seeding holidays.";
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = "Error: " + ex.Message;
+            _isError = true;
+        }
+        finally
+        {
+            _isSeeding = false;
+        }
+    }
+
+    private async Task DeleteHoliday(long id)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"api/holidays/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadHolidays();
+            }
+        }
+        catch
+        {
+            // Handle delete error
+        }
+    }
+}

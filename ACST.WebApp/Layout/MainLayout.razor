@@ -1,16 +1,38 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+@inherits LayoutComponentBase
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+<div class="flex min-h-screen bg-surface text-on-surface">
+    <!-- Sidebar -->
+    <nav class="w-64 bg-surface-container border-r border-outline-variant flex flex-col shrink-0">
+        <div class="p-6 text-2xl font-bold text-primary border-b border-outline-variant">
+            ACST
         </div>
+        <div class="flex flex-col py-4">
+            <NavLink class="px-6 py-3 text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors border-l-4 border-transparent hover:border-primary" href="" Match="NavLinkMatch.All" ActiveClass="bg-surface-variant text-on-surface border-primary">
+                Dashboard
+            </NavLink>
+            <NavLink class="px-6 py-3 text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors border-l-4 border-transparent hover:border-primary" href="semesters" ActiveClass="bg-surface-variant text-on-surface border-primary">
+                Semesters
+            </NavLink>
+            <NavLink class="px-6 py-3 text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors border-l-4 border-transparent hover:border-primary" href="modules" ActiveClass="bg-surface-variant text-on-surface border-primary">
+                Modules
+            </NavLink>
+            <NavLink class="px-6 py-3 text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors border-l-4 border-transparent hover:border-primary" href="holidays" ActiveClass="bg-surface-variant text-on-surface border-primary">
+                Holidays
+            </NavLink>
+            <NavLink class="px-6 py-3 text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors border-l-4 border-transparent hover:border-primary" href="sessions" ActiveClass="bg-surface-variant text-on-surface border-primary">
+                Sessions
+            </NavLink>
+        </div>
+    </nav>
 
-        <article class="content px-4">
-            @Body
-        </article>
+    <!-- Main Content -->
+    <main class="flex-1 p-10 max-w-7xl mx-auto w-full">
+        @Body
     </main>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload text-primary ml-2 hover:underline">Reload</a>
+    <a class="dismiss cursor-pointer float-right mr-2 hover:text-on-error">🗙</a>
 </div>

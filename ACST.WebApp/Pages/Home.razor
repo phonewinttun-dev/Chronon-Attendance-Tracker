@@ -1,7 +1,84 @@
-﻿@page "/"
+@page "/"
+@using ACST.WebApp.Models
+@inject HttpClient Http
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1 class="text-3xl font-bold mb-8">Dashboard</h1>
 
-Welcome to your new app.
+@if (_isLoading)
+{
+    <p class="text-on-surface-variant">Loading dashboard data...</p>
+}
+else if (_summary == null)
+{
+    <div class="bg-surface-container border border-outline-variant p-6 rounded-md shadow-md text-error">
+        Failed to load dashboard. Make sure you have created a semester.
+    </div>
+}
+else
+{
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-surface-container border border-outline-variant p-6 rounded-md shadow-md">
+            <h3 class="text-on-surface-variant mb-2">Today's Classes</h3>
+            <div class="text-5xl font-bold text-primary font-mono">
+                @_summary.TodaySessionsCount
+            </div>
+        </div>
+
+        <div class="bg-surface-container border border-outline-variant p-6 rounded-md shadow-md">
+            <h3 class="text-on-surface-variant mb-2">Upcoming Classes (7 days)</h3>
+            <div class="text-5xl font-bold text-secondary font-mono">
+                @_summary.UpcomingSessionsCount
+            </div>
+        </div>
+
+        <div class="bg-surface-container border border-[@(_summary.SemesterHealthRate > 75 ? "var(--accent-green)" : "var(--accent-terracotta)")] p-6 rounded-md shadow-md">
+            <h3 class="text-on-surface-variant mb-2">Semester Health</h3>
+            <div class="text-5xl font-bold font-mono @(_summary.SemesterHealthRate > 75 ? "text-primary" : "text-error")">
+                @_summary.SemesterHealthRate%
+            </div>
+        </div>
+    </div>
+
+    @if (_summary.Warnings.Any())
+    {
+        <div class="bg-surface-container border border-error p-6 rounded-md shadow-md">
+            <h3 class="text-error text-xl font-semibold mb-4">Alerts</h3>
+            <ul class="list-disc pl-5 text-on-surface">
+                @foreach (var warning in _summary.Warnings)
+                {
+                    <li class="mb-2">@warning</li>
+                }
+            </ul>
+        </div>
+    }
+}
+
+@code {
+    private bool _isLoading = true;
+    private DashboardSummaryDto? _summary;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var semestersResult = await Http.GetFromJsonAsync<ApiResult<List<SemesterDto>>>("api/semesters");
+            var latestSemester = semestersResult?.Data?.OrderByDescending(s => s.StartDate).FirstOrDefault();
+
+            if (latestSemester != null)
+            {
+                var summaryResult = await Http.GetFromJsonAsync<ApiResult<DashboardSummaryDto>>($"api/analytics/dashboard/{latestSemester.Id}");
+                _summary = summaryResult?.Data;
+            }
+        }
+        catch
+        {
+            // Handle error silently for now
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

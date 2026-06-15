@@ -1,0 +1,49 @@
+using System.Threading.Tasks;
+using ACST.Domain.DTOs.Holiday;
+using ACST.Shared;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ACST.Domain.Features.Holidays;
+
+[Route("api/[controller]")]
+[ApiController]
+public class HolidaysController : ControllerBase
+{
+    private readonly IHolidayService _holidayService;
+
+    public HolidaysController(IHolidayService holidayService)
+    {
+        _holidayService = holidayService;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var result = await _holidayService.GetAllHolidaysAsync();
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateHolidayRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(Result.Failure("Invalid request parameters."));
+
+        var result = await _holidayService.CreateHolidayAsync(request);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpPost("seed")]
+    public async Task<IActionResult> Seed()
+    {
+        var result = await _holidayService.SeedHolidaysAsync();
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(long id)
+    {
+        var result = await _holidayService.DeleteHolidayAsync(id);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+}

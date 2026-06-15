@@ -1,0 +1,39 @@
+using System.Threading.Tasks;
+using ACST.Domain.Features.Analytics;
+using ACST.Shared;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ACST.Domain.Features.Analytics;
+
+[Route("api/[controller]")]
+[ApiController]
+public class AnalyticsController : ControllerBase
+{
+    private readonly IAnalyticsService _analyticsService;
+
+    public AnalyticsController(IAnalyticsService analyticsService)
+    {
+        _analyticsService = analyticsService;
+    }
+
+    [HttpGet("overall/{semesterId}")]
+    public async Task<IActionResult> GetOverall(long semesterId)
+    {
+        var result = await _analyticsService.GetOverallAnalyticsAsync(semesterId);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpGet("modules/{moduleId}/{semesterId}")]
+    public async Task<IActionResult> GetByModule(long moduleId, long semesterId)
+    {
+        var result = await _analyticsService.GetModuleAnalyticsAsync(moduleId, semesterId);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpGet("dashboard/{semesterId}")]
+    public async Task<IActionResult> GetDashboardSummary(long semesterId)
+    {
+        var result = await _analyticsService.GetDashboardSummaryAsync(semesterId);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+}
