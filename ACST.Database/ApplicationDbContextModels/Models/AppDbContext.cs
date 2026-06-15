@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,8 +26,12 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<TblSession> TblSessions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=db.dzeubdrqbzbudbblvxep.supabase.co;Database=postgres;Username=postgres;Password=ACSTSupabase1735#;SSL Mode=Require;Trust Server Certificate=true");
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseNpgsql("Host=db.dzeubdrqbzbudbblvxep.supabase.co;Database=postgres;Username=postgres;Password=ACSTSupabase1735#;SSL Mode=Require;Trust Server Certificate=true");
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
