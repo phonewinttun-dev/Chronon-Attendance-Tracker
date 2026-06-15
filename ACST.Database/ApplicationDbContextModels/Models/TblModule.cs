@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ACST.Database.AppDbContextModels.Models;
+namespace ACST.Database.ApplicationDbContextModels.Models;
 
-public partial class Module
+public partial class TblModule
 {
     public long Id { get; set; }
 
@@ -17,7 +17,7 @@ public partial class Module
 
     public DateTime UpdatedAt { get; set; }
 
-    public virtual ICollection<ClassSession> ClassSessions { get; set; } = new List<ClassSession>();
+    public virtual ICollection<TblRecurringSchedule> TblRecurringSchedules { get; set; } = new List<TblRecurringSchedule>();
 
-    public virtual ICollection<RecurringSchedule> RecurringSchedules { get; set; } = new List<RecurringSchedule>();
+    public virtual ICollection<TblSession> TblSessions { get; set; } = new List<TblSession>();
 }

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ACST.Database.AppDbContextModels.Models;
+namespace ACST.Database.ApplicationDbContextModels.Models;
 
-public partial class Holiday
+public partial class TblHoliday
 {
     public long Id { get; set; }
 

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ACST.Database.AppDbContextModels.Models;
+namespace ACST.Database.ApplicationDbContextModels.Models;
 
-public partial class RecurringSchedule
+public partial class TblRecurringSchedule
 {
     public long Id { get; set; }
 
@@ -11,9 +11,6 @@ public partial class RecurringSchedule
 
     public long SemesterId { get; set; }
 
-    /// <summary>
-    /// 0=Sunday ... 6=Saturday
-    /// </summary>
     public short DayOfWeek { get; set; }
 
     public TimeOnly StartTime { get; set; }
@@ -28,9 +25,9 @@ public partial class RecurringSchedule
 
     public DateTime UpdatedAt { get; set; }
 
-    public virtual ICollection<ClassSession> ClassSessions { get; set; } = new List<ClassSession>();
+    public virtual TblModule Module { get; set; } = null!;
 
-    public virtual Module Module { get; set; } = null!;
+    public virtual TblSemester Semester { get; set; } = null!;
 
-    public virtual Semester Semester { get; set; } = null!;
+    public virtual ICollection<TblSession> TblSessions { get; set; } = new List<TblSession>();
 }

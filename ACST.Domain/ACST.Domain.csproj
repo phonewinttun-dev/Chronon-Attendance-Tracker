@@ -15,4 +15,8 @@
     <ProjectReference Include="..\ACST.Shared\ACST.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Google.Apis.Calendar.v3" Version="1.74.0.4154" />
+  </ItemGroup>
+
 </Project>

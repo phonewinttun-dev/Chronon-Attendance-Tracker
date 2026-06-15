@@ -1,4 +1,4 @@
-﻿namespace ACST.Domain
+namespace ACST.Domain
 {
     public class FeatureManager
     {

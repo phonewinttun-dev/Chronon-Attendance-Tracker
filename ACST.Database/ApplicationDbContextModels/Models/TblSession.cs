@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ACST.Database.AppDbContextModels.Models;
+namespace ACST.Database.ApplicationDbContextModels.Models;
 
-public partial class ClassSession
+public partial class TblSession
 {
     public long Id { get; set; }
 
@@ -19,9 +19,6 @@ public partial class ClassSession
 
     public DateTime EndDatetime { get; set; }
 
-    /// <summary>
-    /// Not Marked, Present, Absent, Cancelled, Holiday
-    /// </summary>
     public string Status { get; set; } = null!;
 
     public Guid MagicLinkToken { get; set; }
@@ -34,9 +31,9 @@ public partial class ClassSession
 
     public DateTime UpdatedAt { get; set; }
 
-    public virtual Module Module { get; set; } = null!;
+    public virtual TblModule Module { get; set; } = null!;
 
-    public virtual RecurringSchedule RecurringSchedule { get; set; } = null!;
+    public virtual TblRecurringSchedule RecurringSchedule { get; set; } = null!;
 
-    public virtual Semester Semester { get; set; } = null!;
+    public virtual TblSemester Semester { get; set; } = null!;
 }
