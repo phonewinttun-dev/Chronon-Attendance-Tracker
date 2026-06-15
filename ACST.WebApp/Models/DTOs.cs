@@ -18,6 +18,8 @@ public class ModuleDto
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string TeacherName { get; set; } = string.Empty;
+    public long? SemesterId { get; set; }
+    public string? SemesterName { get; set; }
 }
 
 public class HolidayDto
@@ -68,6 +70,7 @@ public class CreateModuleRequest
 {
     public string Name { get; set; } = string.Empty;
     public string TeacherName { get; set; } = string.Empty;
+    public long? SemesterId { get; set; }
 }
 
 public class CreateRecurringScheduleRequest

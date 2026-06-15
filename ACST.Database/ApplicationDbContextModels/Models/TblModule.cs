@@ -17,6 +17,10 @@ public partial class TblModule
 
     public DateTime UpdatedAt { get; set; }
 
+    public long? SemesterId { get; set; }
+
+    public virtual TblSemester? Semester { get; set; }
+
     public virtual ICollection<TblRecurringSchedule> TblRecurringSchedules { get; set; } = new List<TblRecurringSchedule>();
 
     public virtual ICollection<TblSession> TblSessions { get; set; } = new List<TblSession>();

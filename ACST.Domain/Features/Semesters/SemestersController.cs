@@ -40,7 +40,7 @@ public class SemestersController : ControllerBase
         return result.IsSuccess ? CreatedAtAction(nameof(GetById), new { id = result.Data?.Id }, result) : BadRequest(result);
     }
 
-    [HttpPut("{id}")]
+    [HttpPatch("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] UpdateSemesterRequest request)
     {
         if (!ModelState.IsValid)
