@@ -1,11 +1,11 @@
-# ACST: Personal Attendance & Class Schedule Tracker
+# Chronon: Personal Attendance & Class Schedule Tracker
 
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
-[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue.svg)](https://www.postgresql.org/)
+[![Supabase](https://img.shields.io/badge/Database-Supabase-blue.svg)](https://supabase.com/)
 [![Blazor](https://img.shields.io/badge/Frontend-Blazor%20WASM-purple.svg)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
 [![Flutter](https://img.shields.io/badge/Mobile-Flutter-cyan.svg)](https://flutter.dev/)
 
-**ACST** (Attendance & Class Schedule Tracker) is a specialized application designed to automatically organize class schedules, monitor attendance rates in real-time, and streamline attendance logging via Google Calendar integrations and passwordless magic links.
+**Chronon** is an specialized application designed to automatically organize class schedules, monitor attendance rates in real-time, and streamline attendance logging via Google Calendar integrations and passwordless magic links.
 
 ---
 
@@ -14,6 +14,7 @@
 This project was developed out of necessity: **I do not attend classes regularly and frequently have an attendance rate of less than 75%**.
 
 To avoid academic penalties (such as being barred from exams or failing modules due to poor attendance), this tracker provides:
+
 1. **Real-time visibility** into exactly where my attendance stands for each module.
 2. **Predictive insights & visual indicators** (Green/Yellow/Red warning system) to help maintain an attendance rate of **$\ge 75\%$**.
 3. **Frictionless logging** using **one-click "Mark as Present" magic links** sent directly to Google Calendar events.
@@ -24,7 +25,7 @@ To avoid academic penalties (such as being barred from exams or failing modules 
 
 - **Semester & Module Management**: Define academic semesters (with specific start/end boundaries) and register courses/modules with instructors.
 - **Recurring Schedule & Automation Engine**: Define weekly recurring patterns (e.g., Monday 9:00 AM - 11:00 AM) and auto-generate class sessions for the entire semester.
-- **Google Calendar Synchronization**: 
+- **Google Calendar Synchronization**:
   - Automatically create calendar events for all generated class sessions.
   - Inject custom, passwordless **"Mark as Present" magic links** directly into the Google Calendar descriptions.
 - **Time-Window Enforced Attendance**: Magic links are valid only within a specific grace period (from 15 minutes before the class starts until 1 hour after it ends) to ensure honest logs.
@@ -116,22 +117,26 @@ Update [appsettings.json](file:///d:/Practice/aspdotnetcore/attendance-tracker/A
 ### 🏃 Running the Application
 
 #### Run the Web API & Backend
+
 ```bash
 dotnet run --project ACST.Api/ACST.Api.csproj
 ```
 
 #### Run the Blazor Web Dashboard
+
 ```bash
 dotnet run --project ACST.WebApp/ACST.WebApp.csproj
 ```
 
 #### Run the Flutter Mobile App
+
 ```bash
 cd ACST.Mobile
 flutter run
 ```
 
 #### Run Tests
+
 ```bash
 dotnet test ACST.Domain.Tests/ACST.Domain.Tests.csproj
 ```
