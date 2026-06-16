@@ -1,0 +1,138 @@
+<div class="flex items-center justify-center gap-1.5 py-4 select-none">
+    <!-- Previous Button -->
+    <button type="button" 
+            class="flex items-center px-3 py-1.5 text-sm font-medium transition-all rounded-md focus:outline-none 
+                   @(HasPrevious ? "text-foreground hover:bg-accent/40 cursor-pointer" : "text-muted-foreground/50 cursor-not-allowed")"
+            disabled="@(!HasPrevious)"
+            @onclick="GoToPrevious">
+        <!-- SVG Left Arrow -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Previous
+    </button>
+
+    <!-- Page Numbers -->
+    @foreach (var pageNum in GetPageNumbers())
+    {
+        if (pageNum == null)
+        {
+            <span class="px-2 text-sm text-muted-foreground font-medium select-none">...</span>
+        }
+        else
+        {
+            var p = pageNum.Value;
+            var isActive = p == PageNumber;
+            <button type="button"
+                    class="w-9 h-9 flex items-center justify-center text-sm font-medium rounded-full transition-all focus:outline-none
+                           @(isActive 
+                               ? "bg-primary/15 text-primary font-semibold cursor-default" 
+                               : "text-muted-foreground hover:text-foreground hover:bg-accent/40 cursor-pointer")"
+                    @onclick="() => SelectPage(p)">
+                @p
+            </button>
+        }
+    }
+
+    <!-- Next Button -->
+    <button type="button" 
+            class="flex items-center px-3 py-1.5 text-sm font-medium transition-all rounded-md focus:outline-none 
+                   @(HasNext ? "text-foreground hover:bg-accent/40 cursor-pointer" : "text-muted-foreground/50 cursor-not-allowed")"
+            disabled="@(!HasNext)"
+            @onclick="GoToNext">
+        Next
+        <!-- SVG Right Arrow -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public int PageNumber { get; set; } = 1;
+
+    [Parameter]
+    public int TotalPages { get; set; } = 1;
+
+    [Parameter]
+    public EventCallback<int> PageChanged { get; set; }
+
+    private bool HasPrevious => PageNumber > 1;
+    private bool HasNext => PageNumber < TotalPages;
+
+    private async Task SelectPage(int page)
+    {
+        if (page != PageNumber)
+        {
+            await PageChanged.InvokeAsync(page);
+        }
+    }
+
+    private async Task GoToPrevious()
+    {
+        if (HasPrevious)
+        {
+            await PageChanged.InvokeAsync(PageNumber - 1);
+        }
+    }
+
+    private async Task GoToNext()
+    {
+        if (HasNext)
+        {
+            await PageChanged.InvokeAsync(PageNumber + 1);
+        }
+    }
+
+    private List<int?> GetPageNumbers()
+    {
+        var pages = new List<int?>();
+        int total = TotalPages <= 0 ? 1 : TotalPages;
+        int current = PageNumber;
+
+        // If total pages is small, show all
+        if (total <= 7)
+        {
+            for (int i = 1; i <= total; i++)
+            {
+                pages.Add(i);
+            }
+            return pages;
+        }
+
+        bool showLeftEllipsis = current > 3;
+        bool showRightEllipsis = current < total - 2;
+
+        if (!showLeftEllipsis && showRightEllipsis)
+        {
+            pages.Add(1);
+            pages.Add(2);
+            pages.Add(3);
+            pages.Add(null);
+            pages.Add(total - 1);
+            pages.Add(total);
+        }
+        else if (showLeftEllipsis && !showRightEllipsis)
+        {
+            pages.Add(1);
+            pages.Add(2);
+            pages.Add(null);
+            pages.Add(total - 2);
+            pages.Add(total - 1);
+            pages.Add(total);
+        }
+        else
+        {
+            pages.Add(1);
+            pages.Add(null);
+            pages.Add(current - 1);
+            pages.Add(current);
+            pages.Add(current + 1);
+            pages.Add(null);
+            pages.Add(total);
+        }
+
+        return pages;
+    }
+}

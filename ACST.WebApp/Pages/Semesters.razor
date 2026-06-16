@@ -136,22 +136,8 @@
                     }
                 </tbody>
             </table>
-            <div class="flex items-center justify-between border-t border-border px-6 py-4 bg-card">
-                <span class="text-xs text-muted-foreground font-mono">
-                    Page @_pageNumber of @_totalPages (@_totalCount total items)
-                </span>
-                <div class="flex gap-2">
-                    <button class="px-3 py-1.5 border border-border rounded text-xs font-semibold font-mono hover:bg-accent/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
-                            @onclick="GoToPrevPage" 
-                            disabled="@(!_hasPrevious)">
-                        &lt; Previous
-                    </button>
-                    <button class="px-3 py-1.5 border border-border rounded text-xs font-semibold font-mono hover:bg-accent/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
-                            @onclick="GoToNextPage" 
-                            disabled="@(!_hasNext)">
-                        Next &gt;
-                    </button>
-                </div>
+            <div class="border-t border-border bg-card">
+                <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
             </div>
         }
     </div>
@@ -245,22 +231,8 @@ else
                 </div>
             }
         </div>
-        <div class="flex items-center justify-between border border-border rounded-lg px-6 py-4 bg-card mt-6">
-            <span class="text-xs text-muted-foreground font-mono">
-                Page @_pageNumber of @_totalPages (@_totalCount total items)
-            </span>
-            <div class="flex gap-2">
-                <button class="px-3 py-1.5 border border-border rounded text-xs font-semibold font-mono hover:bg-accent/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
-                        @onclick="GoToPrevPage" 
-                        disabled="@(!_hasPrevious)">
-                    &lt; Previous
-                </button>
-                <button class="px-3 py-1.5 border border-border rounded text-xs font-semibold font-mono hover:bg-accent/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
-                        @onclick="GoToNextPage" 
-                        disabled="@(!_hasNext)">
-                    Next &gt;
-                </button>
-            </div>
+        <div class="border border-border rounded-lg bg-card mt-6">
+            <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
         </div>
     }
 }
@@ -298,22 +270,10 @@ else
         _message = string.Empty;
     }
 
-    private async Task GoToPrevPage()
+    private async Task OnPageChanged(int newPage)
     {
-        if (_hasPrevious)
-        {
-            _pageNumber--;
-            await LoadSemesters();
-        }
-    }
-
-    private async Task GoToNextPage()
-    {
-        if (_hasNext)
-        {
-            _pageNumber++;
-            await LoadSemesters();
-        }
+        _pageNumber = newPage;
+        await LoadSemesters();
     }
 
     private async Task LoadSemesters()
