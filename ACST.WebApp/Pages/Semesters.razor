@@ -6,15 +6,40 @@
 
 <div class="flex justify-between items-center mb-8">
     <h1 class="text-2xl font-bold tracking-tight text-foreground">Semesters</h1>
-    <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="ToggleCreateForm">
-        @(_showCreateForm ? "Cancel" : "New Semester")
-    </button>
+    <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1 bg-muted border border-border p-1 rounded-md">
+            <button class="p-1.5 rounded transition-all @(_viewMode == "table" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                    @onclick='() => _viewMode = "table"' 
+                    title="Table View">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+            </button>
+            <button class="p-1.5 rounded transition-all @(_viewMode == "card" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                    @onclick='() => _viewMode = "card"' 
+                    title="Card View">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+            </button>
+        </div>
+        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="ToggleCreateForm">
+            @(_showCreateForm ? "Cancel" : "New Semester")
+        </button>
+    </div>
 </div>
 
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="border p-4 rounded-md mb-6 text-sm font-medium @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
-        @_message
+    <div class="border p-4 rounded-lg mb-6 text-sm font-semibold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
+        <div class="flex items-center gap-2.5">
+            @if (_isError)
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            }
+            else
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
+            }
+            <span>@_message</span>
+        </div>
+        <button class="hover:opacity-80 focus:outline-none text-base font-bold px-1.5 py-0.5 rounded hover:bg-foreground/5 transition-all" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
     </div>
 }
 
@@ -45,11 +70,50 @@
     </div>
 }
 
-<div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
-    @if (_isLoading)
-    {
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs animate-pulse">
+@if (_viewMode == "table")
+{
+    <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+        @if (_isLoading)
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs animate-pulse">
+                    <thead>
+                        <tr class="border-b border-border bg-muted/50">
+                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Start Date</th>
+                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">End Date</th>
+                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border">
+                        @for (int i = 0; i < 4; i++)
+                        {
+                            <tr>
+                                <td class="px-6 py-4">
+                                    <div class="h-3 bg-muted rounded w-28"></div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="h-3 bg-muted rounded w-20"></div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="h-3 bg-muted rounded w-20"></div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="h-7 bg-muted rounded w-16"></div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (_semesters == null || !_semesters.Any())
+        {
+            <div class="p-6 text-muted-foreground text-sm">No semesters found. Create one to get started.</div>
+        }
+        else
+        {
+            <table class="w-full text-left border-collapse text-xs">
                 <thead>
                     <tr class="border-b border-border bg-muted/50">
                         <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
@@ -59,57 +123,129 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
-                    @for (int i = 0; i < 4; i++)
+                    @foreach (var sem in _semesters)
                     {
-                        <tr>
-                            <td class="px-6 py-4">
-                                <div class="h-3 bg-muted rounded w-28"></div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="h-3 bg-muted rounded w-20"></div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="h-3 bg-muted rounded w-20"></div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="h-7 bg-muted rounded w-16"></div>
+                        <tr class="hover:bg-accent/40 transition-colors">
+                            <td class="px-6 py-3 text-foreground font-medium">@sem.Name</td>
+                            <td class="px-6 py-3 font-mono text-muted-foreground">@sem.StartDate.ToString("dd-MM-yyyy")</td>
+                            <td class="px-6 py-3 font-mono text-muted-foreground">@sem.EndDate.ToString("dd-MM-yyyy")</td>
+                            <td class="px-6 py-3">
+                                <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => DeleteSemester(sem.Id)">Delete</button>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
+            <div class="flex items-center justify-between border-t border-border px-6 py-4 bg-card">
+                <span class="text-xs text-muted-foreground font-mono">
+                    Page @_pageNumber of @_totalPages (@_totalCount total items)
+                </span>
+                <div class="flex gap-2">
+                    <button class="px-3 py-1.5 border border-border rounded text-xs font-semibold font-mono hover:bg-accent/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+                            @onclick="GoToPrevPage" 
+                            disabled="@(!_hasPrevious)">
+                        &lt; Previous
+                    </button>
+                    <button class="px-3 py-1.5 border border-border rounded text-xs font-semibold font-mono hover:bg-accent/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+                            @onclick="GoToNextPage" 
+                            disabled="@(!_hasNext)">
+                        Next &gt;
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    @if (_isLoading)
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-sm">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="h-4 bg-muted rounded w-24"></div>
+                            <div class="h-4 bg-muted rounded w-16"></div>
+                        </div>
+                        <div class="space-y-2.5 my-4">
+                            <div class="flex justify-between">
+                                <div class="h-3 bg-muted rounded w-12"></div>
+                                <div class="h-3 bg-muted rounded w-20"></div>
+                            </div>
+                            <div class="flex justify-between">
+                                <div class="h-3 bg-muted rounded w-12"></div>
+                                <div class="h-3 bg-muted rounded w-20"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end border-t border-border pt-4 mt-2">
+                        <div class="h-7 bg-muted rounded w-16"></div>
+                    </div>
+                </div>
+            }
         </div>
     }
     else if (_semesters == null || !_semesters.Any())
     {
-        <div class="p-6 text-muted-foreground text-sm">No semesters found. Create one to get started.</div>
+        <div class="bg-card border border-border rounded-lg shadow-sm p-6 text-muted-foreground text-sm">No semesters found. Create one to get started.</div>
     }
     else
     {
-        <table class="w-full text-left border-collapse text-xs">
-            <thead>
-                <tr class="border-b border-border bg-muted/50">
-                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
-                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Start Date</th>
-                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">End Date</th>
-                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-border">
-                @foreach (var sem in _semesters)
-                {
-                    <tr class="hover:bg-accent/40 transition-colors">
-                        <td class="px-6 py-3 text-foreground font-medium">@sem.Name</td>
-                        <td class="px-6 py-3 font-mono text-muted-foreground">@sem.StartDate.ToString("dd-MM-yyyy")</td>
-                        <td class="px-6 py-3 font-mono text-muted-foreground">@sem.EndDate.ToString("dd-MM-yyyy")</td>
-                        <td class="px-6 py-3">
-                            <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => DeleteSemester(sem.Id)">Delete</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        <div class="flex items-center justify-between border-t border-border px-6 py-4 bg-card">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach (var sem in _semesters)
+            {
+                var status = GetSemesterStatus(sem.StartDate, sem.EndDate);
+                var progress = GetSemesterProgress(sem.StartDate, sem.EndDate);
+                
+                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-sm">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-base font-bold text-foreground tracking-tight">@sem.Name</h3>
+                            <span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full @GetSemesterStatusClass(status)">
+                                @status
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-2.5 my-4">
+                            <div class="flex items-center justify-between text-xs text-muted-foreground font-mono">
+                                <span class="flex items-center gap-1.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                                    Start:
+                                </span>
+                                <span class="text-foreground">@sem.StartDate.ToString("dd-MM-yyyy")</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-muted-foreground font-mono">
+                                <span class="flex items-center gap-1.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                                    End:
+                                </span>
+                                <span class="text-foreground">@sem.EndDate.ToString("dd-MM-yyyy")</span>
+                            </div>
+                            
+                            @if (status == "Active")
+                            {
+                                <div class="space-y-1 pt-1.5">
+                                    <div class="flex justify-between text-[10px] text-muted-foreground font-mono">
+                                        <span>Progress</span>
+                                        <span>@((int)progress)%</span>
+                                    </div>
+                                    <div class="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                                        <div class="bg-primary h-full rounded-full transition-all duration-500" style="width: @(progress)%"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end border-t border-border pt-4 mt-2">
+                        <button class="bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/20 px-4 py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => DeleteSemester(sem.Id)">Delete</button>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="flex items-center justify-between border border-border rounded-lg px-6 py-4 bg-card mt-6">
             <span class="text-xs text-muted-foreground font-mono">
                 Page @_pageNumber of @_totalPages (@_totalCount total items)
             </span>
@@ -127,9 +263,10 @@
             </div>
         </div>
     }
-</div>
+}
 
 @code {
+    private static string _viewMode = "table";
     private List<SemesterDto>? _semesters;
     private bool _isLoading = true;
     private bool _showCreateForm = false;
@@ -198,7 +335,7 @@
         }
         catch (Exception ex)
         {
-            _message = "Error loading semesters: " + ex.Message;
+            _message = ex.GetFriendlyErrorMessage("Error loading semesters");
             _isError = true;
         }
         finally
@@ -215,30 +352,37 @@
         try
         {
             var response = await Http.PostAsJsonAsync("api/semesters", _newSemester);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult<SemesterDto>>();
-
-            if (result != null && result.IsSuccess)
+            if (response.IsSuccessStatusCode)
             {
-                _message = "Semester created successfully.";
-                _isError = false;
-                _showCreateForm = false;
-                _newSemester = new CreateSemesterRequest
+                var result = await response.Content.ReadFromJsonAsync<ApiResult<SemesterDto>>();
+                if (result != null && result.IsSuccess)
                 {
-                    StartDate = DateOnly.FromDateTime(DateTime.Today),
-                    EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(4))
-                };
-                _pageNumber = 1;
-                await LoadSemesters();
+                    _message = "Semester created successfully.";
+                    _isError = false;
+                    _showCreateForm = false;
+                    _newSemester = new CreateSemesterRequest
+                    {
+                        StartDate = DateOnly.FromDateTime(DateTime.Today),
+                        EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(4))
+                    };
+                    _pageNumber = 1;
+                    await LoadSemesters();
+                }
+                else
+                {
+                    _message = result?.Message ?? "Unknown error creating semester.";
+                    _isError = true;
+                }
             }
             else
             {
-                _message = result?.Message ?? "Unknown error creating semester.";
+                _message = await response.GetFriendlyErrorMessageAsync("Error creating semester");
                 _isError = true;
             }
         }
         catch (Exception ex)
         {
-            _message = "Error: " + ex.Message;
+            _message = ex.GetFriendlyErrorMessage("Error creating semester");
             _isError = true;
         }
         finally
@@ -249,21 +393,61 @@
 
     private async Task DeleteSemester(long id)
     {
+        _message = string.Empty;
         try
         {
             var response = await Http.DeleteAsync($"api/semesters/{id}");
             if (response.IsSuccessStatusCode)
             {
+                _message = "Semester deleted successfully.";
+                _isError = false;
                 if (_semesters != null && _semesters.Count == 1 && _pageNumber > 1)
                 {
                     _pageNumber--;
                 }
                 await LoadSemesters();
             }
+            else
+            {
+                _message = await response.GetFriendlyErrorMessageAsync("Error deleting semester");
+                _isError = true;
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            // Handle error
+            _message = ex.GetFriendlyErrorMessage("Error deleting semester");
+            _isError = true;
         }
+    }
+
+    private string GetSemesterStatus(DateOnly start, DateOnly end)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        if (today >= start && today <= end) return "Active";
+        if (today < start) return "Upcoming";
+        return "Completed";
+    }
+
+    private string GetSemesterStatusClass(string status)
+    {
+        return status switch
+        {
+            "Active" => "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20",
+            "Upcoming" => "bg-amber-500/10 text-amber-500 border border-amber-500/20",
+            _ => "bg-muted text-muted-foreground border border-border"
+        };
+    }
+
+    private double GetSemesterProgress(DateOnly start, DateOnly end)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        if (today < start) return 0;
+        if (today > end) return 100;
+        
+        var totalDays = (end.ToDateTime(TimeOnly.MinValue) - start.ToDateTime(TimeOnly.MinValue)).TotalDays;
+        if (totalDays <= 0) return 100;
+        
+        var elapsedDays = (today.ToDateTime(TimeOnly.MinValue) - start.ToDateTime(TimeOnly.MinValue)).TotalDays;
+        return Math.Max(0, Math.Min(100, (elapsedDays / totalDays) * 100));
     }
 }

@@ -6,15 +6,40 @@
 
 <div class="flex justify-between items-center mb-8">
     <h1 class="text-2xl font-bold tracking-tight text-foreground">Modules</h1>
-    <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="ToggleCreateForm">
-        @(_showCreateForm ? "Cancel" : "New Module")
-    </button>
+    <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1 bg-muted border border-border p-1 rounded-md">
+            <button class="p-1.5 rounded transition-all @(_viewMode == "table" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                    @onclick='() => _viewMode = "table"' 
+                    title="Table View">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+            </button>
+            <button class="p-1.5 rounded transition-all @(_viewMode == "card" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                    @onclick='() => _viewMode = "card"' 
+                    title="Card View">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+            </button>
+        </div>
+        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="ToggleCreateForm">
+            @(_showCreateForm ? "Cancel" : "New Module")
+        </button>
+    </div>
 </div>
 
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="border p-4 rounded-md mb-6 text-sm font-medium @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
-        @_message
+    <div class="border p-4 rounded-lg mb-6 text-sm font-semibold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
+        <div class="flex items-center gap-2.5">
+            @if (_isError)
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            }
+            else
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
+            }
+            <span>@_message</span>
+        </div>
+        <button class="hover:opacity-80 focus:outline-none text-base font-bold px-1.5 py-0.5 rounded hover:bg-foreground/5 transition-all" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
     </div>
 }
 
@@ -142,11 +167,53 @@
     </div>
 }
 
-<div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
-    @if (_isLoading)
-    {
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs animate-pulse">
+@if (_viewMode == "table")
+{
+    <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+        @if (_isLoading)
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs animate-pulse">
+                    <thead>
+                        <tr class="border-b border-border bg-muted/50">
+                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
+                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Teacher</th>
+                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Semester</th>
+                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border">
+                        @for (int i = 0; i < 6; i++)
+                        {
+                            <tr>
+                                <td class="px-6 py-4">
+                                    <div class="h-3 bg-muted rounded w-20"></div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="h-3 bg-muted rounded w-28"></div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="h-3 bg-muted rounded w-24"></div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex gap-2">
+                                        <div class="h-7 bg-muted rounded w-24"></div>
+                                        <div class="h-7 bg-muted rounded w-16"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (_modules == null || !_modules.Any())
+        {
+            <div class="p-6 text-muted-foreground text-sm">No modules found. Create one to get started.</div>
+        }
+        else
+        {
+            <table class="w-full text-left border-collapse text-xs">
                 <thead>
                     <tr class="border-b border-border bg-muted/50">
                         <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
@@ -156,62 +223,96 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
-                    @for (int i = 0; i < 6; i++)
+                    @foreach (var mod in _modules)
                     {
-                        <tr>
-                            <td class="px-6 py-4">
-                                <div class="h-3 bg-muted rounded w-20"></div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="h-3 bg-muted rounded w-28"></div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="h-3 bg-muted rounded w-24"></div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex gap-2">
-                                    <div class="h-7 bg-muted rounded w-24"></div>
-                                    <div class="h-7 bg-muted rounded w-16"></div>
-                                </div>
+                        <tr class="hover:bg-accent/40 transition-colors">
+                            <td class="px-6 py-3 font-semibold text-foreground">@mod.Name</td>
+                            <td class="px-6 py-3 text-muted-foreground">@mod.TeacherName</td>
+                            <td class="px-6 py-3 text-muted-foreground">@(string.IsNullOrEmpty(mod.SemesterName) ? "None" : mod.SemesterName)</td>
+                            <td class="px-6 py-3">
+                                <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold mr-2" @onclick="() => OpenScheduleForm(mod.Id)">Add Schedule</button>
+                                <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold mr-2" @onclick="() => OpenEditForm(mod)">Edit</button>
+                                <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => DeleteModule(mod.Id)">Delete</button>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
+            <div class="flex items-center justify-between border-t border-border px-6 py-4 bg-card">
+                <span class="text-xs text-muted-foreground font-mono">
+                    Page @_pageNumber of @_totalPages (@_totalCount total items)
+                </span>
+                <div class="flex gap-2">
+                    <button class="px-3 py-1.5 border border-border rounded text-xs font-semibold font-mono hover:bg-accent/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+                            @onclick="GoToPrevPage" 
+                            disabled="@(!_hasPrevious)">
+                        &lt; Previous
+                    </button>
+                    <button class="px-3 py-1.5 border border-border rounded text-xs font-semibold font-mono hover:bg-accent/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+                            @onclick="GoToNextPage" 
+                            disabled="@(!_hasNext)">
+                        Next &gt;
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    @if (_isLoading)
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
+            @for (int i = 0; i < 6; i++)
+            {
+                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-sm">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="h-4 bg-muted rounded w-24"></div>
+                            <div class="h-4 bg-muted rounded w-20"></div>
+                        </div>
+                        <div class="h-3 bg-muted rounded w-28 mb-4"></div>
+                    </div>
+                    <div class="flex gap-2 border-t border-border pt-4 mt-2">
+                        <div class="h-7 bg-muted rounded flex-1"></div>
+                        <div class="h-7 bg-muted rounded w-12"></div>
+                        <div class="h-7 bg-muted rounded w-16"></div>
+                    </div>
+                </div>
+            }
         </div>
     }
     else if (_modules == null || !_modules.Any())
     {
-        <div class="p-6 text-muted-foreground text-sm">No modules found. Create one to get started.</div>
+        <div class="bg-card border border-border rounded-lg shadow-sm p-6 text-muted-foreground text-sm">No modules found. Create one to get started.</div>
     }
     else
     {
-        <table class="w-full text-left border-collapse text-xs">
-            <thead>
-                <tr class="border-b border-border bg-muted/50">
-                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
-                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Teacher</th>
-                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Semester</th>
-                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-border">
-                @foreach (var mod in _modules)
-                {
-                    <tr class="hover:bg-accent/40 transition-colors">
-                        <td class="px-6 py-3 font-semibold text-foreground">@mod.Name</td>
-                        <td class="px-6 py-3 text-muted-foreground">@mod.TeacherName</td>
-                        <td class="px-6 py-3 text-muted-foreground">@(string.IsNullOrEmpty(mod.SemesterName) ? "None" : mod.SemesterName)</td>
-                        <td class="px-6 py-3">
-                            <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold mr-2" @onclick="() => OpenScheduleForm(mod.Id)">Add Schedule</button>
-                            <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold mr-2" @onclick="() => OpenEditForm(mod)">Edit</button>
-                            <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => DeleteModule(mod.Id)">Delete</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        <div class="flex items-center justify-between border-t border-border px-6 py-4 bg-card">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach (var mod in _modules)
+            {
+                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-sm">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-base font-bold text-foreground tracking-tight">@mod.Name</h3>
+                            <span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full @(string.IsNullOrEmpty(mod.SemesterName) ? "bg-muted text-muted-foreground border border-border" : "bg-primary/10 text-primary border border-primary/20")">
+                                @(string.IsNullOrEmpty(mod.SemesterName) ? "No Semester" : mod.SemesterName)
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-4 font-mono">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span>@mod.TeacherName</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 border-t border-border pt-4 mt-2">
+                        <button class="flex-1 text-center bg-secondary hover:bg-secondary/80 text-foreground border border-border py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => OpenScheduleForm(mod.Id)">Add Schedule</button>
+                        <button class="text-center hover:bg-accent/40 text-foreground border border-border px-3 py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => OpenEditForm(mod)">Edit</button>
+                        <button class="text-center bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/20 px-3 py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => DeleteModule(mod.Id)">Delete</button>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="flex items-center justify-between border border-border rounded-lg px-6 py-4 bg-card mt-6">
             <span class="text-xs text-muted-foreground font-mono">
                 Page @_pageNumber of @_totalPages (@_totalCount total items)
             </span>
@@ -229,9 +330,10 @@
             </div>
         </div>
     }
-</div>
+}
 
 @code {
+    private static string _viewMode = "table";
     private List<ModuleDto>? _modules;
     private List<SemesterDto>? _semesters;
     
@@ -385,7 +487,7 @@
         }
         catch (Exception ex)
         {
-            _message = "Error loading data: " + ex.Message;
+            _message = ex.GetFriendlyErrorMessage("Error loading data");
             _isError = true;
         }
         finally
@@ -402,26 +504,33 @@
         try
         {
             var response = await Http.PostAsJsonAsync("api/modules", _newModule);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult<ModuleDto>>();
-
-            if (result != null && result.IsSuccess)
+            if (response.IsSuccessStatusCode)
             {
-                _message = "Module created successfully.";
-                _isError = false;
-                _showCreateForm = false;
-                _newModule = new CreateModuleRequest();
-                _pageNumber = 1;
-                await LoadData();
+                var result = await response.Content.ReadFromJsonAsync<ApiResult<ModuleDto>>();
+                if (result != null && result.IsSuccess)
+                {
+                    _message = "Module created successfully.";
+                    _isError = false;
+                    _showCreateForm = false;
+                    _newModule = new CreateModuleRequest();
+                    _pageNumber = 1;
+                    await LoadData();
+                }
+                else
+                {
+                    _message = result?.Message ?? "Unknown error creating module.";
+                    _isError = true;
+                }
             }
             else
             {
-                _message = result?.Message ?? "Unknown error creating module.";
+                _message = await response.GetFriendlyErrorMessageAsync("Error creating module");
                 _isError = true;
             }
         }
         catch (Exception ex)
         {
-            _message = "Error: " + ex.Message;
+            _message = ex.GetFriendlyErrorMessage("Error creating module");
             _isError = true;
         }
         finally
@@ -445,25 +554,32 @@
         try
         {
             var response = await Http.PutAsJsonAsync($"api/modules/{_editingModuleId}", _editModule);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult<ModuleDto>>();
-
-            if (result != null && result.IsSuccess)
+            if (response.IsSuccessStatusCode)
             {
-                _message = "Module updated successfully.";
-                _isError = false;
-                _showEditForm = false;
-                _editingModuleId = 0;
-                await LoadData();
+                var result = await response.Content.ReadFromJsonAsync<ApiResult<ModuleDto>>();
+                if (result != null && result.IsSuccess)
+                {
+                    _message = "Module updated successfully.";
+                    _isError = false;
+                    _showEditForm = false;
+                    _editingModuleId = 0;
+                    await LoadData();
+                }
+                else
+                {
+                    _message = result?.Message ?? "Unknown error updating module.";
+                    _isError = true;
+                }
             }
             else
             {
-                _message = result?.Message ?? "Unknown error updating module.";
+                _message = await response.GetFriendlyErrorMessageAsync("Error updating module");
                 _isError = true;
             }
         }
         catch (Exception ex)
         {
-            _message = "Error: " + ex.Message;
+            _message = ex.GetFriendlyErrorMessage("Error updating module");
             _isError = true;
         }
         finally
@@ -487,30 +603,36 @@
         try
         {
             var response = await Http.PostAsJsonAsync($"api/modules/{_selectedModuleId}/recurring-schedules/{_selectedSemesterId}", _newSchedule);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult<RecurringScheduleDto>>();
-
-            if (result != null && result.IsSuccess)
+            if (response.IsSuccessStatusCode)
             {
-                _message = "Schedule added successfully.";
-                _isError = false;
-                _selectedModuleId = 0;
-                // reset
-                _newSchedule = new CreateRecurringScheduleRequest
+                var result = await response.Content.ReadFromJsonAsync<ApiResult<RecurringScheduleDto>>();
+                if (result != null && result.IsSuccess)
                 {
-                    StartTime = new TimeOnly(9, 0),
-                    EndTime = new TimeOnly(11, 0),
-                    DayOfWeek = 1
-                };
+                    _message = "Schedule added successfully.";
+                    _isError = false;
+                    _selectedModuleId = 0;
+                    _newSchedule = new CreateRecurringScheduleRequest
+                    {
+                        StartTime = new TimeOnly(9, 0),
+                        EndTime = new TimeOnly(11, 0),
+                        DayOfWeek = 1
+                    };
+                }
+                else
+                {
+                    _message = result?.Message ?? "Unknown error adding schedule.";
+                    _isError = true;
+                }
             }
             else
             {
-                _message = result?.Message ?? "Unknown error adding schedule.";
+                _message = await response.GetFriendlyErrorMessageAsync("Error adding schedule");
                 _isError = true;
             }
         }
         catch (Exception ex)
         {
-            _message = "Error: " + ex.Message;
+            _message = ex.GetFriendlyErrorMessage("Error adding schedule");
             _isError = true;
         }
         finally
@@ -521,21 +643,30 @@
 
     private async Task DeleteModule(long id)
     {
+        _message = string.Empty;
         try
         {
             var response = await Http.DeleteAsync($"api/modules/{id}");
             if (response.IsSuccessStatusCode)
             {
+                _message = "Module deleted successfully.";
+                _isError = false;
                 if (_modules != null && _modules.Count == 1 && _pageNumber > 1)
                 {
                     _pageNumber--;
                 }
                 await LoadData();
             }
+            else
+            {
+                _message = await response.GetFriendlyErrorMessageAsync("Error deleting module");
+                _isError = true;
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            // Handle error
+            _message = ex.GetFriendlyErrorMessage("Error deleting module");
+            _isError = true;
         }
     }
 }

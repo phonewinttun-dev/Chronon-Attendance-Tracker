@@ -16,8 +16,19 @@
 
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="bg-card border @(_isError ? "border-destructive/40 text-destructive" : "border-emerald-500/40 text-emerald-500") p-4 rounded-lg text-sm mb-6">
-        @_message
+    <div class="border p-4 rounded-lg mb-6 text-sm font-semibold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
+        <div class="flex items-center gap-2.5">
+            @if (_isError)
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            }
+            else
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
+            }
+            <span>@_message</span>
+        </div>
+        <button class="hover:opacity-80 focus:outline-none text-base font-bold px-1.5 py-0.5 rounded hover:bg-foreground/5 transition-all" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
     </div>
 }
 
@@ -157,7 +168,7 @@
         }
         catch (Exception ex)
         {
-            _message = "Error loading holidays: " + ex.Message;
+            _message = ex.GetFriendlyErrorMessage("Error loading holidays");
             _isError = true;
         }
         finally
@@ -174,24 +185,31 @@
         try
         {
             var response = await Http.PostAsync("api/holidays/seed", null);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
-
-            if (result != null && result.IsSuccess)
+            if (response.IsSuccessStatusCode)
             {
-                _message = result.Message;
-                _isError = false;
-                _pageNumber = 1;
-                await LoadHolidays();
+                var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+                if (result != null && result.IsSuccess)
+                {
+                    _message = result.Message;
+                    _isError = false;
+                    _pageNumber = 1;
+                    await LoadHolidays();
+                }
+                else
+                {
+                    _message = result?.Message ?? "Unknown error seeding holidays.";
+                    _isError = true;
+                }
             }
             else
             {
-                _message = result?.Message ?? "Unknown error seeding holidays.";
+                _message = await response.GetFriendlyErrorMessageAsync("Error seeding holidays");
                 _isError = true;
             }
         }
         catch (Exception ex)
         {
-            _message = "Error: " + ex.Message;
+            _message = ex.GetFriendlyErrorMessage("Error seeding holidays");
             _isError = true;
         }
         finally
@@ -202,21 +220,30 @@
 
     private async Task DeleteHoliday(long id)
     {
+        _message = string.Empty;
         try
         {
             var response = await Http.DeleteAsync($"api/holidays/{id}");
             if (response.IsSuccessStatusCode)
             {
+                _message = "Holiday deleted successfully.";
+                _isError = false;
                 if (_holidays != null && _holidays.Count == 1 && _pageNumber > 1)
                 {
                     _pageNumber--;
                 }
                 await LoadHolidays();
             }
+            else
+            {
+                _message = await response.GetFriendlyErrorMessageAsync("Error deleting holiday");
+                _isError = true;
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            // Handle delete error
+            _message = ex.GetFriendlyErrorMessage("Error deleting holiday");
+            _isError = true;
         }
     }
 }

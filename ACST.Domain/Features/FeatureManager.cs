@@ -18,7 +18,7 @@ namespace ACST.Domain.Features
         public static void AddDomain(this WebApplicationBuilder builder)
         {
             // Database
-            builder.Services.AddDbContext<AppDbContext>(options =>
+            builder.Services.AddDbContextPool<AppDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Feature Services

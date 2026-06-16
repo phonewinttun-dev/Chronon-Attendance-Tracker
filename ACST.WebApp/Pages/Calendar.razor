@@ -56,9 +56,19 @@
 <!-- Message Notification -->
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="bg-card border @(_isError ? "border-destructive/40 text-destructive" : "border-emerald-500/40 text-emerald-500") p-4 rounded-lg text-sm mb-6 flex justify-between items-center">
-        <span>@_message</span>
-        <button class="hover:text-foreground focus:outline-none text-lg font-bold" @onclick="() => _message = string.Empty">×</button>
+    <div class="border p-4 rounded-lg mb-6 text-sm font-semibold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
+        <div class="flex items-center gap-2.5">
+            @if (_isError)
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            }
+            else
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
+            }
+            <span>@_message</span>
+        </div>
+        <button class="hover:opacity-80 focus:outline-none text-base font-bold px-1.5 py-0.5 rounded hover:bg-foreground/5 transition-all" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
     </div>
 }
 
@@ -311,7 +321,7 @@
         }
         catch (Exception ex)
         {
-            _message = "Error loading schedule data: " + ex.Message;
+            _message = ex.GetFriendlyErrorMessage("Error loading schedule data");
             _isError = true;
         }
         finally
@@ -396,26 +406,33 @@
         try
         {
             var response = await Http.PatchAsJsonAsync($"api/classsessions/{_selectedSession.Id}/status", new { Status = status });
-            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
-
-            if (result != null && result.IsSuccess)
+            if (response.IsSuccessStatusCode)
             {
-                _selectedSession.Status = status;
-                _showDetailsModal = false;
-                _selectedSession = null;
-                _message = "Status updated successfully.";
-                _isError = false;
-                await LoadCalendarData();
+                var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+                if (result != null && result.IsSuccess)
+                {
+                    _selectedSession.Status = status;
+                    _showDetailsModal = false;
+                    _selectedSession = null;
+                    _message = "Status updated successfully.";
+                    _isError = false;
+                    await LoadCalendarData();
+                }
+                else
+                {
+                    _message = result?.Message ?? "Failed to update session status.";
+                    _isError = true;
+                }
             }
             else
             {
-                _message = result?.Message ?? "Failed to update session status.";
+                _message = await response.GetFriendlyErrorMessageAsync("Error updating session status");
                 _isError = true;
             }
         }
         catch (Exception ex)
         {
-            _message = "Error: " + ex.Message;
+            _message = ex.GetFriendlyErrorMessage("Error updating status");
             _isError = true;
         }
         finally
