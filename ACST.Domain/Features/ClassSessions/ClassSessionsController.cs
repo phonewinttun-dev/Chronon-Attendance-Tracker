@@ -48,6 +48,22 @@ public class ClassSessionsController : ControllerBase
         var result = await _sessionService.UpdateSessionStatusAsync(id, request);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateClassSessionRequest request)
+    {
+        if (!ModelState.IsValid) return BadRequest(Result.Failure("Invalid request parameters."));
+
+        var result = await _sessionService.UpdateSessionAsync(id, request);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(long id)
+    {
+        var result = await _sessionService.DeleteSessionAsync(id);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
 }
 
 // Separate controller for public Magic Link

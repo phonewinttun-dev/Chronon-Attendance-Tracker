@@ -7,10 +7,20 @@
 
 @if (_isLoadingSemesters)
 {
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold">Dashboard</h1>
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-pulse">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+                <div class="h-5 bg-muted rounded-full w-28"></div>
+            </div>
+            <div class="h-4 bg-muted rounded w-64 mt-2"></div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="h-4 bg-muted rounded w-16"></div>
+            <div class="h-9 bg-muted rounded w-[220px]"></div>
+        </div>
     </div>
-    <p class="text-on-surface-variant">Loading semesters...</p>
+    @RenderDashboardSkeletons
 }
 else if (_semesters == null || !_semesters.Any())
 {
@@ -27,26 +37,26 @@ else
     <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <div class="flex items-center gap-3">
-                <h1 class="text-3xl font-bold text-on-surface">Dashboard</h1>
+                <h1 class="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
                 @if (_selectedSemesterId == _currentSemesterId)
                 {
-                    <span class="bg-primary/10 text-primary border border-primary/30 px-2 py-0.5 rounded-full text-xs font-semibold">Current Semester</span>
+                    <span class="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2.5 py-0.5 rounded-full text-xs font-medium">Current Semester</span>
                 }
                 else
                 {
-                    <span class="bg-surface-variant text-on-surface-variant border border-outline/30 px-2 py-0.5 rounded-full text-xs font-semibold">Previous Semester</span>
+                    <span class="bg-muted text-muted-foreground border border-border px-2.5 py-0.5 rounded-full text-xs font-medium">Previous Semester</span>
                 }
             </div>
             @if (_summary != null)
             {
-                <p class="text-on-surface-variant text-sm mt-1">
-                    Academic Period: <span class="font-mono text-primary">@_summary.StartDate.ToString("dd-MM-yyyy")</span> to <span class="font-mono text-primary">@_summary.EndDate.ToString("dd-MM-yyyy")</span>
+                <p class="text-muted-foreground text-sm mt-1">
+                    Academic Period: <span class="font-mono text-foreground">@_summary.StartDate.ToString("dd-MM-yyyy")</span> to <span class="font-mono text-foreground">@_summary.EndDate.ToString("dd-MM-yyyy")</span>
                 </p>
             }
         </div>
         <div class="flex items-center gap-3">
-            <label class="text-on-surface-variant font-semibold text-sm whitespace-nowrap">Semester:</label>
-            <select class="p-2.5 bg-surface-container border border-outline-variant rounded-lg text-on-surface font-sans text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary min-w-[220px]"
+            <label class="text-muted-foreground font-semibold text-sm whitespace-nowrap">Semester:</label>
+            <select class="p-2 bg-card border border-border rounded-md text-foreground font-sans text-sm focus:outline-none focus:ring-1 focus:ring-ring min-w-[220px]"
                     value="@_selectedSemesterId" @onchange="OnSemesterChanged">
                 @foreach (var sem in _semesters)
                 {
@@ -58,11 +68,11 @@ else
 
     @if (_isLoadingSummary)
     {
-        <p class="text-on-surface-variant">Loading dashboard details...</p>
+        @RenderDashboardSkeletons
     }
     else if (_summary == null)
     {
-        <div class="bg-surface-container border border-error/40 p-6 rounded-xl text-error">
+        <div class="bg-card border border-destructive/50 p-6 rounded-lg text-destructive text-sm font-semibold">
             Failed to load dashboard data for the selected semester.
         </div>
     }
@@ -70,27 +80,27 @@ else
     {
         <!-- Metrics Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-surface-container border border-outline-variant p-6 rounded-xl shadow-sm">
-                <h3 class="text-on-surface-variant text-sm font-semibold mb-2">Today's Classes</h3>
-                <div class="text-5xl font-bold text-primary font-mono">
+            <div class="bg-card border border-border p-6 rounded-lg shadow-sm">
+                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Today's Classes</h3>
+                <div class="text-3xl font-bold text-foreground font-mono">
                     @_summary.TodaySessionsCount
                 </div>
             </div>
 
-            <div class="bg-surface-container border border-outline-variant p-6 rounded-xl shadow-sm">
-                <h3 class="text-on-surface-variant text-sm font-semibold mb-2">Upcoming Classes (7 days)</h3>
-                <div class="text-5xl font-bold text-secondary font-mono">
+            <div class="bg-card border border-border p-6 rounded-lg shadow-sm">
+                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Upcoming Classes (7 days)</h3>
+                <div class="text-3xl font-bold text-foreground font-mono">
                     @_summary.UpcomingSessionsCount
                 </div>
             </div>
 
-            <div class="bg-surface-container border border-outline-variant p-6 rounded-xl shadow-sm relative overflow-hidden">
-                <h3 class="text-on-surface-variant text-sm font-semibold mb-2">Semester Health</h3>
-                <div class="text-5xl font-bold font-mono @GetHealthColorClass(_summary.SemesterHealthRate)">
+            <div class="bg-card border border-border p-6 rounded-lg shadow-sm relative overflow-hidden">
+                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Semester Health</h3>
+                <div class="text-3xl font-bold font-mono @GetHealthColorClass(_summary.SemesterHealthRate)">
                     @_summary.SemesterHealthRate%
                 </div>
                 <!-- Mini Progress Bar -->
-                <div class="w-full bg-surface/50 h-2 rounded-full mt-4 overflow-hidden border border-outline-variant/30">
+                <div class="w-full bg-secondary h-1.5 rounded-full mt-3 overflow-hidden border border-border/30">
                     <div class="h-full rounded-full @GetHealthBgClass(_summary.SemesterHealthRate)" style="width: @(Math.Min(100, _summary.SemesterHealthRate))%"></div>
                 </div>
             </div>
@@ -98,14 +108,16 @@ else
 
         @if (_summary.Warnings.Any())
         {
-            <div class="bg-surface-container border border-error/40 p-5 rounded-xl shadow-sm mb-8">
-                <h3 class="text-error font-semibold mb-2 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            <div class="bg-card border border-destructive/40 p-5 rounded-lg shadow-sm mb-8">
+                <h3 class="text-destructive font-semibold text-sm mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-destructive shrink-0 lucide lucide-triangle-alert">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
                     </svg>
                     Alerts
                 </h3>
-                <ul class="list-disc pl-5 text-on-surface-variant text-sm">
+                <ul class="list-disc pl-5 text-muted-foreground text-xs space-y-0.5">
                     @foreach (var warning in _summary.Warnings)
                     {
                         <li class="mb-1">@warning</li>
@@ -115,53 +127,53 @@ else
         }
 
         <!-- Reconciliation Grid & Details -->
-        <div class="bg-surface-container border border-outline-variant rounded-xl shadow-sm p-6 mb-8">
-            <h2 class="text-xl font-bold text-on-surface mb-4">Data Reconciliation</h2>
+        <div class="bg-card border border-border rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-base font-bold text-foreground mb-4 tracking-tight">Data Reconciliation</h2>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                    <p class="text-on-surface-variant text-sm leading-relaxed mb-4 font-sans">
+                    <p class="text-muted-foreground text-sm leading-relaxed mb-4 font-sans">
                         Reconciliation provides a transparent breakdown of all academic session records for the semester. 
                         Public holidays and cancelled sessions are strictly excluded from the attendance statistics as per calculation guidelines.
                     </p>
-                    <div class="bg-surface border border-outline-variant rounded-lg p-4 font-mono text-xs text-on-surface-variant">
-                        <div class="text-primary font-bold mb-2">// Attendance Rate Formula</div>
+                    <div class="bg-background border border-border rounded-md p-4 font-mono text-[11px] text-muted-foreground">
+                        <div class="text-foreground font-semibold mb-1.5">// Attendance Rate Formula</div>
                         <div>Rate = Present / Valid Sessions * 100</div>
                         <div>Valid = Total - (Cancelled + Holiday)</div>
-                        <div class="mt-3 text-secondary font-bold">// Active Calculation</div>
-                        <div>Rate = @_summary.PresentSessions / @_summary.ValidSessions * 100 = <span class="text-primary font-bold">@_summary.CalculatedRate%</span></div>
+                        <div class="mt-3 text-foreground font-semibold">// Active Calculation</div>
+                        <div>Rate = @_summary.PresentSessions / @_summary.ValidSessions * 100 = <span class="text-foreground font-bold">@_summary.CalculatedRate%</span></div>
                     </div>
                 </div>
                 
-                <div class="border border-outline-variant rounded-lg overflow-hidden">
-                    <table class="w-full text-left text-sm font-sans">
-                        <tbody>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors cursor-pointer" @onclick='() => Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}")'>
-                                <td class="px-4 py-3 font-semibold text-on-surface-variant">Total Generated Sessions</td>
-                                <td class="px-4 py-3 font-mono text-right text-on-surface font-semibold">@_summary.TotalSessions</td>
+                <div class="border border-border rounded-md overflow-hidden bg-background/30">
+                    <table class="w-full text-left text-xs font-sans">
+                        <tbody class="divide-y divide-border">
+                            <tr class="hover:bg-accent/40 transition-colors cursor-pointer" @onclick='() => Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}")'>
+                                <td class="px-4 py-2.5 font-medium text-muted-foreground">Total Generated Sessions</td>
+                                <td class="px-4 py-2.5 font-mono text-right text-foreground font-semibold">@_summary.TotalSessions</td>
                             </tr>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-primary font-semibold cursor-pointer" @onclick='() => NavigateToStatus("Present")'>
-                                <td class="px-4 py-3">Present Sessions (+)</td>
-                                <td class="px-4 py-3 font-mono text-right font-bold">@_summary.PresentSessions</td>
+                            <tr class="hover:bg-accent/40 transition-colors text-emerald-500 font-medium cursor-pointer" @onclick='() => NavigateToStatus("Present")'>
+                                <td class="px-4 py-2.5">Present Sessions (+)</td>
+                                <td class="px-4 py-2.5 font-mono text-right font-bold">@_summary.PresentSessions</td>
                             </tr>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-error cursor-pointer" @onclick='() => NavigateToStatus("Absent")'>
-                                <td class="px-4 py-3 font-semibold">Absent Sessions (+)</td>
-                                <td class="px-4 py-3 font-mono text-right">@_summary.AbsentSessions</td>
+                            <tr class="hover:bg-accent/40 transition-colors text-destructive cursor-pointer" @onclick='() => NavigateToStatus("Absent")'>
+                                <td class="px-4 py-2.5 font-medium">Absent Sessions (+)</td>
+                                <td class="px-4 py-2.5 font-mono text-right">@_summary.AbsentSessions</td>
                             </tr>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-tertiary cursor-pointer" @onclick='() => NavigateToStatus("Late")'>
-                                <td class="px-4 py-3 font-semibold">Late Sessions (+)</td>
-                                <td class="px-4 py-3 font-mono text-right">@_summary.LateSessions</td>
+                            <tr class="hover:bg-accent/40 transition-colors text-amber-500 cursor-pointer" @onclick='() => NavigateToStatus("Late")'>
+                                <td class="px-4 py-2.5 font-medium">Late Sessions (+)</td>
+                                <td class="px-4 py-2.5 font-mono text-right">@_summary.LateSessions</td>
                             </tr>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick='() => NavigateToStatus("Cancelled")'>
-                                <td class="px-4 py-3 font-semibold">Cancelled Sessions (Excluded, -)</td>
-                                <td class="px-4 py-3 font-mono text-right">@_summary.CancelledSessions</td>
+                            <tr class="hover:bg-accent/40 transition-colors text-muted-foreground cursor-pointer" @onclick='() => NavigateToStatus("Cancelled")'>
+                                <td class="px-4 py-2.5 font-medium">Cancelled Sessions (Excluded, -)</td>
+                                <td class="px-4 py-2.5 font-mono text-right">@_summary.CancelledSessions</td>
                             </tr>
-                            <tr class="border-b border-outline-variant hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick='() => NavigateToStatus("Holiday")'>
-                                <td class="px-4 py-3 font-semibold">Holiday Sessions (Excluded, -)</td>
-                                <td class="px-4 py-3 font-mono text-right">@_summary.HolidaySessions</td>
+                            <tr class="hover:bg-accent/40 transition-colors text-muted-foreground cursor-pointer" @onclick='() => NavigateToStatus("Holiday")'>
+                                <td class="px-4 py-2.5 font-medium">Holiday Sessions (Excluded, -)</td>
+                                <td class="px-4 py-2.5 font-mono text-right">@_summary.HolidaySessions</td>
                             </tr>
-                            <tr class="bg-surface-variant/30 hover:bg-surface-variant/50 transition-colors font-bold text-on-surface cursor-pointer" @onclick='() => Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}")'>
-                                <td class="px-4 py-3">Total Valid Sessions (Denominator)</td>
-                                <td class="px-4 py-3 font-mono text-right">@_summary.ValidSessions</td>
+                            <tr class="bg-accent/30 hover:bg-accent/50 transition-colors font-bold text-foreground cursor-pointer" @onclick='() => Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}")'>
+                                <td class="px-4 py-2.5">Total Valid Sessions (Denominator)</td>
+                                <td class="px-4 py-2.5 font-mono text-right">@_summary.ValidSessions</td>
                             </tr>
                         </tbody>
                     </table>
@@ -170,17 +182,17 @@ else
         </div>
 
         <!-- Daily, Weekly, Monthly Tabs -->
-        <div class="bg-surface-container border border-outline-variant rounded-xl shadow-sm overflow-hidden mb-8">
-            <div class="border-b border-outline-variant bg-surface-variant/30 flex p-2 gap-2">
-                <button class="px-4 py-2 text-sm font-semibold rounded-lg transition-all @(_activeTab == Tab.Daily ? "bg-primary text-on-primary shadow-sm" : "text-on-surface-variant hover:bg-surface-variant/50")"
+        <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden mb-8">
+            <div class="border-b border-border bg-accent/20 flex p-1 gap-1">
+                <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Daily ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
                         @onclick="() => SetActiveTab(Tab.Daily)">
                     Daily Attendance
                 </button>
-                <button class="px-4 py-2 text-sm font-semibold rounded-lg transition-all @(_activeTab == Tab.Weekly ? "bg-primary text-on-primary shadow-sm" : "text-on-surface-variant hover:bg-surface-variant/50")"
+                <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Weekly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
                         @onclick="() => SetActiveTab(Tab.Weekly)">
                     Weekly Attendance
                 </button>
-                <button class="px-4 py-2 text-sm font-semibold rounded-lg transition-all @(_activeTab == Tab.Monthly ? "bg-primary text-on-primary shadow-sm" : "text-on-surface-variant hover:bg-surface-variant/50")"
+                <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Monthly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
                         @onclick="() => SetActiveTab(Tab.Monthly)">
                     Monthly Attendance
                 </button>
@@ -200,7 +212,6 @@ else
                                     <th class="pb-3 font-semibold text-center">Late</th>
                                     <th class="pb-3 font-semibold text-center">Cancelled</th>
                                     <th class="pb-3 font-semibold text-center">Holiday</th>
-                                    <th class="pb-3 font-semibold text-center">Valid</th>
                                     <th class="pb-3 font-semibold text-right">Attendance Rate</th>
                                 </tr>
                             </thead>
@@ -215,7 +226,6 @@ else
                                         <td class="py-3 text-center text-tertiary">@day.Late</td>
                                         <td class="py-3 text-center">@day.Cancelled</td>
                                         <td class="py-3 text-center">@day.Holiday</td>
-                                        <td class="py-3 text-center text-on-surface">@day.ValidSessions</td>
                                         <td class="py-3 text-right">
                                             <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(day.AttendanceRate)">
                                                 @day.AttendanceRate%
@@ -241,7 +251,6 @@ else
                                     <th class="pb-3 font-semibold text-center">Late</th>
                                     <th class="pb-3 font-semibold text-center">Cancelled</th>
                                     <th class="pb-3 font-semibold text-center">Holiday</th>
-                                    <th class="pb-3 font-semibold text-center">Valid</th>
                                     <th class="pb-3 font-semibold text-right">Attendance Rate</th>
                                 </tr>
                             </thead>
@@ -257,7 +266,6 @@ else
                                         <td class="py-3 text-center text-tertiary">@week.Late</td>
                                         <td class="py-3 text-center">@week.Cancelled</td>
                                         <td class="py-3 text-center">@week.Holiday</td>
-                                        <td class="py-3 text-center text-on-surface">@week.ValidSessions</td>
                                         <td class="py-3 text-right">
                                             <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(week.AttendanceRate)">
                                                 @week.AttendanceRate%
@@ -282,7 +290,6 @@ else
                                     <th class="pb-3 font-semibold text-center">Late</th>
                                     <th class="pb-3 font-semibold text-center">Cancelled</th>
                                     <th class="pb-3 font-semibold text-center">Holiday</th>
-                                    <th class="pb-3 font-semibold text-center">Valid</th>
                                     <th class="pb-3 font-semibold text-right">Attendance Rate</th>
                                 </tr>
                             </thead>
@@ -297,7 +304,6 @@ else
                                         <td class="py-3 text-center text-tertiary">@month.Late</td>
                                         <td class="py-3 text-center">@month.Cancelled</td>
                                         <td class="py-3 text-center">@month.Holiday</td>
-                                        <td class="py-3 text-center text-on-surface">@month.ValidSessions</td>
                                         <td class="py-3 text-right">
                                             <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(month.AttendanceRate)">
                                                 @month.AttendanceRate%
@@ -431,22 +437,82 @@ else
 
     private string GetHealthColorClass(double rate)
     {
-        if (rate >= 75) return "text-primary";
-        if (rate >= 60) return "text-tertiary"; // Muted Ochre
-        return "text-error"; // Terracotta
+        if (rate >= 75) return "text-emerald-500";
+        if (rate >= 60) return "text-amber-500";
+        return "text-destructive";
     }
 
     private string GetHealthBgClass(double rate)
     {
-        if (rate >= 75) return "bg-primary";
-        if (rate >= 60) return "bg-tertiary";
-        return "bg-error";
+        if (rate >= 75) return "bg-emerald-500";
+        if (rate >= 60) return "bg-amber-500";
+        return "bg-destructive";
     }
 
     private string GetBadgeBorderAndBg(double rate)
     {
-        if (rate >= 75) return "border-primary text-primary bg-primary/10";
-        if (rate >= 60) return "border-tertiary text-tertiary bg-tertiary/10";
-        return "border-error text-error bg-error/10";
+        if (rate >= 75) return "border-emerald-500/20 text-emerald-500 bg-emerald-500/10";
+        if (rate >= 60) return "border-amber-500/20 text-amber-500 bg-amber-500/10";
+        return "border-destructive/20 text-destructive bg-destructive/10";
     }
+
+    private RenderFragment RenderDashboardSkeletons => __builder =>
+    {
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            @for (int i = 0; i < 3; i++)
+            {
+                <div class="bg-card border border-border p-6 rounded-lg shadow-sm animate-pulse">
+                    <div class="h-4 bg-muted rounded w-24 mb-3"></div>
+                    <div class="h-8 bg-muted rounded w-12 text-transparent">0</div>
+                </div>
+            }
+        </div>
+
+        <div class="bg-card border border-border rounded-lg shadow-sm p-6 mb-8 animate-pulse">
+            <div class="h-5 bg-muted rounded w-36 mb-4"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <div class="h-4 bg-muted rounded w-full"></div>
+                    <div class="h-4 bg-muted rounded w-5/6"></div>
+                    <div class="h-20 bg-muted rounded w-full mt-4"></div>
+                </div>
+                <div class="border border-border rounded-md p-4 space-y-3 bg-background/30">
+                    @for (int i = 0; i < 6; i++)
+                    {
+                        <div class="flex justify-between items-center">
+                            <div class="h-3 bg-muted rounded w-1/3"></div>
+                            <div class="h-3 bg-muted rounded w-12"></div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden mb-8 animate-pulse">
+            <div class="border-b border-border bg-accent/20 flex p-1 gap-1">
+                <div class="px-3 py-1.5 h-7 bg-muted rounded-md w-24"></div>
+                <div class="px-3 py-1.5 h-7 bg-muted rounded-md w-24"></div>
+                <div class="px-3 py-1.5 h-7 bg-muted rounded-md w-24"></div>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex gap-4 border-b border-border pb-3">
+                    <div class="h-4 bg-muted rounded w-1/4"></div>
+                    <div class="h-4 bg-muted rounded w-16 mx-auto"></div>
+                    <div class="h-4 bg-muted rounded w-16 mx-auto"></div>
+                    <div class="h-4 bg-muted rounded w-16 mx-auto"></div>
+                    <div class="h-4 bg-muted rounded w-16 mx-auto"></div>
+                </div>
+                @for (int i = 0; i < 5; i++)
+                {
+                    <div class="flex gap-4 py-2 border-b border-border/50">
+                        <div class="h-3 bg-muted rounded w-1/4"></div>
+                        <div class="h-3 bg-muted rounded w-10 mx-auto"></div>
+                        <div class="h-3 bg-muted rounded w-10 mx-auto"></div>
+                        <div class="h-3 bg-muted rounded w-10 mx-auto"></div>
+                        <div class="h-3 bg-muted rounded w-10 mx-auto"></div>
+                    </div>
+                }
+            </div>
+        </div>
+    };
 }

@@ -13,4 +13,6 @@ public interface IClassSessionService
     Task<Result> GenerateSessionsAsync(GenerateSessionsRequest request);
     Task<Result> UpdateSessionStatusAsync(long id, UpdateSessionStatusRequest request);
     Task<Result<string>> MarkAttendanceWithMagicLinkAsync(Guid token);
+    Task<Result> UpdateSessionAsync(long id, UpdateClassSessionRequest request);
+    Task<Result> DeleteSessionAsync(long id);
 }

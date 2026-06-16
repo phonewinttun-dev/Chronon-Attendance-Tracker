@@ -1,0 +1,14 @@
+{
+  "name": "acst-webapp",
+  "version": "1.0.0",
+  "description": "Tailwind CSS build for Blazor WebApp",
+  "scripts": {
+    "build:css": "tailwindcss -i ./Styles/tailwind.css -o ./wwwroot/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./Styles/tailwind.css -o ./wwwroot/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35"
+  }
+}

@@ -151,4 +151,167 @@ public class ClassSessionServiceTests
         var dbSession = await _context.TblSessions.FindAsync(session.Id);
         Assert.Equal("Not Marked", dbSession.Status); // Status should remain unchanged
     }
+
+    [Fact]
+    public async Task UpdateSessionStatusAsync_ShouldFail_WhenAfter24Hours()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var session = new TblSession
+        {
+            StartDatetime = now.AddHours(-25), // Started 25 hours ago
+            EndDatetime = now.AddHours(-23),
+            Status = "Not Marked",
+            ModuleId = 1,
+            SemesterId = 1,
+            SessionDate = DateOnly.FromDateTime(now.AddDays(-1)),
+            RecurringScheduleId = 1
+        };
+        _context.TblSessions.Add(session);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.UpdateSessionStatusAsync(session.Id, new UpdateSessionStatusRequest { Status = "Present" });
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Attendance status cannot be changed after 24 hours.", result.Message);
+        
+        var dbSession = await _context.TblSessions.FindAsync(session.Id);
+        Assert.Equal("Not Marked", dbSession.Status);
+    }
+
+    [Fact]
+    public async Task UpdateSessionAsync_ShouldFail_WhenAfter24Hours()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var session = new TblSession
+        {
+            StartDatetime = now.AddHours(-25),
+            EndDatetime = now.AddHours(-23),
+            Status = "Not Marked",
+            ModuleId = 1,
+            SemesterId = 1,
+            SessionDate = DateOnly.FromDateTime(now.AddDays(-1)),
+            RecurringScheduleId = 1
+        };
+        _context.TblSessions.Add(session);
+        await _context.SaveChangesAsync();
+
+        var request = new UpdateClassSessionRequest
+        {
+            ModuleId = 1,
+            SessionDate = DateOnly.FromDateTime(now),
+            StartDatetime = now,
+            EndDatetime = now.AddHours(1),
+            Status = "Present"
+        };
+
+        // Act
+        var result = await _service.UpdateSessionAsync(session.Id, request);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Attendance status cannot be changed after 24 hours.", result.Message);
+    }
+
+    [Fact]
+    public async Task DeleteSessionAsync_ShouldFail_WhenAfter24Hours()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var session = new TblSession
+        {
+            StartDatetime = now.AddHours(-25),
+            EndDatetime = now.AddHours(-23),
+            Status = "Not Marked",
+            ModuleId = 1,
+            SemesterId = 1,
+            SessionDate = DateOnly.FromDateTime(now.AddDays(-1)),
+            RecurringScheduleId = 1
+        };
+        _context.TblSessions.Add(session);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.DeleteSessionAsync(session.Id);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Attendance status cannot be changed after 24 hours.", result.Message);
+        
+        var dbSession = await _context.TblSessions.FindAsync(session.Id);
+        Assert.False(dbSession.IsDeleted);
+    }
+
+    [Fact]
+    public async Task UpdateSessionAsync_ShouldSucceed_WhenWithin24Hours()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var module = new TblModule { Name = "Science 101" };
+        _context.TblModules.Add(module);
+        await _context.SaveChangesAsync();
+
+        var session = new TblSession
+        {
+            StartDatetime = now.AddHours(-23), // Started 23 hours ago (within 24 hours)
+            EndDatetime = now.AddHours(-21),
+            Status = "Not Marked",
+            ModuleId = module.Id,
+            SemesterId = 1,
+            SessionDate = DateOnly.FromDateTime(now.AddDays(-1)),
+            RecurringScheduleId = 1
+        };
+        _context.TblSessions.Add(session);
+        await _context.SaveChangesAsync();
+
+        var request = new UpdateClassSessionRequest
+        {
+            ModuleId = module.Id,
+            SessionDate = DateOnly.FromDateTime(now),
+            StartDatetime = now.AddHours(-1),
+            EndDatetime = now.AddHours(1),
+            Status = "Present"
+        };
+
+        // Act
+        var result = await _service.UpdateSessionAsync(session.Id, request);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        
+        var dbSession = await _context.TblSessions.FindAsync(session.Id);
+        Assert.Equal("Present", dbSession.Status);
+        Assert.Equal(now.AddHours(-1), dbSession.StartDatetime);
+    }
+
+    [Fact]
+    public async Task DeleteSessionAsync_ShouldSucceed_WhenWithin24Hours()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var session = new TblSession
+        {
+            StartDatetime = now.AddHours(-23),
+            EndDatetime = now.AddHours(-21),
+            Status = "Not Marked",
+            ModuleId = 1,
+            SemesterId = 1,
+            SessionDate = DateOnly.FromDateTime(now.AddDays(-1)),
+            RecurringScheduleId = 1
+        };
+        _context.TblSessions.Add(session);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.DeleteSessionAsync(session.Id);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        
+        var dbSession = await _context.TblSessions.FindAsync(session.Id);
+        Assert.True(dbSession.IsDeleted);
+    }
 }

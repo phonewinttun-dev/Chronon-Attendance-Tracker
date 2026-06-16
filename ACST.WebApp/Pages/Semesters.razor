@@ -5,75 +5,105 @@
 <PageTitle>Semesters</PageTitle>
 
 <div class="flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-bold">Semesters</h1>
-    <button class="bg-primary hover:bg-primary-fixed-dim text-on-primary font-medium px-4 py-2 rounded-md transition-colors" @onclick="ToggleCreateForm">
+    <h1 class="text-2xl font-bold tracking-tight text-foreground">Semesters</h1>
+    <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="ToggleCreateForm">
         @(_showCreateForm ? "Cancel" : "New Semester")
     </button>
 </div>
 
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="bg-surface-container border @(_isError ? "border-error text-error" : "border-primary text-primary") p-4 rounded-md mb-6">
+    <div class="border p-4 rounded-md mb-6 text-sm font-medium @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
         @_message
     </div>
 }
 
 @if (_showCreateForm)
 {
-    <div class="bg-surface-container border border-outline-variant p-6 rounded-md shadow-md mb-8">
-        <h2 class="text-xl font-bold mb-4 text-on-surface">Create New Semester</h2>
+    <div class="bg-card border border-border p-6 rounded-lg shadow-sm mb-8">
+        <h2 class="text-base font-bold mb-4 text-foreground tracking-tight">Create New Semester</h2>
         
         <div class="mb-4">
-            <label class="block text-on-surface-variant mb-2">Name</label>
-            <input type="text" class="w-full p-3 bg-surface border border-outline-variant rounded-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" @bind="_newSemester.Name" placeholder="e.g. Fall 2026" />
+            <label class="block text-sm font-semibold text-muted-foreground mb-1">Name</label>
+            <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_newSemester.Name" placeholder="e.g. Fall 2026" />
         </div>
         
         <div class="grid grid-cols-2 gap-4 mb-6">
             <div>
-                <label class="block text-on-surface-variant mb-2">Start Date</label>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Start Date</label>
                 <DatePicker @bind-Value="_newSemester.StartDate" />
             </div>
             <div>
-                <label class="block text-on-surface-variant mb-2">End Date</label>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">End Date</label>
                 <DatePicker @bind-Value="_newSemester.EndDate" />
             </div>
         </div>
 
-        <button class="bg-primary hover:bg-primary-fixed-dim text-on-primary font-medium px-6 py-3 rounded-md transition-colors disabled:opacity-50" @onclick="CreateSemester" disabled="@_isSubmitting">
+        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="CreateSemester" disabled="@_isSubmitting">
             @(_isSubmitting ? "Creating..." : "Create Semester")
         </button>
     </div>
 }
 
-<div class="bg-surface-container border border-outline-variant rounded-md shadow-md overflow-hidden">
+<div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
     @if (_isLoading)
     {
-        <div class="p-6 text-on-surface-variant">Loading semesters...</div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs animate-pulse">
+                <thead>
+                    <tr class="border-b border-border bg-muted/50">
+                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Start Date</th>
+                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">End Date</th>
+                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <tr>
+                            <td class="px-6 py-4">
+                                <div class="h-3 bg-muted rounded w-28"></div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="h-3 bg-muted rounded w-20"></div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="h-3 bg-muted rounded w-20"></div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="h-7 bg-muted rounded w-16"></div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
     else if (_semesters == null || !_semesters.Any())
     {
-        <div class="p-6 text-on-surface-variant">No semesters found. Create one to get started.</div>
+        <div class="p-6 text-muted-foreground text-sm">No semesters found. Create one to get started.</div>
     }
     else
     {
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse text-xs">
             <thead>
-                <tr class="border-b border-outline-variant bg-surface-variant">
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Name</th>
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Start Date</th>
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">End Date</th>
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Actions</th>
+                <tr class="border-b border-border bg-muted/50">
+                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Start Date</th>
+                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">End Date</th>
+                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-outline-variant">
+            <tbody class="divide-y divide-border">
                 @foreach (var sem in _semesters)
                 {
-                    <tr class="hover:bg-surface-variant/50 transition-colors">
-                        <td class="px-6 py-4">@sem.Name</td>
-                        <td class="px-6 py-4 font-mono text-sm">@sem.StartDate.ToString("dd-MM-yyyy")</td>
-                        <td class="px-6 py-4 font-mono text-sm">@sem.EndDate.ToString("dd-MM-yyyy")</td>
-                        <td class="px-6 py-4">
-                            <button class="text-error border border-error px-3 py-1 rounded hover:bg-error hover:text-on-error transition-colors text-sm" @onclick="() => DeleteSemester(sem.Id)">Delete</button>
+                    <tr class="hover:bg-accent/40 transition-colors">
+                        <td class="px-6 py-3 text-foreground font-medium">@sem.Name</td>
+                        <td class="px-6 py-3 font-mono text-muted-foreground">@sem.StartDate.ToString("dd-MM-yyyy")</td>
+                        <td class="px-6 py-3 font-mono text-muted-foreground">@sem.EndDate.ToString("dd-MM-yyyy")</td>
+                        <td class="px-6 py-3">
+                            <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => DeleteSemester(sem.Id)">Delete</button>
                         </td>
                     </tr>
                 }

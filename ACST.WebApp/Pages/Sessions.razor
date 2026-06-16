@@ -5,54 +5,99 @@
 <PageTitle>Sessions</PageTitle>
 
 <div class="flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-bold">Class Sessions</h1>
-    <button class="bg-primary hover:bg-primary-fixed-dim text-on-primary font-medium px-4 py-2 rounded-md transition-colors disabled:opacity-50" @onclick="GenerateSessions" disabled="@_isGenerating">
+    <h1 class="text-2xl font-bold tracking-tight text-foreground">Class Sessions</h1>
+    <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="GenerateSessions" disabled="@_isGenerating">
         @(_isGenerating ? "Generating..." : "Generate Sessions")
     </button>
 </div>
 
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="bg-surface-container border @(_isError ? "border-error text-error" : "border-primary text-primary") p-4 rounded-md mb-6">
+    <div class="border p-4 rounded-md mb-6 text-sm font-medium @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
         @_message
     </div>
 }
 
-<div class="bg-surface-container border border-outline-variant rounded-md shadow-md overflow-hidden">
+<div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
     @if (_isLoading)
     {
-        <div class="p-6 text-on-surface-variant">Loading...</div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs animate-pulse">
+                <thead>
+                    <tr class="border-b border-border bg-muted/50">
+                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
+                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                    @for (int i = 0; i < 8; i++)
+                    {
+                        <tr>
+                            <td class="px-6 py-4">
+                                <div class="h-3 bg-muted rounded w-20"></div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="h-3 bg-muted rounded w-32"></div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="h-5 bg-muted rounded-full w-16"></div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex gap-2">
+                                    <div class="h-7 bg-muted rounded w-20"></div>
+                                    <div class="h-7 bg-muted rounded w-20"></div>
+                                    <div class="h-7 bg-muted rounded w-20"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
     else if (_sessions == null || !_sessions.Any())
     {
-        <div class="p-6 text-on-surface-variant">No class sessions found. Try generating sessions for the current semester.</div>
+        <div class="p-6 text-muted-foreground text-sm">No class sessions found. Try generating sessions for the current semester.</div>
     }
     else
     {
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse text-xs">
             <thead>
-                <tr class="border-b border-outline-variant bg-surface-variant">
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Module</th>
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Actions</th>
+                <tr class="border-b border-border bg-muted/50">
+                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
+                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-outline-variant">
+            <tbody class="divide-y divide-border">
                 @foreach (var session in _sessions)
                 {
-                    <tr class="hover:bg-surface-variant/50 transition-colors">
-                        <td class="px-6 py-4 font-mono">@session.SessionDate.ToString("dd-MM-yyyy")</td>
-                        <td class="px-6 py-4">@session.ModuleName</td>
-                        <td class="px-6 py-4">
+                    <tr class="hover:bg-accent/40 transition-colors">
+                        <td class="px-6 py-3 font-mono text-foreground">@session.SessionDate.ToString("dd-MM-yyyy")</td>
+                        <td class="px-6 py-3 text-foreground">@session.ModuleName</td>
+                        <td class="px-6 py-3">
                             <span class="@GetBadgeClass(session.Status)">@session.Status</span>
                         </td>
-                        <td class="px-6 py-4">
-                            @if (session.Status == "Not Marked" || session.Status == "Late")
-                            {
-                                <button class="bg-primary/20 text-primary border border-primary px-3 py-1 rounded hover:bg-primary hover:text-on-primary transition-colors text-sm mr-2" @onclick='() => UpdateStatus(session.Id, "Present")'>Present</button>
-                                <button class="bg-error/20 text-error border border-error px-3 py-1 rounded hover:bg-error hover:text-on-error transition-colors text-sm" @onclick='() => UpdateStatus(session.Id, "Absent")'>Absent</button>
-                            }
+                        <td class="px-6 py-3">
+                            <div class="flex flex-wrap gap-2">
+                                @if (DateTime.UtcNow <= session.StartDatetime.AddHours(24))
+                                {
+                                    @if (session.Status == "Not Marked" || session.Status == "Late")
+                                    {
+                                        <button class="w-20 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => UpdateStatus(session.Id, "Present")'>Present</button>
+                                        <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => UpdateStatus(session.Id, "Absent")'>Absent</button>
+                                    }
+                                    <button class="w-20 bg-secondary hover:bg-secondary/80 text-foreground border border-border py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => OpenEditModal(session)">Edit</button>
+                                    <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => DeleteSession(session.Id)">Delete</button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted-foreground text-xs italic">Locked</span>
+                                }
+                            </div>
                         </td>
                     </tr>
                 }
@@ -60,6 +105,72 @@
         </table>
     }
 </div>
+
+@if (_showEditModal && _editingSession != null)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50" @onclick="CloseEditModal">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg" @onclick:stopPropagation>
+            <!-- Modal Header -->
+            <div class="flex justify-between items-start border-b border-border pb-3 mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-foreground tracking-tight">Edit Session</h3>
+                </div>
+                <button type="button" class="text-muted-foreground hover:text-foreground font-semibold text-lg" @onclick="CloseEditModal">×</button>
+            </div>
+
+            <!-- Modal Content / Form -->
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Module</label>
+                    <select class="w-full p-2 bg-card border border-input rounded-md text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editModuleId">
+                        @if (_modules != null)
+                        {
+                            @foreach (var mod in _modules)
+                            {
+                                <option value="@mod.Id">@mod.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Session Date</label>
+                    <DatePicker @bind-Value="_editSessionDate" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Start Time</label>
+                        <input type="time" class="w-full p-2 bg-card border border-input rounded-md text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-ring font-mono" @bind="_editStartTime" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">End Time</label>
+                        <input type="time" class="w-full p-2 bg-card border border-input rounded-md text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-ring font-mono" @bind="_editEndTime" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Status</label>
+                    <select class="w-full p-2 bg-card border border-input rounded-md text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editStatus">
+                        <option value="Not Marked">Not Marked</option>
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Holiday">Holiday</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors" @onclick="CloseEditModal">Cancel</button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors" @onclick="SaveSession" disabled="@_isSaving">
+                    @(_isSaving ? "Saving..." : "Save")
+                </button>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private List<ClassSessionDto>? _sessions;
@@ -85,7 +196,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSessions();
+        await Task.WhenAll(LoadSessions(), LoadModules());
     }
 
     private async Task LoadSessions()
@@ -183,10 +294,142 @@
     {
         return status switch
         {
-            "Present" => "bg-primary/20 text-primary border border-primary px-2 py-1 rounded text-xs font-semibold",
-            "Absent" => "bg-error/20 text-error border border-error px-2 py-1 rounded text-xs font-semibold",
-            "Late" => "bg-secondary/20 text-secondary border border-secondary px-2 py-1 rounded text-xs font-semibold",
-            _ => "bg-surface-variant text-on-surface-variant border border-outline px-2 py-1 rounded text-xs font-semibold"
+            "Present" => "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded text-xs font-semibold",
+            "Absent" => "bg-destructive/10 text-destructive border border-destructive/20 px-2 py-0.5 rounded text-xs font-semibold",
+            "Late" => "bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded text-xs font-semibold",
+            _ => "bg-muted text-muted-foreground border border-border px-2 py-0.5 rounded text-xs font-semibold"
         };
+    }
+
+    private List<ModuleDto>? _modules;
+    private bool _showEditModal = false;
+    private ClassSessionDto? _editingSession;
+    private long _editModuleId;
+    private DateOnly _editSessionDate;
+    private TimeOnly _editStartTime;
+    private TimeOnly _editEndTime;
+    private string _editStatus = string.Empty;
+    private bool _isSaving = false;
+
+    private static readonly TimeSpan MyanmarOffset = TimeSpan.FromHours(6.5);
+
+    private async Task LoadModules()
+    {
+        try
+        {
+            var result = await Http.GetFromJsonAsync<ApiResult<List<ModuleDto>>>("api/modules");
+            if (result != null && result.IsSuccess)
+            {
+                _modules = result.Data;
+            }
+        }
+        catch
+        {
+            // Ignore module loading errors
+        }
+    }
+
+    private void OpenEditModal(ClassSessionDto session)
+    {
+        _editingSession = session;
+        _editModuleId = session.ModuleId;
+        _editSessionDate = session.SessionDate;
+        
+        var startLocal = session.StartDatetime + MyanmarOffset;
+        var endLocal = session.EndDatetime + MyanmarOffset;
+        
+        _editStartTime = TimeOnly.FromDateTime(startLocal);
+        _editEndTime = TimeOnly.FromDateTime(endLocal);
+        _editStatus = session.Status;
+        
+        _showEditModal = true;
+    }
+
+    private void CloseEditModal()
+    {
+        _showEditModal = false;
+        _editingSession = null;
+    }
+
+    private async Task SaveSession()
+    {
+        if (_editingSession == null) return;
+
+        _isSaving = true;
+        _message = string.Empty;
+        try
+        {
+            var startDateTimeLocal = new DateTime(
+                _editSessionDate.Year, _editSessionDate.Month, _editSessionDate.Day,
+                _editStartTime.Hour, _editStartTime.Minute, 0);
+                
+            var endDateTimeLocal = new DateTime(
+                _editSessionDate.Year, _editSessionDate.Month, _editSessionDate.Day,
+                _editEndTime.Hour, _editEndTime.Minute, 0);
+
+            var startUtc = startDateTimeLocal - MyanmarOffset;
+            var endUtc = endDateTimeLocal - MyanmarOffset;
+
+            var request = new
+            {
+                ModuleId = _editModuleId,
+                SessionDate = _editSessionDate,
+                StartDatetime = startUtc,
+                EndDatetime = endUtc,
+                Status = _editStatus
+            };
+
+            var response = await Http.PutAsJsonAsync($"api/classsessions/{_editingSession.Id}", request);
+            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+
+            if (result != null && result.IsSuccess)
+            {
+                _message = "Session updated successfully.";
+                _isError = false;
+                _showEditModal = false;
+                await LoadSessions();
+            }
+            else
+            {
+                _message = result?.Message ?? "Failed to update session.";
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = "Error: " + ex.Message;
+            _isError = true;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task DeleteSession(long id)
+    {
+        _message = string.Empty;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/classsessions/{id}");
+            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+
+            if (result != null && result.IsSuccess)
+            {
+                _message = "Session deleted successfully.";
+                _isError = false;
+                await LoadSessions();
+            }
+            else
+            {
+                _message = result?.Message ?? "Failed to delete session.";
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = "Error: " + ex.Message;
+            _isError = true;
+        }
     }
 }

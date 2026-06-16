@@ -8,84 +8,14 @@
     <base href="/" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=Geist:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        surface: {
-                            DEFAULT: '#11140f',
-                            dim: '#11140f',
-                            bright: '#373a34',
-                            'container-lowest': '#0c0f0a',
-                            'container-low': '#191c17',
-                            container: '#1d211b',
-                            'container-high': '#282b25',
-                            'container-highest': '#323630',
-                            variant: '#323630',
-                        },
-                        on: {
-                            surface: '#e1e3db',
-                            'surface-variant': '#c1c9ba',
-                            primary: '#003a04',
-                            'primary-container': '#000700',
-                            secondary: '#20361c',
-                            'secondary-container': '#a6c09c',
-                            tertiary: '#3a2e22',
-                            'tertiary-container': '#090400',
-                            error: '#690005',
-                            'error-container': '#ffdad6',
-                            background: '#e1e3db'
-                        },
-                        inverse: {
-                            surface: '#e1e3db',
-                            'on-surface': '#2e312c',
-                            primary: '#326a2d'
-                        },
-                        outline: {
-                            DEFAULT: '#8b9386',
-                            variant: '#41493e'
-                        },
-                        primary: {
-                            DEFAULT: '#98d68b',
-                            container: '#4b8443',
-                            fixed: '#b3f3a5',
-                            'fixed-dim': '#98d68b'
-                        },
-                        secondary: {
-                            DEFAULT: '#b4cea9',
-                            container: '#394f32',
-                            fixed: '#cfeac4',
-                            'fixed-dim': '#b4cea9'
-                        },
-                        tertiary: {
-                            DEFAULT: '#d6c3b2',
-                            container: '#837466',
-                            fixed: '#f3dfcd',
-                            'fixed-dim': '#d6c3b2'
-                        },
-                        error: {
-                            DEFAULT: '#ffb4ab',
-                            container: '#93000a'
-                        },
-                        background: '#11140f'
-                    },
-                    fontFamily: {
-                        sans: ['Hanken Grotesk', 'sans-serif'],
-                        mono: ['Geist', 'monospace']
-                    }
-                }
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&family=Geist:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/tailwind.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="ACST.WebApp.styles.css" rel="stylesheet" />
 </head>
 
-<body class="bg-surface text-on-surface font-sans antialiased">
+<body class="bg-background text-foreground font-sans antialiased">
     <div id="app">
         <div class="flex h-screen items-center justify-center">
             <svg class="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

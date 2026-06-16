@@ -32,3 +32,22 @@ public class GenerateSessionsRequest
     
     public long? ModuleId { get; set; }
 }
+
+public class UpdateClassSessionRequest
+{
+    [Required]
+    public long ModuleId { get; set; }
+
+    [Required]
+    public DateOnly SessionDate { get; set; }
+
+    [Required]
+    public DateTime StartDatetime { get; set; }
+
+    [Required]
+    public DateTime EndDatetime { get; set; }
+
+    [Required]
+    public string Status { get; set; } = string.Empty;
+}
+

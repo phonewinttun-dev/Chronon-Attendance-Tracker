@@ -32,6 +32,7 @@ public class HolidayDto
 public class ClassSessionDto
 {
     public long Id { get; set; }
+    public long ModuleId { get; set; }
     public string ModuleName { get; set; } = string.Empty;
     public DateOnly SessionDate { get; set; }
     public string Status { get; set; } = string.Empty;

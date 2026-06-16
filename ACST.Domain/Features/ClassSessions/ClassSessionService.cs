@@ -197,6 +197,11 @@ public class ClassSessionService : IClassSessionService
             var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
             if (session == null) return Result.Failure("Session not found.");
 
+            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            {
+                return Result.Failure("Attendance status cannot be changed after 24 hours.");
+            }
+
             session.Status = request.Status;
             _context.TblSessions.Update(session);
             await _context.SaveChangesAsync();
@@ -232,6 +237,11 @@ public class ClassSessionService : IClassSessionService
                 return Result<string>.Failure("Outside of attendance window.");
             }
 
+            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            {
+                return Result<string>.Failure("Attendance status cannot be changed after 24 hours.");
+            }
+
             if (session.Status == "Present")
             {
                 return Result<string>.Success("Already marked as present.");
@@ -246,6 +256,78 @@ public class ClassSessionService : IClassSessionService
         catch (Exception ex)
         {
             return Result<string>.Failure($"Error processing attendance link: {ex.Message}");
+        }
+    }
+
+    public async Task<Result> UpdateSessionAsync(long id, UpdateClassSessionRequest request)
+    {
+        try
+        {
+            var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+            if (session == null) return Result.Failure("Session not found.");
+
+            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            {
+                return Result.Failure("Attendance status cannot be changed after 24 hours.");
+            }
+
+            var moduleExists = await _context.TblModules.AnyAsync(m => m.Id == request.ModuleId && !m.IsDeleted);
+            if (!moduleExists) return Result.Failure("Module not found.");
+
+            session.ModuleId = request.ModuleId;
+            session.SessionDate = request.SessionDate;
+            session.StartDatetime = request.StartDatetime;
+            session.EndDatetime = request.EndDatetime;
+            
+            var oldStatus = session.Status;
+            session.Status = request.Status;
+
+            _context.TblSessions.Update(session);
+            await _context.SaveChangesAsync();
+
+            if (request.Status == "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
+            {
+                await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Cancelled");
+            }
+            else if (oldStatus == "Cancelled" && request.Status != "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
+            {
+                await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Confirmed");
+            }
+
+            return Result.Success("Session updated successfully.");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to update session: {ex.Message}");
+        }
+    }
+
+    public async Task<Result> DeleteSessionAsync(long id)
+    {
+        try
+        {
+            var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+            if (session == null) return Result.Failure("Session not found.");
+
+            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            {
+                return Result.Failure("Attendance status cannot be changed after 24 hours.");
+            }
+
+            session.IsDeleted = true;
+            _context.TblSessions.Update(session);
+            await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(session.GoogleEventId))
+            {
+                await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
+            }
+
+            return Result.Success("Session deleted successfully.");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to delete session: {ex.Message}");
         }
     }
 }
