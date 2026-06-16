@@ -18,30 +18,59 @@ public class SemesterService : ISemesterService
         _context = context;
     }
 
-    public async Task<Result<IEnumerable<SemesterDto>>> GetAllSemestersAsync()
+    public async Task<PagedResult<SemesterDto>> GetAllSemestersAsync(int? pageNumber = null, int? pageSize = null)
     {
         try
         {
-            var semesters = await _context.TblSemesters
+            var query = _context.TblSemesters
                 .AsNoTracking()
                 .Where(s => !s.IsDeleted)
-                .OrderByDescending(s => s.StartDate)
-                .Select(s => new SemesterDto
-                {
-                    Id = s.Id,
-                    Name = s.Name,
-                    StartDate = s.StartDate,
-                    EndDate = s.EndDate,
-                    CreatedAt = s.CreatedAt,
-                    UpdatedAt = s.UpdatedAt
-                })
-                .ToListAsync();
+                .OrderByDescending(s => s.StartDate);
 
-            return Result<IEnumerable<SemesterDto>>.Success(semesters);
+            int totalCount = await query.CountAsync();
+            List<SemesterDto> items;
+            Pagination pagination;
+
+            if (pageNumber.HasValue && pageSize.HasValue)
+            {
+                items = await query
+                    .Skip((pageNumber.Value - 1) * pageSize.Value)
+                    .Take(pageSize.Value)
+                    .Select(s => new SemesterDto
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        StartDate = s.StartDate,
+                        EndDate = s.EndDate,
+                        CreatedAt = s.CreatedAt,
+                        UpdatedAt = s.UpdatedAt
+                    })
+                    .ToListAsync();
+
+                pagination = new Pagination(pageNumber.Value, pageSize.Value, totalCount);
+            }
+            else
+            {
+                items = await query
+                    .Select(s => new SemesterDto
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        StartDate = s.StartDate,
+                        EndDate = s.EndDate,
+                        CreatedAt = s.CreatedAt,
+                        UpdatedAt = s.UpdatedAt
+                    })
+                    .ToListAsync();
+
+                pagination = new Pagination(1, totalCount > 0 ? totalCount : 1, totalCount);
+            }
+
+            return PagedResult<SemesterDto>.Success(items, pagination);
         }
         catch (Exception ex)
         {
-            return Result<IEnumerable<SemesterDto>>.Failure($"Failed to retrieve semesters: {ex.Message}");
+            return PagedResult<SemesterDto>.Failure($"Failed to retrieve semesters: {ex.Message}");
         }
     }
 

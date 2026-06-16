@@ -268,7 +268,7 @@
     {
         try
         {
-            var result = await Http.GetFromJsonAsync<ApiResult<List<SemesterDto>>>("api/semesters");
+            var result = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>("api/semesters");
             if (result != null && result.IsSuccess)
             {
                 _semesters = result.Data;
@@ -287,7 +287,7 @@
         try
         {
             // Load holidays
-            var holResult = await Http.GetFromJsonAsync<ApiResult<List<HolidayDto>>>("api/holidays");
+            var holResult = await Http.GetFromJsonAsync<PagedResult<HolidayDto>>("api/holidays");
             if (holResult != null && holResult.IsSuccess)
             {
                 _holidays = holResult.Data ?? new();
@@ -303,7 +303,7 @@
                 url += $"&semesterId={_selectedSemesterId}";
             }
 
-            var sessResult = await Http.GetFromJsonAsync<ApiResult<List<ClassSessionDto>>>(url);
+            var sessResult = await Http.GetFromJsonAsync<PagedResult<ClassSessionDto>>(url);
             if (sessResult != null && sessResult.IsSuccess)
             {
                 _sessions = sessResult.Data ?? new();

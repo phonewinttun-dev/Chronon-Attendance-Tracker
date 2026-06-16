@@ -22,7 +22,7 @@ public class ClassSessionService : IClassSessionService
         _googleCalendarService = googleCalendarService;
     }
 
-    public async Task<Result<IEnumerable<ClassSessionDto>>> GetSessionsAsync(long? semesterId, long? moduleId, DateOnly? startDate, DateOnly? endDate, string? status, int? dayOfWeek = null)
+    public async Task<PagedResult<ClassSessionDto>> GetSessionsAsync(long? semesterId, long? moduleId, DateOnly? startDate, DateOnly? endDate, string? status, int? dayOfWeek = null, int? pageNumber = null, int? pageSize = null)
     {
         try
         {
@@ -39,30 +39,64 @@ public class ClassSessionService : IClassSessionService
             if (!string.IsNullOrEmpty(status)) query = query.Where(s => s.Status == status);
             if (dayOfWeek.HasValue) query = query.Where(s => (int)s.SessionDate.DayOfWeek == dayOfWeek.Value);
 
-            var sessions = await query
-                .OrderBy(s => s.StartDatetime)
-                .Select(s => new ClassSessionDto
-                {
-                    Id = s.Id,
-                    RecurringScheduleId = s.RecurringScheduleId,
-                    ModuleId = s.ModuleId,
-                    ModuleName = s.Module.Name,
-                    SemesterId = s.SemesterId,
-                    SemesterName = s.Semester.Name,
-                    SessionDate = s.SessionDate,
-                    StartDatetime = s.StartDatetime,
-                    EndDatetime = s.EndDatetime,
-                    Status = s.Status,
-                    MagicLinkToken = s.MagicLinkToken,
-                    GoogleEventId = s.GoogleEventId
-                })
-                .ToListAsync();
+            int totalCount = await query.CountAsync();
+            List<ClassSessionDto> items;
+            Pagination pagination;
 
-            return Result<IEnumerable<ClassSessionDto>>.Success(sessions);
+            var orderedQuery = query.OrderBy(s => s.StartDatetime);
+
+            if (pageNumber.HasValue && pageSize.HasValue)
+            {
+                items = await orderedQuery
+                    .Skip((pageNumber.Value - 1) * pageSize.Value)
+                    .Take(pageSize.Value)
+                    .Select(s => new ClassSessionDto
+                    {
+                        Id = s.Id,
+                        RecurringScheduleId = s.RecurringScheduleId,
+                        ModuleId = s.ModuleId,
+                        ModuleName = s.Module.Name,
+                        SemesterId = s.SemesterId,
+                        SemesterName = s.Semester.Name,
+                        SessionDate = s.SessionDate,
+                        StartDatetime = s.StartDatetime,
+                        EndDatetime = s.EndDatetime,
+                        Status = s.Status,
+                        MagicLinkToken = s.MagicLinkToken,
+                        GoogleEventId = s.GoogleEventId
+                    })
+                    .ToListAsync();
+
+                pagination = new Pagination(pageNumber.Value, pageSize.Value, totalCount);
+            }
+            else
+            {
+                items = await orderedQuery
+                    .Select(s => new ClassSessionDto
+                    {
+                        Id = s.Id,
+                        RecurringScheduleId = s.RecurringScheduleId,
+                        ModuleId = s.ModuleId,
+                        ModuleName = s.Module.Name,
+                        SemesterId = s.SemesterId,
+                        SemesterName = s.Semester.Name,
+                        SessionDate = s.SessionDate,
+                        StartDatetime = s.StartDatetime,
+                        EndDatetime = s.EndDatetime,
+                        Status = s.Status,
+                        MagicLinkToken = s.MagicLinkToken,
+                        GoogleEventId = s.GoogleEventId
+                    })
+                    .ToListAsync();
+
+                pagination = new Pagination(1, totalCount > 0 ? totalCount : 1, totalCount);
+            }
+
+            return PagedResult<ClassSessionDto>.Success(items, pagination);
         }
         catch (Exception ex)
         {
-            return Result<IEnumerable<ClassSessionDto>>.Failure($"Error getting sessions: {ex.Message}");
+            return PagedResult<ClassSessionDto>.Failure($"Failed to retrieve sessions: {ex.Message}");
         }
     }
 

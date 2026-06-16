@@ -144,6 +144,13 @@ public class CreateRecurringScheduleRequest
     public TimeOnly EndTime { get; set; }
 }
 
+public class UpdateModuleRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public string TeacherName { get; set; } = string.Empty;
+    public long? SemesterId { get; set; }
+}
+
 // --- API Wrappers ---
 
 public class ApiResult<T>
@@ -157,4 +164,22 @@ public class ApiResult
 {
     public bool IsSuccess { get; set; }
     public string Message { get; set; } = string.Empty;
+}
+
+public class Pagination
+{
+    public int PageNumber { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+    public int TotalPages { get; set; }
+    public bool HasPreviousPage { get; set; }
+    public bool HasNextPage { get; set; }
+}
+
+public class PagedResult<T>
+{
+    public bool IsSuccess { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public List<T> Data { get; set; } = new();
+    public Pagination Pagination { get; set; } = null!;
 }

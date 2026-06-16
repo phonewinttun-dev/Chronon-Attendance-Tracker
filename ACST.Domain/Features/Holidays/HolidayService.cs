@@ -20,27 +20,53 @@ public class HolidayService : IHolidayService
         _context = context;
     }
 
-    public async Task<Result<IEnumerable<HolidayDto>>> GetAllHolidaysAsync()
+    public async Task<PagedResult<HolidayDto>> GetAllHolidaysAsync(int? pageNumber = null, int? pageSize = null)
     {
         try
         {
-            var holidays = await _context.TblHolidays
+            var query = _context.TblHolidays
                 .AsNoTracking()
                 .Where(h => !h.IsDeleted)
-                .OrderByDescending(h => h.HolidayDate)
-                .Select(h => new HolidayDto
-                {
-                    Id = h.Id,
-                    Name = h.Name,
-                    HolidayDate = h.HolidayDate
-                })
-                .ToListAsync();
+                .OrderByDescending(h => h.HolidayDate);
 
-            return Result<IEnumerable<HolidayDto>>.Success(holidays);
+            int totalCount = await query.CountAsync();
+            List<HolidayDto> items;
+            Pagination pagination;
+
+            if (pageNumber.HasValue && pageSize.HasValue)
+            {
+                items = await query
+                    .Skip((pageNumber.Value - 1) * pageSize.Value)
+                    .Take(pageSize.Value)
+                    .Select(h => new HolidayDto
+                    {
+                        Id = h.Id,
+                        Name = h.Name,
+                        HolidayDate = h.HolidayDate
+                    })
+                    .ToListAsync();
+
+                pagination = new Pagination(pageNumber.Value, pageSize.Value, totalCount);
+            }
+            else
+            {
+                items = await query
+                    .Select(h => new HolidayDto
+                    {
+                        Id = h.Id,
+                        Name = h.Name,
+                        HolidayDate = h.HolidayDate
+                    })
+                    .ToListAsync();
+
+                pagination = new Pagination(1, totalCount > 0 ? totalCount : 1, totalCount);
+            }
+
+            return PagedResult<HolidayDto>.Success(items, pagination);
         }
         catch (Exception ex)
         {
-            return Result<IEnumerable<HolidayDto>>.Failure($"Failed to retrieve holidays: {ex.Message}");
+            return PagedResult<HolidayDto>.Failure($"Failed to retrieve holidays: {ex.Message}");
         }
     }
 

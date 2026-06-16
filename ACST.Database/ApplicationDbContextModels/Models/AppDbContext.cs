@@ -29,7 +29,7 @@ public partial class AppDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseNpgsql("Host=db.dzeubdrqbzbudbblvxep.supabase.co;Database=postgres;Username=postgres;Password=ACSTSupabase1735#;SSL Mode=Require;Trust Server Certificate=true");
+            optionsBuilder.UseNpgsql("Host=db.dzeubdrqbzbudbblvxep.supabase.co;Database=postgres;Username=postgres;Password=ACSTSupabase1735#;SSL Mode=Require;Trust Server Certificate=true;Keepalive=30;Timeout=30;Command Timeout=30");
         }
     }
 

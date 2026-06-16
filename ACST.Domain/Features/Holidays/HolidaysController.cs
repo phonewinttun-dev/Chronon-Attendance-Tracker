@@ -17,9 +17,9 @@ public class HolidaysController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] int? pageNumber, [FromQuery] int? pageSize)
     {
-        var result = await _holidayService.GetAllHolidaysAsync();
+        var result = await _holidayService.GetAllHolidaysAsync(pageNumber, pageSize);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 

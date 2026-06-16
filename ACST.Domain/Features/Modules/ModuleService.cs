@@ -18,32 +18,62 @@ public class ModuleService : IModuleService
         _context = context;
     }
 
-    public async Task<Result<IEnumerable<ModuleDto>>> GetAllModulesAsync()
+    public async Task<PagedResult<ModuleDto>> GetAllModulesAsync(int? pageNumber = null, int? pageSize = null)
     {
         try
         {
-            var modules = await _context.TblModules
+            var query = _context.TblModules
                 .AsNoTracking()
                 .Include(m => m.Semester)
                 .Where(m => !m.IsDeleted)
-                .OrderBy(m => m.Name)
-                .Select(m => new ModuleDto
-                {
-                    Id = m.Id,
-                    Name = m.Name,
-                    TeacherName = m.TeacherName,
-                    SemesterId = m.SemesterId,
-                    SemesterName = m.Semester != null ? m.Semester.Name : null,
-                    CreatedAt = m.CreatedAt,
-                    UpdatedAt = m.UpdatedAt
-                })
-                .ToListAsync();
+                .OrderBy(m => m.Name);
 
-            return Result<IEnumerable<ModuleDto>>.Success(modules);
+            int totalCount = await query.CountAsync();
+            List<ModuleDto> items;
+            Pagination pagination;
+
+            if (pageNumber.HasValue && pageSize.HasValue)
+            {
+                items = await query
+                    .Skip((pageNumber.Value - 1) * pageSize.Value)
+                    .Take(pageSize.Value)
+                    .Select(m => new ModuleDto
+                    {
+                        Id = m.Id,
+                        Name = m.Name,
+                        TeacherName = m.TeacherName,
+                        SemesterId = m.SemesterId,
+                        SemesterName = m.Semester != null ? m.Semester.Name : null,
+                        CreatedAt = m.CreatedAt,
+                        UpdatedAt = m.UpdatedAt
+                    })
+                    .ToListAsync();
+
+                pagination = new Pagination(pageNumber.Value, pageSize.Value, totalCount);
+            }
+            else
+            {
+                items = await query
+                    .Select(m => new ModuleDto
+                    {
+                        Id = m.Id,
+                        Name = m.Name,
+                        TeacherName = m.TeacherName,
+                        SemesterId = m.SemesterId,
+                        SemesterName = m.Semester != null ? m.Semester.Name : null,
+                        CreatedAt = m.CreatedAt,
+                        UpdatedAt = m.UpdatedAt
+                    })
+                    .ToListAsync();
+
+                pagination = new Pagination(1, totalCount > 0 ? totalCount : 1, totalCount);
+            }
+
+            return PagedResult<ModuleDto>.Success(items, pagination);
         }
         catch (Exception ex)
         {
-            return Result<IEnumerable<ModuleDto>>.Failure($"Failed to retrieve modules: {ex.Message}");
+            return PagedResult<ModuleDto>.Failure($"Failed to retrieve modules: {ex.Message}");
         }
     }
 

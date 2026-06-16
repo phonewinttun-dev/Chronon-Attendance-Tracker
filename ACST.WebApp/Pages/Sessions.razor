@@ -103,6 +103,23 @@
                 }
             </tbody>
         </table>
+        <div class="flex items-center justify-between border-t border-border px-6 py-4 bg-card">
+            <span class="text-xs text-muted-foreground font-mono">
+                Page @_pageNumber of @_totalPages (@_totalCount total items)
+            </span>
+            <div class="flex gap-2">
+                <button class="px-3 py-1.5 border border-border rounded text-xs font-semibold font-mono hover:bg-accent/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+                        @onclick="GoToPrevPage" 
+                        disabled="@(!_hasPrevious)">
+                    &lt; Previous
+                </button>
+                <button class="px-3 py-1.5 border border-border rounded text-xs font-semibold font-mono hover:bg-accent/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+                        @onclick="GoToNextPage" 
+                        disabled="@(!_hasNext)">
+                    Next &gt;
+                </button>
+            </div>
+        </div>
     }
 </div>
 
@@ -179,6 +196,19 @@
     private string _message = string.Empty;
     private bool _isError = false;
 
+    private int _pageNumber = 1;
+    private int _pageSize = 10;
+    private int _totalPages = 1;
+    private int _totalCount = 0;
+    private bool _hasPrevious = false;
+    private bool _hasNext = false;
+
+    private long? _prevSemesterId;
+    private string? _prevStartDate;
+    private string? _prevEndDate;
+    private string? _prevStatus;
+    private int? _prevDayOfWeek;
+
     [SupplyParameterFromQuery]
     public long? SemesterId { get; set; }
 
@@ -196,7 +226,44 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(LoadSessions(), LoadModules());
+        await LoadModules();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_prevSemesterId != SemesterId || 
+            _prevStartDate != StartDate || 
+            _prevEndDate != EndDate || 
+            _prevStatus != Status || 
+            _prevDayOfWeek != DayOfWeek)
+        {
+            _pageNumber = 1;
+            _prevSemesterId = SemesterId;
+            _prevStartDate = StartDate;
+            _prevEndDate = EndDate;
+            _prevStatus = Status;
+            _prevDayOfWeek = DayOfWeek;
+        }
+
+        await LoadSessions();
+    }
+
+    private async Task GoToPrevPage()
+    {
+        if (_hasPrevious)
+        {
+            _pageNumber--;
+            await LoadSessions();
+        }
+    }
+
+    private async Task GoToNextPage()
+    {
+        if (_hasNext)
+        {
+            _pageNumber++;
+            await LoadSessions();
+        }
     }
 
     private async Task LoadSessions()
@@ -211,11 +278,20 @@
             if (!string.IsNullOrEmpty(Status)) query.Add($"status={Uri.EscapeDataString(Status)}");
             if (DayOfWeek.HasValue) query.Add($"dayOfWeek={DayOfWeek}");
 
+            query.Add($"pageNumber={_pageNumber}");
+            query.Add($"pageSize={_pageSize}");
+
             var queryString = query.Any() ? "?" + string.Join("&", query) : "";
-            var result = await Http.GetFromJsonAsync<ApiResult<List<ClassSessionDto>>>($"api/classsessions{queryString}");
+            var result = await Http.GetFromJsonAsync<PagedResult<ClassSessionDto>>($"api/classsessions{queryString}");
             if (result != null && result.IsSuccess)
             {
                 _sessions = result.Data;
+                _pageNumber = result.Pagination.PageNumber;
+                _pageSize = result.Pagination.PageSize;
+                _totalPages = result.Pagination.TotalPages;
+                _totalCount = result.Pagination.TotalCount;
+                _hasPrevious = result.Pagination.HasPreviousPage;
+                _hasNext = result.Pagination.HasNextPage;
             }
         }
         catch (Exception ex)
@@ -236,7 +312,7 @@
 
         try
         {
-            var semestersResult = await Http.GetFromJsonAsync<ApiResult<List<SemesterDto>>>("api/semesters");
+            var semestersResult = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>("api/semesters");
             var latestSemester = semestersResult?.Data?.OrderByDescending(s => s.StartDate).FirstOrDefault();
 
             if (latestSemester == null)
@@ -254,6 +330,7 @@
             {
                 _message = result.Message;
                 _isError = false;
+                _pageNumber = 1;
                 await LoadSessions();
             }
             else
@@ -317,7 +394,7 @@
     {
         try
         {
-            var result = await Http.GetFromJsonAsync<ApiResult<List<ModuleDto>>>("api/modules");
+            var result = await Http.GetFromJsonAsync<PagedResult<ModuleDto>>("api/modules");
             if (result != null && result.IsSuccess)
             {
                 _modules = result.Data;
@@ -418,6 +495,10 @@
             {
                 _message = "Session deleted successfully.";
                 _isError = false;
+                if (_sessions != null && _sessions.Count == 1 && _pageNumber > 1)
+                {
+                    _pageNumber--;
+                }
                 await LoadSessions();
             }
             else

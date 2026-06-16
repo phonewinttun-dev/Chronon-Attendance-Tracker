@@ -7,7 +7,7 @@ namespace ACST.Domain.Features.Semesters;
 
 public interface ISemesterService
 {
-    Task<Result<IEnumerable<SemesterDto>>> GetAllSemestersAsync();
+    Task<PagedResult<SemesterDto>> GetAllSemestersAsync(int? pageNumber = null, int? pageSize = null);
     Task<Result<SemesterDto>> GetSemesterByIdAsync(long id);
     Task<Result<SemesterDto>> CreateSemesterAsync(CreateSemesterRequest request);
     Task<Result<SemesterDto>> UpdateSemesterAsync(long id, UpdateSemesterRequest request);

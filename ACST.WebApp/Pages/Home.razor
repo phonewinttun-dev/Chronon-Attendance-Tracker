@@ -341,7 +341,7 @@ else
         _isLoadingSemesters = true;
         try
         {
-            var semestersResult = await Http.GetFromJsonAsync<ApiResult<List<SemesterDto>>>("api/semesters");
+            var semestersResult = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>("api/semesters");
             if (semestersResult != null && semestersResult.IsSuccess && semestersResult.Data != null)
             {
                 _semesters = semestersResult.Data.OrderByDescending(s => s.StartDate).ToList();
