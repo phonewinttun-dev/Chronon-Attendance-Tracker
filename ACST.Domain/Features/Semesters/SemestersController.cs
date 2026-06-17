@@ -17,9 +17,9 @@ public class SemestersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int? pageNumber, [FromQuery] int? pageSize)
+    public async Task<IActionResult> GetAll([FromQuery] string? searchTerm, [FromQuery] int? pageNumber, [FromQuery] int? pageSize)
     {
-        var result = await _semesterService.GetAllSemestersAsync(pageNumber, pageSize);
+        var result = await _semesterService.GetAllSemestersAsync(searchTerm, pageNumber, pageSize);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 

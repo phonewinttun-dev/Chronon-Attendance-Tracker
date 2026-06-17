@@ -10,6 +10,9 @@ public class ModuleDto
     public string? TeacherName { get; set; }
     public long? SemesterId { get; set; }
     public string? SemesterName { get; set; }
+    public double AttendanceRate { get; set; }
+    public int TotalValidSessions { get; set; }
+    public int PresentSessions { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

@@ -49,29 +49,29 @@
         @if (_isLoading)
         {
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs animate-pulse">
+                <table class="w-full text-left border-collapse text-sm animate-pulse">
                     <thead>
                         <tr class="border-b border-border bg-muted/50">
-                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
-                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
+                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
+                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @for (int i = 0; i < 8; i++)
                         {
                             <tr>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-4">
                                     <div class="h-3 bg-muted rounded w-20"></div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-4">
                                     <div class="h-3 bg-muted rounded w-32"></div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-4">
                                     <div class="h-5 bg-muted rounded-full w-16"></div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-4">
                                     <div class="flex gap-2">
                                         <div class="h-7 bg-muted rounded w-20"></div>
                                         <div class="h-7 bg-muted rounded w-20"></div>
@@ -90,25 +90,25 @@
         }
         else
         {
-            <table class="w-full text-left border-collapse text-xs">
+            <table class="w-full text-left border-collapse text-sm">
                 <thead>
                     <tr class="border-b border-border bg-muted/50">
-                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
-                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
+                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
+                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     @foreach (var session in _sessions)
                     {
                         <tr class="hover:bg-accent/40 transition-colors">
-                            <td class="px-6 py-3 font-mono text-foreground">@session.SessionDate.ToString("dd-MM-yyyy")</td>
-                            <td class="px-6 py-3 text-foreground">@session.ModuleName</td>
-                            <td class="px-6 py-3">
+                            <td class="px-4 py-3.5 font-mono text-foreground">@session.SessionDate.ToString("dd-MM-yyyy")</td>
+                            <td class="px-4 py-3.5 text-foreground">@session.ModuleName</td>
+                            <td class="px-4 py-3.5">
                                 <span class="@GetBadgeClass(session.Status)">@session.Status</span>
                             </td>
-                            <td class="px-6 py-3">
+                            <td class="px-4 py-3.5">
                                 <div class="flex flex-wrap gap-2">
                                     @if (DateTime.UtcNow <= session.StartDatetime.AddHours(24))
                                     {

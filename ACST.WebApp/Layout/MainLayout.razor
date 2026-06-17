@@ -2,34 +2,61 @@
 
 <div class="flex min-h-screen bg-background text-foreground">
     <!-- Sidebar -->
-    <nav class="w-64 bg-card border-r border-border flex flex-col shrink-0">
-        <div class="p-6 text-xl font-bold text-foreground border-b border-border tracking-tight">
-            Chronon Tracker
+    <nav class="bg-card border-r border-border flex flex-col shrink-0 transition-all duration-300 ease-in-out @(_isCollapsed ? "w-16" : "w-64")">
+        <!-- Sidebar Header -->
+        <div class="h-16 flex items-center border-b border-border transition-all duration-300 @(_isCollapsed ? "justify-center px-0" : "justify-between px-6")">
+            <div class="font-bold text-lg tracking-tight whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                Chronon Tracker
+            </div>
+            <button @onclick="ToggleSidebar" class="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors focus:outline-none" title="@(_isCollapsed ? "Expand Sidebar" : "Collapse Sidebar")">
+                @if (_isCollapsed)
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 15 3-3-3-3"/></svg>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
+                }
+            </button>
         </div>
+
+        <!-- Navigation Links -->
         <div class="flex flex-col py-3 space-y-1">
-            <NavLink class="px-4 py-2 mx-3 rounded-md text-sm font-medium transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center gap-2" href="" Match="NavLinkMatch.All" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-home"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                Dashboard
+            <NavLink class="@GetNavLinkClass()" href="" Match="NavLinkMatch.All" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Dashboard" : "")">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-home"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                    Dashboard
+                </span>
             </NavLink>
-            <NavLink class="px-4 py-2 mx-3 rounded-md text-sm font-medium transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center gap-2" href="calendar" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
-                Calendar
+            <NavLink class="@GetNavLinkClass()" href="calendar" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Calendar" : "")">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                    Calendar
+                </span>
             </NavLink>
-            <NavLink class="px-4 py-2 mx-3 rounded-md text-sm font-medium transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center gap-2" href="semesters" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-graduation-cap"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/><path d="M21.5 12v6"/></svg>
-                Semesters
+            <NavLink class="@GetNavLinkClass()" href="semesters" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Semesters" : "")">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-graduation-cap"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/><path d="M21.5 12v6"/></svg>
+                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                    Semesters
+                </span>
             </NavLink>
-            <NavLink class="px-4 py-2 mx-3 rounded-md text-sm font-medium transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center gap-2" href="modules" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-book-open"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                Modules
+            <NavLink class="@GetNavLinkClass()" href="modules" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Modules" : "")">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-book-open"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                    Modules
+                </span>
             </NavLink>
-            <NavLink class="px-4 py-2 mx-3 rounded-md text-sm font-medium transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center gap-2" href="holidays" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-bed"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>
-                Holidays
+            <NavLink class="@GetNavLinkClass()" href="holidays" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Holidays" : "")">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-bed"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>
+                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                    Holidays
+                </span>
             </NavLink>
-            <NavLink class="px-4 py-2 mx-3 rounded-md text-sm font-medium transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center gap-2" href="sessions" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Sessions
+            <NavLink class="@GetNavLinkClass()" href="sessions" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Sessions" : "")">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                    Sessions
+                </span>
             </NavLink>
         </div>
     </nav>
@@ -45,3 +72,18 @@
     <a href="" class="reload text-primary ml-2 hover:underline">Reload</a>
     <a class="dismiss cursor-pointer float-right mr-2 hover:text-destructive">🗙</a>
 </div>
+
+@code {
+    private bool _isCollapsed = false;
+
+    private void ToggleSidebar()
+    {
+        _isCollapsed = !_isCollapsed;
+    }
+
+    private string GetNavLinkClass()
+    {
+        return "py-2 rounded-md text-sm font-medium transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center " +
+               (_isCollapsed ? "px-0 justify-center mx-2" : "px-4 justify-start mx-3 gap-2");
+    }
+}

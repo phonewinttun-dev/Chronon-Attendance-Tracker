@@ -73,18 +73,18 @@
             <table class="w-full text-left border-collapse text-sm">
                 <thead>
                     <tr class="border-b border-border bg-muted/40">
-                        <th class="px-6 py-3 font-semibold text-muted-foreground">Name</th>
-                        <th class="px-6 py-3 font-semibold text-muted-foreground">Date</th>
-                        <th class="px-6 py-3 font-semibold text-muted-foreground w-28">Actions</th>
+                        <th class="px-4 py-3.5 font-semibold text-muted-foreground">Name</th>
+                        <th class="px-4 py-3.5 font-semibold text-muted-foreground">Date</th>
+                        <th class="px-4 py-3.5 font-semibold text-muted-foreground w-28">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     @foreach (var holiday in _holidays)
                     {
                         <tr class="hover:bg-muted/40 transition-colors">
-                            <td class="px-6 py-3 text-foreground font-medium">@holiday.Name</td>
-                            <td class="px-6 py-3 font-mono text-muted-foreground">@holiday.HolidayDate.ToString("dd-MM-yyyy")</td>
-                            <td class="px-6 py-3">
+                            <td class="px-4 py-3.5 text-foreground font-medium">@holiday.Name</td>
+                            <td class="px-4 py-3.5 font-mono text-muted-foreground">@holiday.HolidayDate.ToString("dd-MM-yyyy")</td>
+                            <td class="px-4 py-3.5">
                                 <button class="text-destructive border border-destructive/30 hover:bg-destructive hover:text-destructive-foreground px-3 py-1 rounded transition-colors text-xs font-semibold w-20" @onclick="() => DeleteHoliday(holiday.Id)">Delete</button>
                             </td>
                         </tr>

@@ -18,15 +18,27 @@ public class ModuleService : IModuleService
         _context = context;
     }
 
-    public async Task<PagedResult<ModuleDto>> GetAllModulesAsync(int? pageNumber = null, int? pageSize = null)
+    public async Task<PagedResult<ModuleDto>> GetAllModulesAsync(string? searchTerm = null, int? pageNumber = null, int? pageSize = null, long? semesterId = null)
     {
         try
         {
             var query = _context.TblModules
                 .AsNoTracking()
                 .Include(m => m.Semester)
-                .Where(m => !m.IsDeleted)
-                .OrderBy(m => m.Name);
+                .Where(m => !m.IsDeleted);
+
+            if (semesterId.HasValue)
+            {
+                query = query.Where(m => m.SemesterId == semesterId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(m => EF.Functions.ToTsVector("english", m.Name + " " + (m.TeacherName ?? ""))
+                    .Matches(searchTerm));
+            }
+
+            query = query.OrderBy(m => m.Name);
 
             int totalCount = await query.CountAsync();
             List<ModuleDto> items;
@@ -34,37 +46,69 @@ public class ModuleService : IModuleService
 
             if (pageNumber.HasValue && pageSize.HasValue)
             {
-                items = await query
-                    .Skip((pageNumber.Value - 1) * pageSize.Value)
-                    .Take(pageSize.Value)
-                    .Select(m => new ModuleDto
+                var rawItems = await query
+                    .Select(m => new
                     {
                         Id = m.Id,
                         Name = m.Name,
                         TeacherName = m.TeacherName,
                         SemesterId = m.SemesterId,
                         SemesterName = m.Semester != null ? m.Semester.Name : null,
+                        TotalValidSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled"),
+                        PresentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Present"),
                         CreatedAt = m.CreatedAt,
                         UpdatedAt = m.UpdatedAt
                     })
+                    .Skip((pageNumber.Value - 1) * pageSize.Value)
+                    .Take(pageSize.Value)
                     .ToListAsync();
+
+                items = rawItems.Select(m => new ModuleDto
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                    TeacherName = m.TeacherName,
+                    SemesterId = m.SemesterId,
+                    SemesterName = m.SemesterName,
+                    TotalValidSessions = m.TotalValidSessions,
+                    PresentSessions = m.PresentSessions,
+                    AttendanceRate = m.TotalValidSessions > 0 ? Math.Round((double)m.PresentSessions / m.TotalValidSessions * 100, 2) : 0,
+                    CreatedAt = m.CreatedAt,
+                    UpdatedAt = m.UpdatedAt
+                }).ToList();
 
                 pagination = new Pagination(pageNumber.Value, pageSize.Value, totalCount);
             }
             else
             {
-                items = await query
-                    .Select(m => new ModuleDto
+                var rawItems = await query
+                    .Select(m => new
                     {
                         Id = m.Id,
                         Name = m.Name,
                         TeacherName = m.TeacherName,
                         SemesterId = m.SemesterId,
                         SemesterName = m.Semester != null ? m.Semester.Name : null,
+                        TotalValidSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled"),
+                        PresentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Present"),
                         CreatedAt = m.CreatedAt,
                         UpdatedAt = m.UpdatedAt
                     })
                     .ToListAsync();
+
+                items = rawItems.Select(m => new ModuleDto
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                    TeacherName = m.TeacherName,
+                    SemesterId = m.SemesterId,
+                    SemesterName = m.SemesterName,
+                    TotalValidSessions = m.TotalValidSessions,
+                    PresentSessions = m.PresentSessions,
+                    AttendanceRate = m.TotalValidSessions > 0 ? Math.Round((double)m.PresentSessions / m.TotalValidSessions * 100, 2) : 0,
+                    CreatedAt = m.CreatedAt,
+                    UpdatedAt = m.UpdatedAt
+                }).ToList();
 
                 pagination = new Pagination(1, totalCount > 0 ? totalCount : 1, totalCount);
             }
@@ -81,25 +125,40 @@ public class ModuleService : IModuleService
     {
         try
         {
-            var module = await _context.TblModules
+            var moduleData = await _context.TblModules
                 .AsNoTracking()
-                .Include(m => m.Semester)
-                .FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
+                .Where(m => m.Id == id && !m.IsDeleted)
+                .Select(m => new
+                {
+                    m.Id,
+                    m.Name,
+                    m.TeacherName,
+                    m.SemesterId,
+                    SemesterName = m.Semester != null ? m.Semester.Name : null,
+                    TotalValidSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled"),
+                    PresentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Present"),
+                    m.CreatedAt,
+                    m.UpdatedAt
+                })
+                .FirstOrDefaultAsync();
 
-            if (module == null)
+            if (moduleData == null)
             {
                 return Result<ModuleDto>.Failure("Module not found.");
             }
 
             return Result<ModuleDto>.Success(new ModuleDto
             {
-                Id = module.Id,
-                Name = module.Name,
-                TeacherName = module.TeacherName,
-                SemesterId = module.SemesterId,
-                SemesterName = module.Semester?.Name,
-                CreatedAt = module.CreatedAt,
-                UpdatedAt = module.UpdatedAt
+                Id = moduleData.Id,
+                Name = moduleData.Name,
+                TeacherName = moduleData.TeacherName,
+                SemesterId = moduleData.SemesterId,
+                SemesterName = moduleData.SemesterName,
+                TotalValidSessions = moduleData.TotalValidSessions,
+                PresentSessions = moduleData.PresentSessions,
+                AttendanceRate = moduleData.TotalValidSessions > 0 ? Math.Round((double)moduleData.PresentSessions / moduleData.TotalValidSessions * 100, 2) : 0,
+                CreatedAt = moduleData.CreatedAt,
+                UpdatedAt = moduleData.UpdatedAt
             });
         }
         catch (Exception ex)
@@ -141,6 +200,9 @@ public class ModuleService : IModuleService
                 TeacherName = module.TeacherName,
                 SemesterId = module.SemesterId,
                 SemesterName = semesterName,
+                AttendanceRate = 0,
+                TotalValidSessions = 0,
+                PresentSessions = 0,
                 CreatedAt = module.CreatedAt,
                 UpdatedAt = module.UpdatedAt
             }, "Module created successfully.");
@@ -180,6 +242,10 @@ public class ModuleService : IModuleService
             _context.TblModules.Update(module);
             await _context.SaveChangesAsync();
 
+            var totalValid = await _context.TblSessions.CountAsync(s => s.ModuleId == id && !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled");
+            var present = await _context.TblSessions.CountAsync(s => s.ModuleId == id && !s.IsDeleted && s.Status == "Present");
+            var rate = totalValid > 0 ? Math.Round((double)present / totalValid * 100, 2) : 0;
+
             return Result<ModuleDto>.Success(new ModuleDto
             {
                 Id = module.Id,
@@ -187,6 +253,9 @@ public class ModuleService : IModuleService
                 TeacherName = module.TeacherName,
                 SemesterId = module.SemesterId,
                 SemesterName = semesterName,
+                AttendanceRate = rate,
+                TotalValidSessions = totalValid,
+                PresentSessions = present,
                 CreatedAt = module.CreatedAt,
                 UpdatedAt = module.UpdatedAt
             }, "Module updated successfully.");

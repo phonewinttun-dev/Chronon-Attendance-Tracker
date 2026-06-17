@@ -181,8 +181,8 @@ public class ClassSessionService : IClassSessionService
                             var startDateTimeLocal = new DateTime(date.Year, date.Month, date.Day, schedule.StartTime.Hour, schedule.StartTime.Minute, schedule.StartTime.Second);
                             var endDateTimeLocal = new DateTime(date.Year, date.Month, date.Day, schedule.EndTime.Hour, schedule.EndTime.Minute, schedule.EndTime.Second);
                             
-                            var startUtc = startDateTimeLocal - MyanmarOffset;
-                            var endUtc = endDateTimeLocal - MyanmarOffset;
+                            var startUtc = DateTime.SpecifyKind(startDateTimeLocal - MyanmarOffset, DateTimeKind.Utc);
+                            var endUtc = DateTime.SpecifyKind(endDateTimeLocal - MyanmarOffset, DateTimeKind.Utc);
 
                             var sessionToken = Guid.NewGuid();
 
@@ -310,8 +310,8 @@ public class ClassSessionService : IClassSessionService
 
             session.ModuleId = request.ModuleId;
             session.SessionDate = request.SessionDate;
-            session.StartDatetime = request.StartDatetime;
-            session.EndDatetime = request.EndDatetime;
+            session.StartDatetime = DateTime.SpecifyKind(request.StartDatetime, DateTimeKind.Utc);
+            session.EndDatetime = DateTime.SpecifyKind(request.EndDatetime, DateTimeKind.Utc);
             
             var oldStatus = session.Status;
             session.Status = request.Status;

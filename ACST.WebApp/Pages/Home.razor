@@ -2,6 +2,7 @@
 @using ACST.WebApp.Models
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -87,21 +88,17 @@ else
                 </div>
             </div>
 
-            <div class="bg-card border border-border p-6 rounded-lg shadow-sm">
+            <div class="bg-card border border-border p-6 rounded-lg shadow-sm hover:border-primary/50 transition-all cursor-pointer" @onclick='() => Navigation.NavigateTo("/calendar")'>
                 <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Upcoming Classes (7 days)</h3>
                 <div class="text-3xl font-bold text-foreground font-mono">
                     @_summary.UpcomingSessionsCount
                 </div>
             </div>
 
-            <div class="bg-card border border-border p-6 rounded-lg shadow-sm relative overflow-hidden">
-                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Semester Health</h3>
+            <div class="bg-card border border-border p-6 rounded-lg shadow-sm relative overflow-hidden hover:border-primary/50 transition-all cursor-pointer" @onclick="() => SetActiveTab(Tab.Module)">
+                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Attendance Rate</h3>
                 <div class="text-3xl font-bold font-mono @GetHealthColorClass(_summary.SemesterHealthRate)">
                     @_summary.SemesterHealthRate%
-                </div>
-                <!-- Mini Progress Bar -->
-                <div class="w-full bg-secondary h-1.5 rounded-full mt-3 overflow-hidden border border-border/30">
-                    <div class="h-full rounded-full @GetHealthBgClass(_summary.SemesterHealthRate)" style="width: @(Math.Min(100, _summary.SemesterHealthRate))%"></div>
                 </div>
             </div>
         </div>
@@ -145,7 +142,7 @@ else
                 </div>
                 
                 <div class="border border-border rounded-md overflow-hidden bg-background/30">
-                    <table class="w-full text-left text-xs font-sans">
+                    <table class="w-full text-left text-sm font-sans">
                         <tbody class="divide-y divide-border">
                             <tr class="hover:bg-accent/40 transition-colors cursor-pointer" @onclick='() => Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}")'>
                                 <td class="px-4 py-2.5 font-medium text-muted-foreground">Total Generated Sessions</td>
@@ -182,138 +179,323 @@ else
         </div>
 
         <!-- Daily, Weekly, Monthly Tabs -->
-        <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden mb-8">
-            <div class="border-b border-border bg-accent/20 flex p-1 gap-1">
-                <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Daily ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
-                        @onclick="() => SetActiveTab(Tab.Daily)">
-                    Daily Attendance
-                </button>
-                <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Weekly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
-                        @onclick="() => SetActiveTab(Tab.Weekly)">
-                    Weekly Attendance
-                </button>
-                <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Monthly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
-                        @onclick="() => SetActiveTab(Tab.Monthly)">
-                    Monthly Attendance
-                </button>
+        <div id="attendance-breakdown" class="bg-card border border-border rounded-lg shadow-sm overflow-hidden mb-8">
+            <div class="border-b border-border bg-accent/20 flex flex-col md:flex-row md:items-center justify-between p-2 gap-3">
+                <div class="flex flex-wrap gap-1">
+                    <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Daily ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
+                            @onclick="() => SetActiveTab(Tab.Daily)">
+                        Daily Attendance
+                    </button>
+                    <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Weekly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
+                            @onclick="() => SetActiveTab(Tab.Weekly)">
+                        Weekly Attendance
+                    </button>
+                    <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Monthly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
+                            @onclick="() => SetActiveTab(Tab.Monthly)">
+                        Monthly Attendance
+                    </button>
+                    <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Module ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
+                            @onclick="() => SetActiveTab(Tab.Module)">
+                        Module Attendance
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2.5 mr-1">
+                    <!-- Semester dropdown in card header -->
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-muted-foreground text-xs font-semibold whitespace-nowrap">Semester:</span>
+                        <select class="p-1 bg-card border border-border rounded text-foreground font-sans text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[140px]"
+                                value="@_selectedSemesterId" @onchange="OnSemesterChanged">
+                            @foreach (var sem in _semesters)
+                            {
+                                <option value="@sem.Id">@sem.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-1 bg-muted border border-border p-1 rounded-md">
+                        <button class="p-1 rounded transition-all @(_breakdownViewMode == "table" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                                @onclick='() => _breakdownViewMode = "table"' 
+                                title="Table View">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+                        </button>
+                        <button class="p-1 rounded transition-all @(_breakdownViewMode == "card" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                                @onclick='() => _breakdownViewMode = "card"' 
+                                title="Card View">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="p-6">
                 @if (_activeTab == Tab.Daily)
                 {
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-sm">
-                            <thead>
-                                <tr class="border-b border-outline-variant text-on-surface-variant">
-                                    <th class="pb-3 font-semibold">Day of Week</th>
-                                    <th class="pb-3 font-semibold text-center">Total</th>
-                                    <th class="pb-3 font-semibold text-center">Present</th>
-                                    <th class="pb-3 font-semibold text-center">Absent</th>
-                                    <th class="pb-3 font-semibold text-center">Late</th>
-                                    <th class="pb-3 font-semibold text-center">Cancelled</th>
-                                    <th class="pb-3 font-semibold text-center">Holiday</th>
-                                    <th class="pb-3 font-semibold text-right">Attendance Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-outline-variant/50 font-mono text-xs">
-                                @foreach (var day in _summary.DailyAttendance)
-                                {
-                                    <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToDaily(day.DayOfWeek)">
-                                        <td class="py-3 font-sans text-sm font-semibold text-on-surface">@day.DayOfWeek</td>
-                                        <td class="py-3 text-center">@day.TotalSessions</td>
-                                        <td class="py-3 text-center text-primary font-bold">@day.Present</td>
-                                        <td class="py-3 text-center text-error">@day.Absent</td>
-                                        <td class="py-3 text-center text-tertiary">@day.Late</td>
-                                        <td class="py-3 text-center">@day.Cancelled</td>
-                                        <td class="py-3 text-center">@day.Holiday</td>
-                                        <td class="py-3 text-right">
-                                            <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(day.AttendanceRate)">
-                                                @day.AttendanceRate%
-                                            </span>
-                                        </td>
+                    @if (_breakdownViewMode == "table")
+                    {
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="border-b border-outline-variant text-on-surface-variant">
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Day of Week</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Total</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Present</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Absent</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Cancelled</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Holiday</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-right">Attendance Rate</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody class="divide-y divide-outline-variant/50 text-sm">
+                                    @foreach (var day in _summary.DailyAttendance)
+                                    {
+                                        <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToDaily(day.DayOfWeek)">
+                                            <td class="px-4 py-3.5 font-sans text-sm font-semibold text-foreground">@day.DayOfWeek</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-foreground">@day.TotalSessions</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-primary font-bold">@day.Present</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-error font-semibold">@day.Absent</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@day.Cancelled</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@day.Holiday</td>
+                                            <td class="px-4 py-3.5 text-right">
+                                                <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(day.AttendanceRate)">
+                                                    @day.AttendanceRate%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach (var day in _summary.DailyAttendance)
+                            {
+                                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/30 transition-all shadow-sm cursor-pointer" @onclick="() => NavigateToDaily(day.DayOfWeek)">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h3 class="text-sm font-semibold text-foreground">@day.DayOfWeek</h3>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(day.AttendanceRate)">
+                                            @day.AttendanceRate%
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t border-border/30 pt-3">
+                                        <div>Total: <span class="text-foreground font-semibold">@day.TotalSessions</span></div>
+                                        <div>Present: <span class="text-primary font-bold">@day.Present</span></div>
+                                        <div>Absent: <span class="text-error font-semibold">@day.Absent</span></div>
+                                        <div>Cancelled: <span class="text-foreground font-semibold">@day.Cancelled</span></div>
+                                        <div>Holiday: <span class="text-foreground font-semibold">@day.Holiday</span></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
                 }
                 else if (_activeTab == Tab.Weekly)
                 {
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-sm">
-                            <thead>
-                                <tr class="border-b border-outline-variant text-on-surface-variant">
-                                    <th class="pb-3 font-semibold">Week</th>
-                                    <th class="pb-3 font-semibold">Date Range</th>
-                                    <th class="pb-3 font-semibold text-center">Total</th>
-                                    <th class="pb-3 font-semibold text-center">Present</th>
-                                    <th class="pb-3 font-semibold text-center">Absent</th>
-                                    <th class="pb-3 font-semibold text-center">Late</th>
-                                    <th class="pb-3 font-semibold text-center">Cancelled</th>
-                                    <th class="pb-3 font-semibold text-center">Holiday</th>
-                                    <th class="pb-3 font-semibold text-right">Attendance Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-outline-variant/50 font-mono text-xs">
-                                @foreach (var week in _summary.WeeklyAttendance)
-                                {
-                                    <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToWeekly(week.WeekStartDate, week.WeekEndDate)">
-                                        <td class="py-3 font-sans text-sm font-semibold text-on-surface">Week @week.WeekNumber</td>
-                                        <td class="py-3 text-on-surface-variant">@week.WeekStartDate.ToString("dd-MM-yyyy") ~ @week.WeekEndDate.ToString("dd-MM-yyyy")</td>
-                                        <td class="py-3 text-center">@week.TotalSessions</td>
-                                        <td class="py-3 text-center text-primary font-bold">@week.Present</td>
-                                        <td class="py-3 text-center text-error">@week.Absent</td>
-                                        <td class="py-3 text-center text-tertiary">@week.Late</td>
-                                        <td class="py-3 text-center">@week.Cancelled</td>
-                                        <td class="py-3 text-center">@week.Holiday</td>
-                                        <td class="py-3 text-right">
-                                            <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(week.AttendanceRate)">
-                                                @week.AttendanceRate%
-                                            </span>
-                                        </td>
+                    @if (_breakdownViewMode == "table")
+                    {
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="border-b border-outline-variant text-on-surface-variant">
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Week</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Date Range</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Total</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Present</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Absent</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Cancelled</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Holiday</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-right">Attendance Rate</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody class="divide-y divide-outline-variant/50 text-sm">
+                                    @foreach (var week in _summary.WeeklyAttendance.Skip((_weeklyPageNumber - 1) * _weeklyPageSize).Take(_weeklyPageSize))
+                                    {
+                                        <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToWeekly(week.WeekStartDate, week.WeekEndDate)">
+                                            <td class="px-4 py-3.5 font-sans text-sm font-semibold text-foreground">Week @week.WeekNumber</td>
+                                            <td class="px-4 py-3.5 font-sans text-sm text-muted-foreground">@week.WeekStartDate.ToString("dd-MM-yyyy") ~ @week.WeekEndDate.ToString("dd-MM-yyyy")</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-foreground">@week.TotalSessions</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-primary font-bold">@week.Present</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-error font-semibold">@week.Absent</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@week.Cancelled</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@week.Holiday</td>
+                                            <td class="px-4 py-3.5 text-right">
+                                                <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(week.AttendanceRate)">
+                                                    @week.AttendanceRate%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach (var week in _summary.WeeklyAttendance.Skip((_weeklyPageNumber - 1) * _weeklyPageSize).Take(_weeklyPageSize))
+                            {
+                                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/30 transition-all shadow-sm cursor-pointer" @onclick="() => NavigateToWeekly(week.WeekStartDate, week.WeekEndDate)">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div>
+                                            <h3 class="text-sm font-semibold text-foreground">Week @week.WeekNumber</h3>
+                                            <p class="text-[10px] text-muted-foreground font-mono mt-0.5">@week.WeekStartDate.ToString("dd-MM-yyyy") ~ @week.WeekEndDate.ToString("dd-MM-yyyy")</p>
+                                        </div>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(week.AttendanceRate)">
+                                            @week.AttendanceRate%
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t border-border/30 pt-3">
+                                        <div>Total: <span class="text-foreground font-semibold">@week.TotalSessions</span></div>
+                                        <div>Present: <span class="text-primary font-bold">@week.Present</span></div>
+                                        <div>Absent: <span class="text-error font-semibold">@week.Absent</span></div>
+                                        <div>Cancelled: <span class="text-foreground font-semibold">@week.Cancelled</span></div>
+                                        <div>Holiday: <span class="text-foreground font-semibold">@week.Holiday</span></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @if (GetWeeklyTotalPages() > 1)
+                    {
+                        <div class="border-t border-border mt-6">
+                            <PaginationControl PageNumber="@_weeklyPageNumber" TotalPages="@GetWeeklyTotalPages()" PageChanged="OnWeeklyPageChanged" />
+                        </div>
+                    }
                 }
                 else if (_activeTab == Tab.Monthly)
                 {
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-sm">
-                            <thead>
-                                <tr class="border-b border-outline-variant text-on-surface-variant">
-                                    <th class="pb-3 font-semibold">Month</th>
-                                    <th class="pb-3 font-semibold text-center">Total</th>
-                                    <th class="pb-3 font-semibold text-center">Present</th>
-                                    <th class="pb-3 font-semibold text-center">Absent</th>
-                                    <th class="pb-3 font-semibold text-center">Late</th>
-                                    <th class="pb-3 font-semibold text-center">Cancelled</th>
-                                    <th class="pb-3 font-semibold text-center">Holiday</th>
-                                    <th class="pb-3 font-semibold text-right">Attendance Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-outline-variant/50 font-mono text-xs">
-                                @foreach (var month in _summary.MonthlyAttendance)
-                                {
-                                    <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToMonthly(month.Year, month.Month)">
-                                        <td class="py-3 font-sans text-sm font-semibold text-on-surface">@month.MonthName</td>
-                                        <td class="py-3 text-center">@month.TotalSessions</td>
-                                        <td class="py-3 text-center text-primary font-bold">@month.Present</td>
-                                        <td class="py-3 text-center text-error">@month.Absent</td>
-                                        <td class="py-3 text-center text-tertiary">@month.Late</td>
-                                        <td class="py-3 text-center">@month.Cancelled</td>
-                                        <td class="py-3 text-center">@month.Holiday</td>
-                                        <td class="py-3 text-right">
-                                            <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(month.AttendanceRate)">
-                                                @month.AttendanceRate%
-                                            </span>
-                                        </td>
+                    @if (_breakdownViewMode == "table")
+                    {
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="border-b border-outline-variant text-on-surface-variant">
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Month</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Total</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Present</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Absent</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Cancelled</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Holiday</th>
+                                        <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-right">Attendance Rate</th>
                                     </tr>
+                                </thead>
+                                <tbody class="divide-y divide-outline-variant/50 text-sm">
+                                    @foreach (var month in _summary.MonthlyAttendance)
+                                    {
+                                        <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToMonthly(month.Year, month.Month)">
+                                            <td class="px-4 py-3.5 font-sans text-sm font-semibold text-foreground">@month.MonthName</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-foreground">@month.TotalSessions</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-primary font-bold">@month.Present</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-error font-semibold">@month.Absent</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@month.Cancelled</td>
+                                            <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@month.Holiday</td>
+                                            <td class="px-4 py-3.5 text-right">
+                                                <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(month.AttendanceRate)">
+                                                    @month.AttendanceRate%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach (var month in _summary.MonthlyAttendance)
+                            {
+                                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/30 transition-all shadow-sm cursor-pointer" @onclick="() => NavigateToMonthly(month.Year, month.Month)">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h3 class="text-sm font-semibold text-foreground">@month.MonthName</h3>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(month.AttendanceRate)">
+                                            @month.AttendanceRate%
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t border-border/30 pt-3">
+                                        <div>Total: <span class="text-foreground font-semibold">@month.TotalSessions</span></div>
+                                        <div>Present: <span class="text-primary font-bold">@month.Present</span></div>
+                                        <div>Absent: <span class="text-error font-semibold">@month.Absent</span></div>
+                                        <div>Cancelled: <span class="text-foreground font-semibold">@month.Cancelled</span></div>
+                                        <div>Holiday: <span class="text-foreground font-semibold">@month.Holiday</span></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+                else if (_activeTab == Tab.Module)
+                {
+                    @if (_summary.ModuleAttendance == null || !_summary.ModuleAttendance.Any())
+                    {
+                        <div class="text-center text-muted-foreground font-sans text-sm py-6">
+                            No module attendance records found for this semester.
+                        </div>
+                    }
+                    else
+                    {
+                        @if (_breakdownViewMode == "table")
+                        {
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-sm">
+                                    <thead>
+                                        <tr class="border-b border-outline-variant text-on-surface-variant">
+                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Module</th>
+                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Teacher</th>
+                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Total Sessions</th>
+                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Present</th>
+                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Absent</th>
+                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-right">Attendance Rate</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-outline-variant/50 text-sm">
+                                        @foreach (var mod in _summary.ModuleAttendance)
+                                        {
+                                            <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToModule(mod.ModuleId)">
+                                                <td class="px-4 py-3.5 font-sans text-sm font-semibold text-primary hover:underline">@mod.ModuleName</td>
+                                                <td class="px-4 py-3.5 font-sans text-sm text-muted-foreground">@(string.IsNullOrEmpty(mod.TeacherName) ? "N/A" : mod.TeacherName)</td>
+                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-foreground">@mod.TotalSessions</td>
+                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-primary font-bold">@mod.TotalPresent</td>
+                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-error font-semibold">@mod.TotalAbsent</td>
+                                                <td class="px-4 py-3.5 text-right">
+                                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(mod.AttendanceRate)">
+                                                        @mod.AttendanceRate%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @foreach (var mod in _summary.ModuleAttendance)
+                                {
+                                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/30 transition-all shadow-sm cursor-pointer" @onclick="() => NavigateToModule(mod.ModuleId)">
+                                        <div class="flex items-start justify-between mb-3">
+                                            <div>
+                                                <h3 class="text-sm font-semibold text-foreground hover:underline">@mod.ModuleName</h3>
+                                                <p class="text-[10px] text-muted-foreground font-sans mt-0.5">@(string.IsNullOrEmpty(mod.TeacherName) ? "N/A" : mod.TeacherName)</p>
+                                            </div>
+                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(mod.AttendanceRate)">
+                                                @mod.AttendanceRate%
+                                            </span>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t border-border/30 pt-3">
+                                            <div>Total Classes: <span class="text-foreground font-semibold">@mod.TotalSessions</span></div>
+                                            <div>Present: <span class="text-primary font-bold">@mod.TotalPresent</span></div>
+                                            <div>Absent: <span class="text-error font-semibold">@mod.TotalAbsent</span></div>
+                                        </div>
+                                    </div>
                                 }
-                            </tbody>
-                        </table>
-                    </div>
+                            </div>
+                        }
+                    }
                 }
             </div>
         </div>
@@ -321,7 +503,7 @@ else
 }
 
 @code {
-    private enum Tab { Daily, Weekly, Monthly }
+    private enum Tab { Daily, Weekly, Monthly, Module }
 
     private bool _isLoadingSemesters = true;
     private bool _isLoadingSummary = true;
@@ -330,6 +512,9 @@ else
     private long _selectedSemesterId;
     private long _currentSemesterId;
     private Tab _activeTab = Tab.Daily;
+    private string _breakdownViewMode = "table";
+    private int _weeklyPageNumber = 1;
+    private const int _weeklyPageSize = 5;
 
     protected override async Task OnInitializedAsync()
     {
@@ -378,6 +563,7 @@ else
     private async Task LoadDashboardSummary(long semesterId)
     {
         _isLoadingSummary = true;
+        _weeklyPageNumber = 1;
         try
         {
             var summaryResult = await Http.GetFromJsonAsync<ApiResult<DashboardSummaryDto>>($"api/analytics/dashboard/{semesterId}");
@@ -405,9 +591,21 @@ else
         }
     }
 
-    private void SetActiveTab(Tab tab)
+    private async Task SetActiveTab(Tab tab)
     {
         _activeTab = tab;
+        if (tab == Tab.Module)
+        {
+            await Task.Delay(50);
+            try
+            {
+                await JS.InvokeVoidAsync("eval", "document.getElementById('attendance-breakdown')?.scrollIntoView({ behavior: 'smooth' });");
+            }
+            catch
+            {
+                // Fallback silently if JS interop is not ready yet
+            }
+        }
     }
 
     private void NavigateToStatus(string status)
@@ -433,6 +631,11 @@ else
         var start = new DateOnly(year, month, 1);
         var end = start.AddMonths(1).AddDays(-1);
         Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}&startDate={start.ToString("yyyy-MM-dd")}&endDate={end.ToString("yyyy-MM-dd")}");
+    }
+
+    private void NavigateToModule(long moduleId)
+    {
+        Navigation.NavigateTo($"/sessions?semesterId={_selectedSemesterId}&moduleId={moduleId}");
     }
 
     private string GetHealthColorClass(double rate)
@@ -493,6 +696,7 @@ else
                 <div class="px-3 py-1.5 h-7 bg-muted rounded-md w-24"></div>
                 <div class="px-3 py-1.5 h-7 bg-muted rounded-md w-24"></div>
                 <div class="px-3 py-1.5 h-7 bg-muted rounded-md w-24"></div>
+                <div class="px-3 py-1.5 h-7 bg-muted rounded-md w-24"></div>
             </div>
             <div class="p-6 space-y-4">
                 <div class="flex gap-4 border-b border-border pb-3">
@@ -515,4 +719,15 @@ else
             </div>
         </div>
     };
+
+    private int GetWeeklyTotalPages()
+    {
+        if (_summary?.WeeklyAttendance == null || !_summary.WeeklyAttendance.Any()) return 1;
+        return (int)Math.Ceiling((double)_summary.WeeklyAttendance.Count / _weeklyPageSize);
+    }
+
+    private void OnWeeklyPageChanged(int page)
+    {
+        _weeklyPageNumber = page;
+    }
 }

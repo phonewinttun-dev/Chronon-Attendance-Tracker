@@ -255,6 +255,37 @@ public class AnalyticsService : IAnalyticsService
                 });
             }
 
+            // Group by Module
+            var modules = await _context.TblModules
+                .AsNoTracking()
+                .Where(m => m.SemesterId == semesterId && !m.IsDeleted)
+                .ToListAsync();
+
+            var moduleBreakdown = new List<ModuleAnalyticsDto>();
+            foreach (var mod in modules)
+            {
+                var modSessions = sessions.Where(s => s.ModuleId == mod.Id).ToList();
+                var mValidSessions = modSessions.Where(s => s.Status != "Holiday" && s.Status != "Cancelled").ToList();
+                int mTotalValid = mValidSessions.Count;
+
+                int mPresent = mValidSessions.Count(s => s.Status == "Present");
+                int mAbsent = mValidSessions.Count(s => s.Status == "Absent");
+                int mLate = mValidSessions.Count(s => s.Status == "Late");
+
+                double mRate = mTotalValid > 0 ? (double)mPresent / mTotalValid * 100 : 0;
+
+                moduleBreakdown.Add(new ModuleAnalyticsDto
+                {
+                    ModuleId = mod.Id,
+                    ModuleName = mod.Name,
+                    AttendanceRate = Math.Round(mRate, 2),
+                    TotalPresent = mPresent,
+                    TotalAbsent = mAbsent,
+                    TotalLate = mLate,
+                    TotalSessions = mTotalValid
+                });
+            }
+
             return Result<DashboardSummaryDto>.Success(new DashboardSummaryDto
             {
                 TodaySessionsCount = todaySessions,
@@ -277,7 +308,8 @@ public class AnalyticsService : IAnalyticsService
                 
                 DailyAttendance = dailyBreakdown,
                 WeeklyAttendance = weeklyBreakdown,
-                MonthlyAttendance = monthlyBreakdown
+                MonthlyAttendance = monthlyBreakdown,
+                ModuleAttendance = moduleBreakdown
             });
         }
         catch (Exception ex)

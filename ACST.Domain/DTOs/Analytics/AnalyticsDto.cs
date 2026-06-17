@@ -18,6 +18,7 @@ public class ModuleAnalyticsDto
 {
     public long ModuleId { get; set; }
     public string ModuleName { get; set; } = string.Empty;
+    public string? TeacherName { get; set; }
     public double AttendanceRate { get; set; }
     public int TotalPresent { get; set; }
     public int TotalAbsent { get; set; }
@@ -51,6 +52,7 @@ public class DashboardSummaryDto
     public List<DailyAttendanceDto> DailyAttendance { get; set; } = new();
     public List<WeeklyAttendanceDto> WeeklyAttendance { get; set; } = new();
     public List<MonthlyAttendanceDto> MonthlyAttendance { get; set; } = new();
+    public List<ModuleAnalyticsDto> ModuleAttendance { get; set; } = new();
 }
 
 public class DailyAttendanceDto
