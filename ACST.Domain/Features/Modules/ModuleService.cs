@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ACST.Database.ApplicationDbContextModels.Models;
 using ACST.Domain.DTOs.Module;
+using ACST.Domain.Features.GoogleCalendar;
 using ACST.Shared;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,10 +13,12 @@ namespace ACST.Domain.Features.Modules;
 public class ModuleService : IModuleService
 {
     private readonly AppDbContext _context;
+    private readonly IGoogleCalendarService _googleCalendarService;
 
-    public ModuleService(AppDbContext context)
+    public ModuleService(AppDbContext context, IGoogleCalendarService googleCalendarService)
     {
         _context = context;
+        _googleCalendarService = googleCalendarService;
     }
 
     public async Task<PagedResult<ModuleDto>> GetAllModulesAsync(string? searchTerm = null, int? pageNumber = null, int? pageSize = null, long? semesterId = null)
@@ -279,6 +282,34 @@ public class ModuleService : IModuleService
 
             module.IsDeleted = true;
             _context.TblModules.Update(module);
+
+            // Cascade soft-delete associated recurring schedules
+            var schedules = await _context.TblRecurringSchedules
+                .Where(s => s.ModuleId == id && !s.IsDeleted)
+                .ToListAsync();
+
+            foreach (var schedule in schedules)
+            {
+                schedule.IsDeleted = true;
+                _context.TblRecurringSchedules.Update(schedule);
+            }
+
+            // Cascade soft-delete associated class sessions
+            var sessions = await _context.TblSessions
+                .Where(s => s.ModuleId == id && !s.IsDeleted)
+                .ToListAsync();
+
+            foreach (var session in sessions)
+            {
+                session.IsDeleted = true;
+                _context.TblSessions.Update(session);
+
+                if (!string.IsNullOrEmpty(session.GoogleEventId))
+                {
+                    await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             return Result.Success("Module deleted successfully.");
