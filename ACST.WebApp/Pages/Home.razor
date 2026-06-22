@@ -23,6 +23,19 @@
     </div>
     @RenderDashboardSkeletons
 }
+else if (_isError)
+{
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+    </div>
+    <div class="bg-surface-container border border-error/40 p-6 rounded-xl text-error">
+        <h3 class="font-bold text-lg mb-2">Error Connecting to API</h3>
+        <p class="text-on-surface-variant font-medium">@_message</p>
+        <button class="mt-4 bg-error text-on-error hover:bg-error/95 px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="LoadInitialData">
+            Retry Connection
+        </button>
+    </div>
+}
 else if (_semesters == null || !_semesters.Any())
 {
     <div class="flex justify-between items-center mb-8">
@@ -507,6 +520,8 @@ else
 
     private bool _isLoadingSemesters = true;
     private bool _isLoadingSummary = true;
+    private bool _isError = false;
+    private string _message = string.Empty;
     private List<SemesterDto>? _semesters;
     private DashboardSummaryDto? _summary;
     private long _selectedSemesterId;
@@ -524,6 +539,8 @@ else
     private async Task LoadInitialData()
     {
         _isLoadingSemesters = true;
+        _isError = false;
+        _message = string.Empty;
         try
         {
             var semestersResult = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>("api/semesters");
@@ -549,10 +566,16 @@ else
                     await LoadDashboardSummary(_selectedSemesterId);
                 }
             }
+            else
+            {
+                _isError = true;
+                _message = semestersResult?.Message ?? "Failed to retrieve semesters.";
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            // Fail silently or handle error appropriately
+            _message = ex.GetFriendlyErrorMessage("Error loading semesters");
+            _isError = true;
         }
         finally
         {
@@ -571,10 +594,18 @@ else
             {
                 _summary = summaryResult.Data;
             }
+            else
+            {
+                _summary = null;
+                _isError = true;
+                _message = summaryResult?.Message ?? "Failed to load dashboard summary.";
+            }
         }
-        catch
+        catch (Exception ex)
         {
             _summary = null;
+            _message = ex.GetFriendlyErrorMessage("Error loading dashboard summary");
+            _isError = true;
         }
         finally
         {
