@@ -9,6 +9,8 @@ public partial class TblModule
 
     public string Name { get; set; } = null!;
 
+    public string ModuleCode { get; set; } = null!;
+
     public string? TeacherName { get; set; }
 
     public bool IsDeleted { get; set; }

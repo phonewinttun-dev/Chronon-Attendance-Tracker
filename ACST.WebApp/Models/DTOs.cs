@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 namespace ACST.WebApp.Models;
 
-// --- DTOs ---
-
 public class SemesterDto
 {
     public long Id { get; set; }
@@ -17,6 +15,7 @@ public class ModuleDto
 {
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string ModuleCode { get; set; } = string.Empty;
     public string TeacherName { get; set; } = string.Empty;
     public long? SemesterId { get; set; }
     public string? SemesterName { get; set; }
@@ -149,6 +148,7 @@ public class CreateSemesterRequest
 public class CreateModuleRequest
 {
     public string Name { get; set; } = string.Empty;
+    public string ModuleCode { get; set; } = string.Empty;
     public string TeacherName { get; set; } = string.Empty;
     public long? SemesterId { get; set; }
 }
@@ -163,6 +163,7 @@ public class CreateRecurringScheduleRequest
 public class UpdateModuleRequest
 {
     public string Name { get; set; } = string.Empty;
+    public string ModuleCode { get; set; } = string.Empty;
     public string TeacherName { get; set; } = string.Empty;
     public long? SemesterId { get; set; }
 }

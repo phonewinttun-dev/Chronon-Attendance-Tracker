@@ -11,9 +11,6 @@ public partial class TblRecurringSchedule
 
     public long SemesterId { get; set; }
 
-    /// <summary>
-    /// 0=Sunday ... 6=Saturday
-    /// </summary>
     public short DayOfWeek { get; set; }
 
     public TimeOnly StartTime { get; set; }

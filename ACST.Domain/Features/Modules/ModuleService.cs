@@ -54,6 +54,7 @@ public class ModuleService : IModuleService
                     {
                         Id = m.Id,
                         Name = m.Name,
+                        ModuleCode = m.ModuleCode,
                         TeacherName = m.TeacherName,
                         SemesterId = m.SemesterId,
                         SemesterName = m.Semester != null ? m.Semester.Name : null,
@@ -70,6 +71,7 @@ public class ModuleService : IModuleService
                 {
                     Id = m.Id,
                     Name = m.Name,
+                    ModuleCode = m.ModuleCode,
                     TeacherName = m.TeacherName,
                     SemesterId = m.SemesterId,
                     SemesterName = m.SemesterName,
@@ -89,6 +91,7 @@ public class ModuleService : IModuleService
                     {
                         Id = m.Id,
                         Name = m.Name,
+                        ModuleCode = m.ModuleCode,
                         TeacherName = m.TeacherName,
                         SemesterId = m.SemesterId,
                         SemesterName = m.Semester != null ? m.Semester.Name : null,
@@ -103,6 +106,7 @@ public class ModuleService : IModuleService
                 {
                     Id = m.Id,
                     Name = m.Name,
+                    ModuleCode = m.ModuleCode,
                     TeacherName = m.TeacherName,
                     SemesterId = m.SemesterId,
                     SemesterName = m.SemesterName,
@@ -135,6 +139,7 @@ public class ModuleService : IModuleService
                 {
                     m.Id,
                     m.Name,
+                    m.ModuleCode,
                     m.TeacherName,
                     m.SemesterId,
                     SemesterName = m.Semester != null ? m.Semester.Name : null,
@@ -154,6 +159,7 @@ public class ModuleService : IModuleService
             {
                 Id = moduleData.Id,
                 Name = moduleData.Name,
+                ModuleCode = moduleData.ModuleCode,
                 TeacherName = moduleData.TeacherName,
                 SemesterId = moduleData.SemesterId,
                 SemesterName = moduleData.SemesterName,
@@ -188,6 +194,7 @@ public class ModuleService : IModuleService
             var module = new TblModule
             {
                 Name = request.Name,
+                ModuleCode = request.ModuleCode,
                 TeacherName = request.TeacherName,
                 SemesterId = request.SemesterId,
                 IsDeleted = false
@@ -200,6 +207,7 @@ public class ModuleService : IModuleService
             {
                 Id = module.Id,
                 Name = module.Name,
+                ModuleCode = module.ModuleCode,
                 TeacherName = module.TeacherName,
                 SemesterId = module.SemesterId,
                 SemesterName = semesterName,
@@ -239,6 +247,7 @@ public class ModuleService : IModuleService
             }
 
             module.Name = request.Name;
+            module.ModuleCode = request.ModuleCode;
             module.TeacherName = request.TeacherName;
             module.SemesterId = request.SemesterId;
 
@@ -253,6 +262,7 @@ public class ModuleService : IModuleService
             {
                 Id = module.Id,
                 Name = module.Name,
+                ModuleCode = module.ModuleCode,
                 TeacherName = module.TeacherName,
                 SemesterId = module.SemesterId,
                 SemesterName = semesterName,

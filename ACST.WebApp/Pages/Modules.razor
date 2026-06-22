@@ -82,10 +82,14 @@
     <div class="bg-card border border-border p-6 rounded-lg shadow-sm mb-8">
         <h2 class="text-base font-bold mb-4 text-foreground tracking-tight">Create New Module</h2>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div>
                 <label class="block text-sm font-semibold text-muted-foreground mb-1">Module Name</label>
-                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_newModule.Name" placeholder="e.g. CS101" />
+                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_newModule.Name" placeholder="e.g. Introduction to CS" />
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Module Code</label>
+                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_newModule.ModuleCode" placeholder="e.g. CS-101" />
             </div>
             <div>
                 <label class="block text-sm font-semibold text-muted-foreground mb-1">Teacher Name</label>
@@ -171,10 +175,14 @@
             <button class="text-muted-foreground hover:text-foreground text-sm font-semibold" @onclick="CancelEditForm">Cancel</button>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div>
                 <label class="block text-sm font-semibold text-muted-foreground mb-1">Module Name</label>
-                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editModule.Name" placeholder="e.g. CS101" />
+                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editModule.Name" placeholder="e.g. Introduction to CS" />
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Module Code</label>
+                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editModule.ModuleCode" placeholder="e.g. CS-101" />
             </div>
             <div>
                 <label class="block text-sm font-semibold text-muted-foreground mb-1">Teacher Name</label>
@@ -265,7 +273,10 @@
                     @foreach (var mod in _modules)
                     {
                         <tr class="hover:bg-accent/40 transition-colors">
-                            <td class="px-4 py-3.5 font-semibold text-foreground">@mod.Name</td>
+                            <td class="px-4 py-3.5 font-semibold text-foreground">
+                                <div>@mod.Name</div>
+                                <div class="text-[10px] text-muted-foreground font-mono mt-0.5">@mod.ModuleCode</div>
+                            </td>
                             <td class="px-4 py-3.5 text-muted-foreground">@mod.TeacherName</td>
                             <td class="px-4 py-3.5 text-muted-foreground">@(string.IsNullOrEmpty(mod.SemesterName) ? "None" : mod.SemesterName)</td>
                             <td class="px-4 py-3.5">
@@ -335,7 +346,10 @@ else
                     <div>
                         <div class="flex justify-between items-start mb-3">
                             <div>
-                                <h3 class="text-base font-bold text-foreground tracking-tight">@mod.Name</h3>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-secondary border border-border text-foreground rounded">@mod.ModuleCode</span>
+                                    <h3 class="text-base font-bold text-foreground tracking-tight">@mod.Name</h3>
+                                </div>
                                 <div class="flex items-center gap-2 text-xs text-muted-foreground mt-1 font-mono">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                     <span>@mod.TeacherName</span>
@@ -497,6 +511,7 @@ else
         _editModule = new UpdateModuleRequest
         {
             Name = mod.Name,
+            ModuleCode = mod.ModuleCode,
             TeacherName = mod.TeacherName,
             SemesterId = mod.SemesterId
         };
@@ -627,6 +642,13 @@ else
         if (string.IsNullOrWhiteSpace(_editModule.Name))
         {
             _message = "Module name is required.";
+            _isError = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_editModule.ModuleCode))
+        {
+            _message = "Module code is required.";
             _isError = true;
             return;
         }

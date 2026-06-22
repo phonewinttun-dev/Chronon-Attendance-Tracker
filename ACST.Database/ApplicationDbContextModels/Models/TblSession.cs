@@ -19,9 +19,6 @@ public partial class TblSession
 
     public DateTime EndDatetime { get; set; }
 
-    /// <summary>
-    /// Not Marked, Present, Absent, Cancelled, Holiday
-    /// </summary>
     public string Status { get; set; } = null!;
 
     public Guid MagicLinkToken { get; set; }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,10 +6,6 @@ namespace ACST.Database.ApplicationDbContextModels.Models;
 
 public partial class AppDbContext : DbContext
 {
-    public AppDbContext()
-    {
-    }
-
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
@@ -24,14 +20,6 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<TblSemester> TblSemesters { get; set; }
 
     public virtual DbSet<TblSession> TblSessions { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            optionsBuilder.UseNpgsql("Host=db.dzeubdrqbzbudbblvxep.supabase.co;Database=postgres;Username=postgres;Password=ACSTSupabase1735#;SSL Mode=Require;Trust Server Certificate=true;Keepalive=30;Timeout=30;Command Timeout=30");
-        }
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -75,54 +63,29 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<TblModule>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("modules_pkey");
+            entity.HasKey(e => e.Id).HasName("tblmodule_pkey");
 
             entity.ToTable("TblModule");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("created_at");
-            entity.Property(e => e.IsDeleted).HasColumnName("is_deleted");
-            entity.Property(e => e.Name).HasColumnName("name");
-            entity.Property(e => e.SemesterId).HasColumnName("semester_id");
-            entity.Property(e => e.TeacherName).HasColumnName("teacher_name");
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("updated_at");
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
 
             entity.HasOne(d => d.Semester).WithMany(p => p.TblModules)
                 .HasForeignKey(d => d.SemesterId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("TblModule_semester_id_fkey");
+                .HasConstraintName("tblmodule_semester_id_fkey");
         });
 
         modelBuilder.Entity<TblRecurringSchedule>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("recurring_schedules_pkey");
+            entity.HasKey(e => e.Id).HasName("tblrecurringschedule_pkey");
 
             entity.ToTable("TblRecurringSchedule");
 
-            entity.HasIndex(e => new { e.ModuleId, e.SemesterId }, "idx_tblrecurringschedule_module_semester");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("created_at");
-            entity.Property(e => e.DayOfWeek)
-                .HasComment("0=Sunday ... 6=Saturday")
-                .HasColumnName("day_of_week");
-            entity.Property(e => e.EndTime).HasColumnName("end_time");
-            entity.Property(e => e.IsActive)
-                .HasDefaultValue(true)
-                .HasColumnName("is_active");
-            entity.Property(e => e.IsDeleted).HasColumnName("is_deleted");
-            entity.Property(e => e.ModuleId).HasColumnName("module_id");
-            entity.Property(e => e.SemesterId).HasColumnName("semester_id");
-            entity.Property(e => e.StartTime).HasColumnName("start_time");
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("updated_at");
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
 
             entity.HasOne(d => d.Module).WithMany(p => p.TblRecurringSchedules)
                 .HasForeignKey(d => d.ModuleId)
@@ -135,65 +98,28 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<TblSemester>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("semesters_pkey");
+            entity.HasKey(e => e.Id).HasName("tblsemester_pkey");
 
             entity.ToTable("TblSemester");
 
-            entity.HasIndex(e => new { e.StartDate, e.EndDate }, "idx_tblsemester_dates");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("created_at");
-            entity.Property(e => e.EndDate).HasColumnName("end_date");
-            entity.Property(e => e.IsDeleted).HasColumnName("is_deleted");
-            entity.Property(e => e.Name).HasColumnName("name");
-            entity.Property(e => e.StartDate).HasColumnName("start_date");
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("updated_at");
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<TblSession>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("class_sessions_pkey");
+            entity.HasKey(e => e.Id).HasName("tblsession_pkey");
 
             entity.ToTable("TblSession");
 
-            entity.HasIndex(e => e.MagicLinkToken, "class_sessions_magic_link_token_key").IsUnique();
+            entity.HasIndex(e => e.MagicLinkToken, "TblSession_MagicLinkToken_key").IsUnique();
 
-            entity.HasIndex(e => e.SessionDate, "idx_tblsession_date");
-
-            entity.HasIndex(e => e.MagicLinkToken, "idx_tblsession_magic_token");
-
-            entity.HasIndex(e => new { e.ModuleId, e.SessionDate }, "idx_tblsession_module_date");
-
-            entity.HasIndex(e => new { e.SemesterId, e.SessionDate }, "idx_tblsession_semester_date");
-
-            entity.HasIndex(e => e.Status, "idx_tblsession_status");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("created_at");
-            entity.Property(e => e.EndDatetime).HasColumnName("end_datetime");
-            entity.Property(e => e.GoogleEventId).HasColumnName("google_event_id");
-            entity.Property(e => e.IsDeleted).HasColumnName("is_deleted");
-            entity.Property(e => e.MagicLinkToken)
-                .HasDefaultValueSql("uuid_generate_v4()")
-                .HasColumnName("magic_link_token");
-            entity.Property(e => e.ModuleId).HasColumnName("module_id");
-            entity.Property(e => e.RecurringScheduleId).HasColumnName("recurring_schedule_id");
-            entity.Property(e => e.SemesterId).HasColumnName("semester_id");
-            entity.Property(e => e.SessionDate).HasColumnName("session_date");
-            entity.Property(e => e.StartDatetime).HasColumnName("start_datetime");
-            entity.Property(e => e.Status)
-                .HasDefaultValueSql("'Not Marked'::text")
-                .HasComment("Not Marked, Present, Absent, Cancelled, Holiday")
-                .HasColumnName("status");
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("updated_at");
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.MagicLinkToken).HasDefaultValueSql("uuid_generate_v4()");
+            entity.Property(e => e.Status).HasDefaultValueSql("'Not Marked'::text");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
 
             entity.HasOne(d => d.Module).WithMany(p => p.TblSessions)
                 .HasForeignKey(d => d.ModuleId)

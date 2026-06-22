@@ -30,7 +30,7 @@ public class ClassSessionService : IClassSessionService
                 .Include(s => s.Module)
                 .Include(s => s.Semester)
                 .AsNoTracking()
-                .Where(s => !s.IsDeleted);
+                .Where(s => !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
 
             if (semesterId.HasValue) query = query.Where(s => s.SemesterId == semesterId.Value);
             if (moduleId.HasValue) query = query.Where(s => s.ModuleId == moduleId.Value);
@@ -108,7 +108,7 @@ public class ClassSessionService : IClassSessionService
                 .Include(s => s.Module)
                 .Include(s => s.Semester)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+                .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
 
             if (s == null) return Result<ClassSessionDto>.Failure("Session not found.");
 
@@ -143,7 +143,7 @@ public class ClassSessionService : IClassSessionService
 
             var schedulesQuery = _context.TblRecurringSchedules
                 .Include(r => r.Module)
-                .Where(r => r.SemesterId == request.SemesterId && r.IsActive && !r.IsDeleted);
+                .Where(r => r.SemesterId == request.SemesterId && r.IsActive && !r.IsDeleted && (r.Module == null || !r.Module.IsDeleted));
 
             if (request.ModuleId.HasValue)
             {

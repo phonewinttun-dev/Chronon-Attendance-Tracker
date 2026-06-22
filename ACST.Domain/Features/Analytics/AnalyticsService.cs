@@ -24,7 +24,7 @@ public class AnalyticsService : IAnalyticsService
         {
             var sessions = await _context.TblSessions
                 .AsNoTracking()
-                .Where(s => s.SemesterId == semesterId && !s.IsDeleted)
+                .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted))
                 .ToListAsync();
 
             if (!sessions.Any())
@@ -68,7 +68,7 @@ public class AnalyticsService : IAnalyticsService
 
             var sessions = await _context.TblSessions
                 .AsNoTracking()
-                .Where(s => s.ModuleId == moduleId && s.SemesterId == semesterId && !s.IsDeleted)
+                .Where(s => s.ModuleId == moduleId && s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted))
                 .ToListAsync();
 
             var validSessions = sessions.Where(s => s.Status != "Holiday" && s.Status != "Cancelled").ToList();
@@ -112,7 +112,7 @@ public class AnalyticsService : IAnalyticsService
 
             var sessions = await _context.TblSessions
                 .AsNoTracking()
-                .Where(s => s.SemesterId == semesterId && !s.IsDeleted)
+                .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted))
                 .ToListAsync();
 
             var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(6.5)); // Myanmar Time

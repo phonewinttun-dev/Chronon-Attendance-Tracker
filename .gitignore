@@ -363,4 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 code_style.md
 seed_test_data.sql
-system_loading_screen.json  
+system_loading_screen.json
+insert_mock_data.sql

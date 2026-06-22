@@ -314,4 +314,78 @@ public class ClassSessionServiceTests
         var dbSession = await _context.TblSessions.FindAsync(session.Id);
         Assert.True(dbSession.IsDeleted);
     }
+
+    [Fact]
+    public async Task GetSessionsAsync_ShouldIgnoreSessionsOfDeletedModulesOrSemesters()
+    {
+        // Arrange
+        var semester = new TblSemester
+        {
+            Name = "Active Semester",
+            StartDate = new DateOnly(2026, 1, 1),
+            EndDate = new DateOnly(2026, 1, 31),
+            IsDeleted = false
+        };
+        var deletedSemester = new TblSemester
+        {
+            Name = "Deleted Semester",
+            StartDate = new DateOnly(2026, 1, 1),
+            EndDate = new DateOnly(2026, 1, 31),
+            IsDeleted = true
+        };
+        _context.TblSemesters.AddRange(semester, deletedSemester);
+
+        var module = new TblModule { Name = "Active Module", Semester = semester, IsDeleted = false };
+        var deletedModule = new TblModule { Name = "Deleted Module", Semester = semester, IsDeleted = true };
+        _context.TblModules.AddRange(module, deletedModule);
+        await _context.SaveChangesAsync();
+
+        var session1 = new TblSession
+        {
+            ModuleId = module.Id,
+            SemesterId = semester.Id,
+            RecurringScheduleId = 1,
+            SessionDate = new DateOnly(2026, 1, 5),
+            StartDatetime = DateTime.UtcNow,
+            EndDatetime = DateTime.UtcNow.AddHours(2),
+            Status = "Not Marked",
+            IsDeleted = false
+        };
+        var session2 = new TblSession
+        {
+            ModuleId = deletedModule.Id,
+            SemesterId = semester.Id,
+            RecurringScheduleId = 1,
+            SessionDate = new DateOnly(2026, 1, 6),
+            StartDatetime = DateTime.UtcNow,
+            EndDatetime = DateTime.UtcNow.AddHours(2),
+            Status = "Not Marked",
+            IsDeleted = false
+        };
+        var session3 = new TblSession
+        {
+            ModuleId = module.Id,
+            SemesterId = deletedSemester.Id,
+            RecurringScheduleId = 1,
+            SessionDate = new DateOnly(2026, 1, 7),
+            StartDatetime = DateTime.UtcNow,
+            EndDatetime = DateTime.UtcNow.AddHours(2),
+            Status = "Not Marked",
+            IsDeleted = false
+        };
+        _context.TblSessions.AddRange(session1, session2, session3);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.GetSessionsAsync(null, null, null, null, null);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var sessions = result.Data;
+        Assert.NotNull(sessions);
+        
+        // Should only return session1 (active module & active semester)
+        Assert.Single(sessions);
+        Assert.Equal(session1.Id, sessions.First().Id);
+    }
 }

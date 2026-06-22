@@ -7,15 +7,19 @@ using ACST.Domain.DTOs.Semester;
 using ACST.Shared;
 using Microsoft.EntityFrameworkCore;
 
+using ACST.Domain.Features.GoogleCalendar;
+
 namespace ACST.Domain.Features.Semesters;
 
 public class SemesterService : ISemesterService
 {
     private readonly AppDbContext _context;
+    private readonly IGoogleCalendarService _googleCalendarService;
 
-    public SemesterService(AppDbContext context)
+    public SemesterService(AppDbContext context, IGoogleCalendarService googleCalendarService)
     {
         _context = context;
+        _googleCalendarService = googleCalendarService;
     }
 
     public async Task<PagedResult<SemesterDto>> GetAllSemestersAsync(string? searchTerm = null, int? pageNumber = null, int? pageSize = null)
@@ -188,9 +192,48 @@ public class SemesterService : ISemesterService
 
             semester.IsDeleted = true;
             _context.TblSemesters.Update(semester);
+
+            // Cascade soft-delete modules belonging to this semester
+            var modules = await _context.TblModules
+                .Where(m => m.SemesterId == id && !m.IsDeleted)
+                .ToListAsync();
+
+            foreach (var module in modules)
+            {
+                module.IsDeleted = true;
+                _context.TblModules.Update(module);
+            }
+
+            // Cascade soft-delete recurring schedules belonging to this semester
+            var schedules = await _context.TblRecurringSchedules
+                .Where(s => s.SemesterId == id && !s.IsDeleted)
+                .ToListAsync();
+
+            foreach (var schedule in schedules)
+            {
+                schedule.IsDeleted = true;
+                _context.TblRecurringSchedules.Update(schedule);
+            }
+
+            // Cascade soft-delete sessions belonging to this semester and remove their Google Calendar events
+            var sessions = await _context.TblSessions
+                .Where(s => s.SemesterId == id && !s.IsDeleted)
+                .ToListAsync();
+
+            foreach (var session in sessions)
+            {
+                session.IsDeleted = true;
+                _context.TblSessions.Update(session);
+
+                if (!string.IsNullOrEmpty(session.GoogleEventId))
+                {
+                    await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
+                }
+            }
+
             await _context.SaveChangesAsync();
 
-            return Result.Success("Semester deleted successfully.");
+            return Result.Success("Semester and all its associated modules, schedules, and sessions deleted successfully.");
         }
         catch (Exception ex)
         {
