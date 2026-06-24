@@ -299,9 +299,11 @@
                 _holidays = holResult.Data ?? new();
             }
 
-            // Load sessions for the range of dates on calendar
-            var startStr = _calendarDays.First().ToString("yyyy-MM-dd");
-            var endStr = _calendarDays.Last().ToString("yyyy-MM-dd");
+            // Load sessions only for the current month
+            var startOfMonth = new DateOnly(_viewDate.Year, _viewDate.Month, 1);
+            var endOfMonth = new DateOnly(_viewDate.Year, _viewDate.Month, DateTime.DaysInMonth(_viewDate.Year, _viewDate.Month));
+            var startStr = startOfMonth.ToString("yyyy-MM-dd");
+            var endStr = endOfMonth.ToString("yyyy-MM-dd");
             
             string url = $"api/classsessions?startDate={startStr}&endDate={endStr}";
             if (_selectedSemesterId > 0)

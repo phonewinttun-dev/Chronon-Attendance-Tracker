@@ -1,4 +1,5 @@
 @using System.Globalization
+@implements IDisposable
 
 <div class="relative w-full" @onfocusout="HandleFocusOut">
     <div class="flex items-center bg-card border border-input rounded-md focus-within:ring-1 focus-within:ring-ring overflow-hidden transition-all h-9 shadow-sm">
@@ -77,6 +78,27 @@
     private DateOnly _viewDate;
     private bool _isFocused = false;
 
+    private static event Action<DatePicker>? OnCalendarOpened;
+
+    protected override void OnInitialized()
+    {
+        OnCalendarOpened += HandleOtherCalendarOpened;
+    }
+
+    private void HandleOtherCalendarOpened(DatePicker openedDatePicker)
+    {
+        if (openedDatePicker != this && _showCalendar)
+        {
+            _showCalendar = false;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        OnCalendarOpened -= HandleOtherCalendarOpened;
+    }
+
     protected override void OnParametersSet()
     {
         if (!_isFocused)
@@ -101,6 +123,7 @@
         if (_showCalendar)
         {
             _viewDate = Value != default ? Value : DateOnly.FromDateTime(DateTime.Today);
+            OnCalendarOpened?.Invoke(this);
         }
     }
 
