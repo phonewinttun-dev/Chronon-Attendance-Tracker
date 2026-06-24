@@ -113,7 +113,6 @@ public class RecurringScheduleService : IRecurringScheduleService
             if (schedule == null) return Result.Failure("Recurring schedule not found.");
 
             schedule.IsDeleted = true;
-            _context.TblRecurringSchedules.Update(schedule);
             await _context.SaveChangesAsync();
 
             return Result.Success("Recurring schedule deleted successfully.");

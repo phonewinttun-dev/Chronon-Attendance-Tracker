@@ -522,10 +522,10 @@
     {
         @if (_isLoading)
         {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
+            <div class="flex flex-wrap justify-center gap-4 animate-pulse">
                 @for (int i = 0; i < 6; i++)
                 {
-                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-sm">
+                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-sm w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.75rem)] flex-grow max-w-[400px]">
                         <div>
                             <div class="flex justify-between items-start mb-3">
                                 <div class="h-4 bg-muted rounded w-24"></div>
@@ -548,10 +548,10 @@
         }
         else
         {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="flex flex-wrap justify-center gap-4">
                 @foreach (var mod in _modules)
                 {
-                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-sm">
+                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-sm w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.75rem)] flex-grow max-w-[400px]">
                         <div>
                             <div class="flex justify-between items-start mb-3">
                                 <div>

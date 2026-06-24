@@ -162,7 +162,6 @@ public class SemesterService : ISemesterService
             semester.StartDate = request.StartDate;
             semester.EndDate = request.EndDate;
 
-            _context.TblSemesters.Update(semester);
             await _context.SaveChangesAsync();
 
             return Result<SemesterDto>.Success(new SemesterDto
@@ -191,7 +190,6 @@ public class SemesterService : ISemesterService
                 return Result.Failure("Semester not found.");
 
             semester.IsDeleted = true;
-            _context.TblSemesters.Update(semester);
 
             // Cascade soft-delete modules belonging to this semester
             var modules = await _context.TblModules
@@ -201,7 +199,6 @@ public class SemesterService : ISemesterService
             foreach (var module in modules)
             {
                 module.IsDeleted = true;
-                _context.TblModules.Update(module);
             }
 
             // Cascade soft-delete recurring schedules belonging to this semester
@@ -212,7 +209,6 @@ public class SemesterService : ISemesterService
             foreach (var schedule in schedules)
             {
                 schedule.IsDeleted = true;
-                _context.TblRecurringSchedules.Update(schedule);
             }
 
             // Cascade soft-delete sessions belonging to this semester and remove their Google Calendar events
@@ -223,7 +219,6 @@ public class SemesterService : ISemesterService
             foreach (var session in sessions)
             {
                 session.IsDeleted = true;
-                _context.TblSessions.Update(session);
 
                 if (!string.IsNullOrEmpty(session.GoogleEventId))
                 {

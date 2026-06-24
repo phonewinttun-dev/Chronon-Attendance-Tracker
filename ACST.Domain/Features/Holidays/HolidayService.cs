@@ -162,7 +162,6 @@ public class HolidayService : IHolidayService
                 return Result.Failure("Holiday not found.");
 
             holiday.IsDeleted = true;
-            _context.TblHolidays.Update(holiday);
             await _context.SaveChangesAsync();
 
             return Result.Success("Holiday deleted successfully.");

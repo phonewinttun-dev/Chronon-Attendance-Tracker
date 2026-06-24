@@ -241,7 +241,6 @@ public class ClassSessionService : IClassSessionService
             }
 
             session.Status = request.Status;
-            _context.TblSessions.Update(session);
             await _context.SaveChangesAsync();
 
             if (request.Status == "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
@@ -286,7 +285,6 @@ public class ClassSessionService : IClassSessionService
             }
 
             session.Status = "Present";
-            _context.TblSessions.Update(session);
             await _context.SaveChangesAsync();
 
             return Result<string>.Success("Attendance successfully marked.");
@@ -320,7 +318,6 @@ public class ClassSessionService : IClassSessionService
             var oldStatus = session.Status;
             session.Status = request.Status;
 
-            _context.TblSessions.Update(session);
             await _context.SaveChangesAsync();
 
             if (request.Status == "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
@@ -353,7 +350,6 @@ public class ClassSessionService : IClassSessionService
             }
 
             session.IsDeleted = true;
-            _context.TblSessions.Update(session);
             await _context.SaveChangesAsync();
 
             if (!string.IsNullOrEmpty(session.GoogleEventId))

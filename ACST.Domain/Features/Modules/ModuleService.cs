@@ -348,7 +348,6 @@ public class ModuleService : IModuleService
             module.TeacherName = request.TeacherName;
             module.SemesterId = request.SemesterId;
 
-            _context.TblModules.Update(module);
             await _context.SaveChangesAsync();
 
             // Handle schedules update
@@ -369,7 +368,6 @@ public class ModuleService : IModuleService
                 foreach (var sch in toDelete)
                 {
                     sch.IsDeleted = true;
-                    _context.TblRecurringSchedules.Update(sch);
 
                     // Cascade soft-delete future class sessions for this deleted schedule
                     var associatedSessions = await _context.TblSessions
@@ -378,7 +376,6 @@ public class ModuleService : IModuleService
                     foreach (var s in associatedSessions)
                     {
                         s.IsDeleted = true;
-                        _context.TblSessions.Update(s);
                         if (!string.IsNullOrEmpty(s.GoogleEventId))
                         {
                             await _googleCalendarService.DeleteEventAsync(s.GoogleEventId);
@@ -403,7 +400,6 @@ public class ModuleService : IModuleService
                             existing.StartTime = schReq.StartTime;
                             existing.EndTime = schReq.EndTime;
                             existing.SemesterId = request.SemesterId!.Value;
-                            _context.TblRecurringSchedules.Update(existing);
                         }
                     }
                     else
@@ -482,7 +478,6 @@ public class ModuleService : IModuleService
             }
 
             module.IsDeleted = true;
-            _context.TblModules.Update(module);
 
             // Cascade soft-delete associated recurring schedules
             var schedules = await _context.TblRecurringSchedules
@@ -492,7 +487,6 @@ public class ModuleService : IModuleService
             foreach (var schedule in schedules)
             {
                 schedule.IsDeleted = true;
-                _context.TblRecurringSchedules.Update(schedule);
             }
 
             // Cascade soft-delete associated class sessions
@@ -503,7 +497,6 @@ public class ModuleService : IModuleService
             foreach (var session in sessions)
             {
                 session.IsDeleted = true;
-                _context.TblSessions.Update(session);
 
                 if (!string.IsNullOrEmpty(session.GoogleEventId))
                 {
