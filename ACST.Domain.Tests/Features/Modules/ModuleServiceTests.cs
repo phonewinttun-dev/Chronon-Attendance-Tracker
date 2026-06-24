@@ -39,7 +39,7 @@ public class ModuleServiceTests
         };
         _context.TblSemesters.Add(semester);
 
-        var module = new TblModule { Name = "Math 101", Semester = semester };
+        var module = new TblModule { Name = "Math 101", ModuleCode = "MATH-101", Semester = semester };
         _context.TblModules.Add(module);
         
         await _context.SaveChangesAsync();

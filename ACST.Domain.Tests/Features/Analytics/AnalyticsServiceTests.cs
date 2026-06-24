@@ -37,7 +37,7 @@ public class AnalyticsServiceTests
         };
         _context.TblSemesters.Add(semester);
 
-        var module = new TblModule { Id = 1, Name = "Module 1" };
+        var module = new TblModule { Id = 1, Name = "Module 1", ModuleCode = "MOD-1" };
         _context.TblModules.Add(module);
 
         var schedule = new TblRecurringSchedule { Id = 1, ModuleId = 1, SemesterId = 1 };

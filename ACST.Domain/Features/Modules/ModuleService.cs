@@ -246,6 +246,59 @@ public class ModuleService : IModuleService
             _context.TblModules.Add(module);
             await _context.SaveChangesAsync();
 
+            // Save schedules if any
+            if (request.Schedules != null && request.Schedules.Any())
+            {
+                if (!request.SemesterId.HasValue)
+                {
+                    return Result<ModuleDto>.Failure("Semester is required when adding schedules.");
+                }
+
+                foreach (var schRequest in request.Schedules)
+                {
+                    if (schRequest.StartTime >= schRequest.EndTime)
+                    {
+                        return Result<ModuleDto>.Failure("Start time must be before end time for all schedules.");
+                    }
+
+                    var schedule = new TblRecurringSchedule
+                    {
+                        ModuleId = module.Id,
+                        SemesterId = request.SemesterId.Value,
+                        DayOfWeek = schRequest.DayOfWeek,
+                        StartTime = schRequest.StartTime,
+                        EndTime = schRequest.EndTime,
+                        IsActive = true,
+                        IsDeleted = false
+                    };
+                    _context.TblRecurringSchedules.Add(schedule);
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            var schedulesList = new List<RecurringScheduleDto>();
+            if (request.Schedules != null && request.Schedules.Any() && request.SemesterId.HasValue)
+            {
+                schedulesList = await _context.TblRecurringSchedules
+                    .Include(s => s.Semester)
+                    .Where(s => s.ModuleId == module.Id && !s.IsDeleted)
+                    .Select(s => new RecurringScheduleDto
+                    {
+                        Id = s.Id,
+                        ModuleId = s.ModuleId,
+                        ModuleName = module.Name,
+                        SemesterId = s.SemesterId,
+                        SemesterName = s.Semester.Name,
+                        DayOfWeek = s.DayOfWeek,
+                        StartTime = s.StartTime,
+                        EndTime = s.EndTime,
+                        IsActive = s.IsActive,
+                        CreatedAt = s.CreatedAt,
+                        UpdatedAt = s.UpdatedAt
+                    })
+                    .ToListAsync();
+            }
+
             return Result<ModuleDto>.Success(new ModuleDto
             {
                 Id = module.Id,
@@ -257,6 +310,7 @@ public class ModuleService : IModuleService
                 AttendanceRate = 0,
                 TotalValidSessions = 0,
                 PresentSessions = 0,
+                Schedules = schedulesList,
                 CreatedAt = module.CreatedAt,
                 UpdatedAt = module.UpdatedAt
             }, "Module created successfully.");
@@ -297,9 +351,102 @@ public class ModuleService : IModuleService
             _context.TblModules.Update(module);
             await _context.SaveChangesAsync();
 
+            // Handle schedules update
+            if (request.Schedules != null)
+            {
+                if (request.Schedules.Any() && !request.SemesterId.HasValue)
+                {
+                    return Result<ModuleDto>.Failure("Semester is required when adding schedules.");
+                }
+
+                var existingSchedules = await _context.TblRecurringSchedules
+                    .Where(s => s.ModuleId == id && !s.IsDeleted)
+                    .ToListAsync();
+
+                // Determine deleted schedules
+                var requestIds = request.Schedules.Where(s => s.Id.HasValue).Select(s => s.Id!.Value).ToList();
+                var toDelete = existingSchedules.Where(s => !requestIds.Contains(s.Id)).ToList();
+                foreach (var sch in toDelete)
+                {
+                    sch.IsDeleted = true;
+                    _context.TblRecurringSchedules.Update(sch);
+
+                    // Cascade soft-delete future class sessions for this deleted schedule
+                    var associatedSessions = await _context.TblSessions
+                        .Where(s => s.RecurringScheduleId == sch.Id && !s.IsDeleted && s.StartDatetime >= DateTime.UtcNow)
+                        .ToListAsync();
+                    foreach (var s in associatedSessions)
+                    {
+                        s.IsDeleted = true;
+                        _context.TblSessions.Update(s);
+                        if (!string.IsNullOrEmpty(s.GoogleEventId))
+                        {
+                            await _googleCalendarService.DeleteEventAsync(s.GoogleEventId);
+                        }
+                    }
+                }
+
+                // Add or update schedules
+                foreach (var schReq in request.Schedules)
+                {
+                    if (schReq.StartTime >= schReq.EndTime)
+                    {
+                        return Result<ModuleDto>.Failure("Start time must be before end time for all schedules.");
+                    }
+
+                    if (schReq.Id.HasValue)
+                    {
+                        var existing = existingSchedules.FirstOrDefault(s => s.Id == schReq.Id.Value);
+                        if (existing != null)
+                        {
+                            existing.DayOfWeek = schReq.DayOfWeek;
+                            existing.StartTime = schReq.StartTime;
+                            existing.EndTime = schReq.EndTime;
+                            existing.SemesterId = request.SemesterId!.Value;
+                            _context.TblRecurringSchedules.Update(existing);
+                        }
+                    }
+                    else
+                    {
+                        var newSch = new TblRecurringSchedule
+                        {
+                            ModuleId = module.Id,
+                            SemesterId = request.SemesterId!.Value,
+                            DayOfWeek = schReq.DayOfWeek,
+                            StartTime = schReq.StartTime,
+                            EndTime = schReq.EndTime,
+                            IsActive = true,
+                            IsDeleted = false
+                        };
+                        _context.TblRecurringSchedules.Add(newSch);
+                    }
+                }
+                await _context.SaveChangesAsync();
+            }
+
             var totalValid = await _context.TblSessions.CountAsync(s => s.ModuleId == id && !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled");
             var present = await _context.TblSessions.CountAsync(s => s.ModuleId == id && !s.IsDeleted && s.Status == "Present");
             var rate = totalValid > 0 ? Math.Round((double)present / totalValid * 100, 2) : 0;
+
+            // Fetch current list of schedules to return in DTO
+            var schedulesList = await _context.TblRecurringSchedules
+                .Include(s => s.Semester)
+                .Where(s => s.ModuleId == id && !s.IsDeleted)
+                .Select(s => new RecurringScheduleDto
+                {
+                    Id = s.Id,
+                    ModuleId = s.ModuleId,
+                    ModuleName = module.Name,
+                    SemesterId = s.SemesterId,
+                    SemesterName = s.Semester.Name,
+                    DayOfWeek = s.DayOfWeek,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    IsActive = s.IsActive,
+                    CreatedAt = s.CreatedAt,
+                    UpdatedAt = s.UpdatedAt
+                })
+                .ToListAsync();
 
             return Result<ModuleDto>.Success(new ModuleDto
             {
@@ -312,6 +459,7 @@ public class ModuleService : IModuleService
                 AttendanceRate = rate,
                 TotalValidSessions = totalValid,
                 PresentSessions = present,
+                Schedules = schedulesList,
                 CreatedAt = module.CreatedAt,
                 UpdatedAt = module.UpdatedAt
             }, "Module updated successfully.");

@@ -159,10 +159,19 @@ public class CreateModuleRequest
     public string ModuleCode { get; set; } = string.Empty;
     public string TeacherName { get; set; } = string.Empty;
     public long? SemesterId { get; set; }
+    public List<CreateRecurringScheduleRequest> Schedules { get; set; } = new();
 }
 
 public class CreateRecurringScheduleRequest
 {
+    public short DayOfWeek { get; set; }
+    public TimeOnly StartTime { get; set; }
+    public TimeOnly EndTime { get; set; }
+}
+
+public class UpdateRecurringScheduleRequest
+{
+    public long? Id { get; set; }
     public short DayOfWeek { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
@@ -174,6 +183,7 @@ public class UpdateModuleRequest
     public string ModuleCode { get; set; } = string.Empty;
     public string TeacherName { get; set; } = string.Empty;
     public long? SemesterId { get; set; }
+    public List<UpdateRecurringScheduleRequest>? Schedules { get; set; }
 }
 
 // --- API Wrappers ---

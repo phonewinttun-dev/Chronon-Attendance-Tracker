@@ -35,6 +35,8 @@ public class CreateModuleRequest
     public string? TeacherName { get; set; }
 
     public long? SemesterId { get; set; }
+
+    public List<CreateRecurringScheduleRequest> Schedules { get; set; } = new();
 }
 
 public class UpdateModuleRequest
@@ -51,4 +53,6 @@ public class UpdateModuleRequest
     public string? TeacherName { get; set; }
 
     public long? SemesterId { get; set; }
+
+    public List<UpdateRecurringScheduleRequest>? Schedules { get; set; }
 }

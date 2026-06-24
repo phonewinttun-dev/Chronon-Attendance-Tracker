@@ -114,7 +114,62 @@
             </div>
         </div>
 
-        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="CreateModule" disabled="@_isSubmitting">
+        <div class="mt-6 border-t border-border pt-4 mb-6">
+            <h3 class="text-sm font-bold text-foreground mb-4">Schedules</h3>
+            
+            @if (!_newModuleSchedules.Any())
+            {
+                <p class="text-xs text-muted-foreground italic mb-4">No schedules added yet. Click the button below to add a schedule.</p>
+            }
+            else
+            {
+                <div class="space-y-3 mb-4">
+                    @for (int i = 0; i < _newModuleSchedules.Count; i++)
+                    {
+                        var index = i;
+                        var sch = _newModuleSchedules[i];
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-muted/20 p-3 rounded-lg border border-border">
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Day of Week</label>
+                                <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring" 
+                                        @bind="sch.DayOfWeek">
+                                    <option value="1">Monday</option>
+                                    <option value="2">Tuesday</option>
+                                    <option value="3">Wednesday</option>
+                                    <option value="4">Thursday</option>
+                                    <option value="5">Friday</option>
+                                    <option value="6">Saturday</option>
+                                    <option value="0">Sunday</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Start Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.StartTime" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">End Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.EndTime" />
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" class="bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground text-destructive px-3 py-2 rounded-md text-xs font-semibold transition-all w-full md:w-auto" 
+                                        @onclick="() => RemoveNewModuleSchedule(index)">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            
+            <button type="button" class="bg-secondary text-foreground hover:bg-secondary/80 border border-border px-3 py-2 rounded-md text-xs font-semibold transition-all shadow-sm" 
+                    @onclick="AddNewModuleSchedule">
+                + Add Schedule
+            </button>
+        </div>
+
+        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="CreateModule" disabled="@_isSubmitting">
             @(_isSubmitting ? "Creating..." : "Create Module")
         </button>
     </div>
@@ -146,40 +201,73 @@
             </div>
         }
         
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div>
-                <label class="block text-sm font-semibold text-muted-foreground mb-1">Semester</label>
-                <select class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_selectedSemesterId">
-                    <option value="0">Select Semester...</option>
-                    @if (_semesters != null)
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-muted-foreground mb-1">Semester</label>
+            <select class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_selectedSemesterId">
+                <option value="0">Select Semester...</option>
+                @if (_semesters != null)
+                {
+                    @foreach(var sem in _semesters)
                     {
-                        @foreach(var sem in _semesters)
-                        {
-                            <option value="@sem.Id">@sem.Name</option>
-                        }
+                        <option value="@sem.Id">@sem.Name</option>
                     }
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-muted-foreground mb-1">Day of Week</label>
-                <select class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_newSchedule.DayOfWeek">
-                    <option value="1">Monday</option>
-                    <option value="2">Tuesday</option>
-                    <option value="3">Wednesday</option>
-                    <option value="4">Thursday</option>
-                    <option value="5">Friday</option>
-                    <option value="6">Saturday</option>
-                    <option value="0">Sunday</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-muted-foreground mb-1">Start Time</label>
-                <input type="time" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring font-mono" @bind="_newSchedule.StartTime" />
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-muted-foreground mb-1">End Time</label>
-                <input type="time" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring font-mono" @bind="_newSchedule.EndTime" />
-            </div>
+                }
+            </select>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-muted-foreground mb-3">Schedules to Add</label>
+            
+            @if (!_assignSchedules.Any())
+            {
+                <p class="text-xs text-muted-foreground italic mb-4">No schedules added yet. Click the button below to add a schedule.</p>
+            }
+            else
+            {
+                <div class="space-y-3 mb-4">
+                    @for (int i = 0; i < _assignSchedules.Count; i++)
+                    {
+                        var index = i;
+                        var sch = _assignSchedules[i];
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-muted/20 p-3 rounded-lg border border-border">
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Day of Week</label>
+                                <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring" 
+                                        @bind="sch.DayOfWeek">
+                                    <option value="1">Monday</option>
+                                    <option value="2">Tuesday</option>
+                                    <option value="3">Wednesday</option>
+                                    <option value="4">Thursday</option>
+                                    <option value="5">Friday</option>
+                                    <option value="6">Saturday</option>
+                                    <option value="0">Sunday</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Start Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.StartTime" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">End Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.EndTime" />
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" class="bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground text-destructive px-3 py-2 rounded-md text-xs font-semibold transition-all w-full md:w-auto" 
+                                        @onclick="() => RemoveAssignSchedule(index)">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            
+            <button type="button" class="bg-secondary text-foreground hover:bg-secondary/80 border border-border px-3 py-2 rounded-md text-xs font-semibold transition-all shadow-sm" 
+                    @onclick="AddAssignSchedule">
+                + Add Schedule
+            </button>
         </div>
 
         @if (_selectedSemester != null)
@@ -196,8 +284,8 @@
             </div>
         }
 
-        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="CreateSchedule" disabled="@_isSubmittingSchedule">
-            @(_isSubmittingSchedule ? "Adding..." : "Add Schedule")
+        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="CreateSchedule" disabled="@_isSubmittingSchedule">
+            @(_isSubmittingSchedule ? "Adding..." : "Add Schedules")
         </button>
     </div>
 }
@@ -238,7 +326,62 @@
             </div>
         </div>
 
-        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="UpdateModule" disabled="@_isSubmittingEdit">
+        <div class="mt-6 border-t border-border pt-4 mb-6">
+            <h3 class="text-sm font-bold text-foreground mb-4">Schedules</h3>
+            
+            @if (!_editModuleSchedules.Any())
+            {
+                <p class="text-xs text-muted-foreground italic mb-4">No schedules added yet. Click the button below to add a schedule.</p>
+            }
+            else
+            {
+                <div class="space-y-3 mb-4">
+                    @for (int i = 0; i < _editModuleSchedules.Count; i++)
+                    {
+                        var index = i;
+                        var sch = _editModuleSchedules[i];
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-muted/20 p-3 rounded-lg border border-border">
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Day of Week</label>
+                                <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring" 
+                                        @bind="sch.DayOfWeek">
+                                    <option value="1">Monday</option>
+                                    <option value="2">Tuesday</option>
+                                    <option value="3">Wednesday</option>
+                                    <option value="4">Thursday</option>
+                                    <option value="5">Friday</option>
+                                    <option value="6">Saturday</option>
+                                    <option value="0">Sunday</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Start Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.StartTime" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">End Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.EndTime" />
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" class="bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground text-destructive px-3 py-2 rounded-md text-xs font-semibold transition-all w-full md:w-auto" 
+                                        @onclick="() => RemoveEditModuleSchedule(index)">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            
+            <button type="button" class="bg-secondary text-foreground hover:bg-secondary/80 border border-border px-3 py-2 rounded-md text-xs font-semibold transition-all" 
+                    @onclick="AddEditModuleSchedule">
+                + Add Schedule
+            </button>
+        </div>
+
+        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="UpdateModule" disabled="@_isSubmittingEdit">
             @(_isSubmittingEdit ? "Saving..." : "Save Changes")
         </button>
     </div>
@@ -358,7 +501,11 @@
                                     <div class="flex items-center gap-2">
                                         <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => OpenScheduleForm(mod)">Add Schedule</button>
                                         <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => OpenEditForm(mod)">Edit</button>
-                                        <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => DeleteModule(mod.Id)">Delete</button>
+                                        <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold disabled:opacity-50" 
+                                                @onclick="() => DeleteModule(mod.Id)" 
+                                                disabled="@_deletingModuleIds.Contains(mod.Id)">
+                                            @(_deletingModuleIds.Contains(mod.Id) ? "Deleting..." : "Delete")
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -470,7 +617,11 @@
                         <div class="flex gap-2 border-t border-border pt-4 mt-2">
                             <button class="flex-1 text-center bg-secondary hover:bg-secondary/80 text-foreground border border-border py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => OpenScheduleForm(mod)">Add Schedule</button>
                             <button class="text-center hover:bg-accent/40 text-foreground border border-border px-3 py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => OpenEditForm(mod)">Edit</button>
-                            <button class="text-center bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/20 px-3 py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => DeleteModule(mod.Id)">Delete</button>
+                            <button class="text-center bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/20 px-3 py-1.5 rounded text-xs font-semibold transition-all disabled:opacity-50" 
+                                    @onclick="() => DeleteModule(mod.Id)" 
+                                    disabled="@_deletingModuleIds.Contains(mod.Id)">
+                                @(_deletingModuleIds.Contains(mod.Id) ? "Deleting..." : "Delete")
+                            </button>
                         </div>
                     </div>
                 }
@@ -500,6 +651,7 @@
     private static string _viewMode = "table";
     private List<ModuleDto>? _modules;
     private List<SemesterDto>? _semesters;
+    private HashSet<long> _deletingModuleIds = new();
     
     private bool _isLoading = true;
     private bool _showCreateForm = false;
@@ -529,6 +681,7 @@
     private bool _hasNext = false;
 
     private CreateModuleRequest _newModule = new();
+    private List<CreateRecurringScheduleRequest> _newModuleSchedules = new();
 
     private string _newModuleSemesterIdStr
     {
@@ -536,13 +689,19 @@
         set
         {
             if (long.TryParse(value, out var id))
+            {
                 _newModule.SemesterId = id;
+            }
             else
+            {
                 _newModule.SemesterId = null;
+                _newModuleSchedules.Clear();
+            }
         }
     }
 
     private UpdateModuleRequest _editModule = new();
+    private List<UpdateRecurringScheduleRequest> _editModuleSchedules = new();
     private long _editingModuleId = 0;
     private bool _showEditForm = false;
     private bool _isSubmittingEdit = false;
@@ -553,9 +712,14 @@
         set
         {
             if (long.TryParse(value, out var id))
+            {
                 _editModule.SemesterId = id;
+            }
             else
+            {
                 _editModule.SemesterId = null;
+                _editModuleSchedules.Clear();
+            }
         }
     }
     
@@ -568,17 +732,25 @@
         {
             _selectedSemesterIdVal = value;
             _selectedSemester = _semesters?.FirstOrDefault(s => s.Id == value);
+            if (value == 0)
+            {
+                _assignSchedules.Clear();
+            }
+            else if (!_assignSchedules.Any())
+            {
+                _assignSchedules.Add(new CreateRecurringScheduleRequest 
+                { 
+                    StartTime = new TimeOnly(9, 0), 
+                    EndTime = new TimeOnly(11, 0), 
+                    DayOfWeek = 1 
+                });
+            }
         }
     }
     private long _selectedSemesterIdVal = 0;
     private SemesterDto? _selectedSemester = null;
     private ModuleDto? _selectedModule = null;
-    private CreateRecurringScheduleRequest _newSchedule = new()
-    {
-        StartTime = new TimeOnly(9, 0),
-        EndTime = new TimeOnly(11, 0),
-        DayOfWeek = 1
-    };
+    private List<CreateRecurringScheduleRequest> _assignSchedules = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -595,6 +767,7 @@
             _selectedModuleName = string.Empty;
             _showEditForm = false;
             _editingModuleId = 0;
+            _newModuleSchedules.Clear();
         }
     }
     
@@ -608,6 +781,7 @@
         _showEditForm = false;
         _editingModuleId = 0;
         _message = string.Empty;
+        _assignSchedules = new();
     }
     
     private void CancelScheduleForm()
@@ -616,6 +790,7 @@
         _selectedModuleName = string.Empty;
         _selectedModule = null;
         _selectedSemesterId = 0;
+        _assignSchedules = new();
     }
 
     private void OpenEditForm(ModuleDto mod)
@@ -628,6 +803,13 @@
             TeacherName = mod.TeacherName,
             SemesterId = mod.SemesterId
         };
+        _editModuleSchedules = mod.Schedules.Select(s => new UpdateRecurringScheduleRequest
+        {
+            Id = s.Id,
+            DayOfWeek = s.DayOfWeek,
+            StartTime = s.StartTime,
+            EndTime = s.EndTime
+        }).ToList();
         _showEditForm = true;
         _showCreateForm = false;
         _selectedModuleId = 0;
@@ -640,6 +822,82 @@
         _showEditForm = false;
         _editingModuleId = 0;
         _editModule = new UpdateModuleRequest();
+        _editModuleSchedules.Clear();
+    }
+
+    private void AddNewModuleSchedule()
+    {
+        if (!_newModule.SemesterId.HasValue)
+        {
+            _message = "Please select a semester first before adding schedules.";
+            _isError = true;
+            return;
+        }
+
+        _newModuleSchedules.Add(new CreateRecurringScheduleRequest
+        {
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            DayOfWeek = 1
+        });
+    }
+
+    private void RemoveNewModuleSchedule(int index)
+    {
+        if (index >= 0 && index < _newModuleSchedules.Count)
+        {
+            _newModuleSchedules.RemoveAt(index);
+        }
+    }
+
+    private void AddEditModuleSchedule()
+    {
+        if (!_editModule.SemesterId.HasValue)
+        {
+            _message = "Please select a semester first before adding schedules.";
+            _isError = true;
+            return;
+        }
+
+        _editModuleSchedules.Add(new UpdateRecurringScheduleRequest
+        {
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            DayOfWeek = 1
+        });
+    }
+
+    private void RemoveEditModuleSchedule(int index)
+    {
+        if (index >= 0 && index < _editModuleSchedules.Count)
+        {
+            _editModuleSchedules.RemoveAt(index);
+        }
+    }
+
+    private void AddAssignSchedule()
+    {
+        if (_selectedSemesterId == 0)
+        {
+            _message = "Please select a semester first before adding schedules.";
+            _isError = true;
+            return;
+        }
+
+        _assignSchedules.Add(new CreateRecurringScheduleRequest
+        {
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            DayOfWeek = 1
+        });
+    }
+
+    private void RemoveAssignSchedule(int index)
+    {
+        if (index >= 0 && index < _assignSchedules.Count)
+        {
+            _assignSchedules.RemoveAt(index);
+        }
     }
 
     private async Task OnSearchKeyUp(KeyboardEventArgs e)
@@ -722,6 +980,8 @@
         _isSubmitting = true;
         _message = string.Empty;
 
+        _newModule.Schedules = _newModuleSchedules;
+
         try
         {
             var response = await Http.PostAsJsonAsync("api/modules", _newModule);
@@ -734,6 +994,7 @@
                     _isError = false;
                     _showCreateForm = false;
                     _newModule = new CreateModuleRequest();
+                    _newModuleSchedules.Clear();
                     _pageNumber = 1;
                     await LoadData();
                 }
@@ -779,6 +1040,8 @@
         _isSubmittingEdit = true;
         _message = string.Empty;
 
+        _editModule.Schedules = _editModuleSchedules;
+
         try
         {
             var response = await Http.PutAsJsonAsync($"api/modules/{_editingModuleId}", _editModule);
@@ -791,6 +1054,7 @@
                     _isError = false;
                     _showEditForm = false;
                     _editingModuleId = 0;
+                    _editModuleSchedules.Clear();
                     await LoadData();
                 }
                 else
@@ -824,47 +1088,74 @@
             _isError = true;
             return;
         }
+
+        if (!_assignSchedules.Any())
+        {
+            _message = "Please add at least one schedule.";
+            _isError = true;
+            return;
+        }
         
         _isSubmittingSchedule = true;
         _message = string.Empty;
 
         try
         {
-            var response = await Http.PostAsJsonAsync($"api/modules/{_selectedModuleId}/recurring-schedules/{_selectedSemesterId}", _newSchedule);
-            if (response.IsSuccessStatusCode)
+            bool allSuccess = true;
+            string errorDetails = "";
+
+            foreach (var sch in _assignSchedules)
             {
-                var result = await response.Content.ReadFromJsonAsync<ApiResult<RecurringScheduleDto>>();
-                if (result != null && result.IsSuccess)
+                if (sch.StartTime >= sch.EndTime)
                 {
-                    _message = "Schedule added successfully.";
-                    _isError = false;
-                    _selectedModuleId = 0;
-                    _selectedModuleName = string.Empty;
-                    _selectedModule = null;
-                    _selectedSemesterId = 0;
-                    _newSchedule = new CreateRecurringScheduleRequest
-                    {
-                        StartTime = new TimeOnly(9, 0),
-                        EndTime = new TimeOnly(11, 0),
-                        DayOfWeek = 1
-                    };
-                    await LoadData();
+                    _message = "Start time must be before end time for all schedules.";
+                    _isError = true;
+                    _isSubmittingSchedule = false;
+                    return;
+                }
+            }
+
+            foreach (var sch in _assignSchedules)
+            {
+                var response = await Http.PostAsJsonAsync($"api/modules/{_selectedModuleId}/recurring-schedules/{_selectedSemesterId}", sch);
+                if (!response.IsSuccessStatusCode)
+                {
+                    allSuccess = false;
+                    errorDetails = await response.GetFriendlyErrorMessageAsync("Error adding schedule");
+                    break;
                 }
                 else
                 {
-                    _message = result?.Message ?? "Unknown error adding schedule.";
-                    _isError = true;
+                    var result = await response.Content.ReadFromJsonAsync<ApiResult<RecurringScheduleDto>>();
+                    if (result == null || !result.IsSuccess)
+                    {
+                        allSuccess = false;
+                        errorDetails = result?.Message ?? "Unknown error adding schedule.";
+                        break;
+                    }
                 }
+            }
+
+            if (allSuccess)
+            {
+                _message = "Schedules added successfully.";
+                _isError = false;
+                _selectedModuleId = 0;
+                _selectedModuleName = string.Empty;
+                _selectedModule = null;
+                _selectedSemesterId = 0;
+                _assignSchedules = new();
+                await LoadData();
             }
             else
             {
-                _message = await response.GetFriendlyErrorMessageAsync("Error adding schedule");
+                _message = errorDetails;
                 _isError = true;
             }
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error adding schedule");
+            _message = ex.GetFriendlyErrorMessage("Error adding schedules");
             _isError = true;
         }
         finally
@@ -875,6 +1166,8 @@
 
     private async Task DeleteModule(long id)
     {
+        if (_deletingModuleIds.Contains(id)) return;
+        _deletingModuleIds.Add(id);
         _message = string.Empty;
         try
         {
@@ -899,6 +1192,10 @@
         {
             _message = ex.GetFriendlyErrorMessage("Error deleting module");
             _isError = true;
+        }
+        finally
+        {
+            _deletingModuleIds.Remove(id);
         }
     }
 

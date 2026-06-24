@@ -42,7 +42,7 @@ public class ClassSessionServiceTests
         };
         _context.TblSemesters.Add(semester);
 
-        var module = new TblModule { Name = "Math 101" };
+        var module = new TblModule { Name = "Math 101", ModuleCode = "MATH-101" };
         _context.TblModules.Add(module);
         
         await _context.SaveChangesAsync();
@@ -250,7 +250,7 @@ public class ClassSessionServiceTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var module = new TblModule { Name = "Science 101" };
+        var module = new TblModule { Name = "Science 101", ModuleCode = "SCI-101" };
         _context.TblModules.Add(module);
         await _context.SaveChangesAsync();
 
@@ -335,8 +335,8 @@ public class ClassSessionServiceTests
         };
         _context.TblSemesters.AddRange(semester, deletedSemester);
 
-        var module = new TblModule { Name = "Active Module", Semester = semester, IsDeleted = false };
-        var deletedModule = new TblModule { Name = "Deleted Module", Semester = semester, IsDeleted = true };
+        var module = new TblModule { Name = "Active Module", ModuleCode = "ACT-101", Semester = semester, IsDeleted = false };
+        var deletedModule = new TblModule { Name = "Deleted Module", ModuleCode = "DEL-101", Semester = semester, IsDeleted = true };
         _context.TblModules.AddRange(module, deletedModule);
         await _context.SaveChangesAsync();
 
