@@ -22,6 +22,7 @@ public class ModuleDto
     public double AttendanceRate { get; set; }
     public int TotalValidSessions { get; set; }
     public int PresentSessions { get; set; }
+    public List<RecurringScheduleDto> Schedules { get; set; } = new();
 }
 
 public class HolidayDto
@@ -139,6 +140,13 @@ public class RecurringScheduleDto
 // --- Requests ---
 
 public class CreateSemesterRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public DateOnly StartDate { get; set; }
+    public DateOnly EndDate { get; set; }
+}
+
+public class UpdateSemesterRequest
 {
     public string Name { get; set; } = string.Empty;
     public DateOnly StartDate { get; set; }

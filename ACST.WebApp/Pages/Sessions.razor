@@ -5,63 +5,130 @@
 
 <PageTitle>Sessions</PageTitle>
 
-@if (ModuleId.HasValue && _selectedModule != null)
-{
-    <div class="flex justify-between items-center mb-8">
-        <div class="flex items-center gap-4">
-            <button class="p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-all" @onclick="GoBackToModules" title="Back to Modules">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-2xl font-bold tracking-tight text-foreground">
+            @(ModuleId.HasValue && _selectedModule != null ? $"{_selectedModule.Name} Sessions" : "Class Sessions")
+        </h1>
+        <p class="text-xs text-muted-foreground">
+            @(ModuleId.HasValue && _selectedModule != null ? $"{_selectedModule.ModuleCode} • {_selectedModule.TeacherName}" : "All Modules")
+        </p>
+    </div>
+    <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1 bg-muted border border-border p-1 rounded-md">
+            <button class="p-1.5 rounded transition-all @(_viewMode == "table" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                    @onclick='() => _viewMode = "table"' 
+                    title="Table View">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
             </button>
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-foreground">@_selectedModule.Name Sessions</h1>
-                <p class="text-xs text-muted-foreground">@_selectedModule.ModuleCode &bull; @_selectedModule.TeacherName</p>
-            </div>
+            <button class="p-1.5 rounded transition-all @(_viewMode == "card" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                    @onclick='() => _viewMode = "card"' 
+                    title="Card View">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+            </button>
         </div>
-        <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1 bg-muted border border-border p-1 rounded-md">
-                <button class="p-1.5 rounded transition-all @(_viewMode == "table" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
-                        @onclick='() => _viewMode = "table"' 
-                        title="Table View">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
-                </button>
-                <button class="p-1.5 rounded transition-all @(_viewMode == "card" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
-                        @onclick='() => _viewMode = "card"' 
-                        title="Card View">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
-                </button>
-            </div>
-            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="GenerateSessions" disabled="@_isGenerating">
-                @(_isGenerating ? "Generating..." : "Generate Sessions")
+        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="GenerateSessions" disabled="@_isGenerating">
+            @(_isGenerating ? "Generating..." : "Generate Sessions")
+        </button>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="flex flex-wrap items-center gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm">
+    <!-- Search Bar -->
+    <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Search</label>
+        <div class="flex gap-2">
+            <input type="text" class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[180px]"
+                   placeholder="Search sessions..." @bind="_localSearchTerm" @onkeyup="OnSearchKeyUp" />
+            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-1.5 rounded-md text-xs font-semibold transition-all shrink-0" @onclick="TriggerSearch">
+                Search
             </button>
         </div>
     </div>
-}
-else
-{
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-foreground">Class Sessions</h1>
-            <p class="text-sm text-muted-foreground">Select a module to view and manage its class sessions.</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1 bg-muted border border-border p-1 rounded-md">
-                <button class="p-1.5 rounded transition-all @(_viewMode == "table" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
-                        @onclick='() => _viewMode = "table"' 
-                        title="Table View">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
-                </button>
-                <button class="p-1.5 rounded transition-all @(_viewMode == "card" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
-                        @onclick='() => _viewMode = "card"' 
-                        title="Card View">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
-                </button>
-            </div>
-            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="GenerateSessions" disabled="@_isGenerating">
-                @(_isGenerating ? "Generating..." : "Generate Sessions")
-            </button>
-        </div>
+
+    <!-- Semester Filter -->
+    <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Semester</label>
+        <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[160px]"
+                value="@SemesterId" @onchange="OnSemesterChanged">
+            <option value="">All Semesters</option>
+            @if (_semesters != null)
+            {
+                @foreach (var sem in _semesters)
+                {
+                    <option value="@sem.Id">@sem.Name</option>
+                }
+            }
+        </select>
     </div>
-}
+
+    <!-- Module Filter -->
+    <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Module</label>
+        <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[160px]"
+                value="@ModuleId" @onchange="OnModuleChanged">
+            <option value="">All Modules</option>
+            @if (_modules != null)
+            {
+                @foreach (var mod in _modules)
+                {
+                    <option value="@mod.Id">@mod.Name</option>
+                }
+            }
+        </select>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Status</label>
+        <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[120px]"
+                value="@Status" @onchange="OnStatusChanged">
+            <option value="">All Statuses</option>
+            <option value="Not Marked">Not Marked</option>
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+            <option value="Cancelled">Cancelled</option>
+            <option value="Holiday">Holiday</option>
+        </select>
+    </div>
+
+    <!-- Day of Week Filter -->
+    <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Day of Week</label>
+        <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[120px]"
+                value="@DayOfWeek" @onchange="OnDayOfWeekChanged">
+            <option value="">All Days</option>
+            <option value="1">Monday</option>
+            <option value="2">Tuesday</option>
+            <option value="3">Wednesday</option>
+            <option value="4">Thursday</option>
+            <option value="5">Friday</option>
+            <option value="6">Saturday</option>
+            <option value="0">Sunday</option>
+        </select>
+    </div>
+
+    <!-- Start Date -->
+    <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Start Date</label>
+        <DatePicker @bind-Value="DatePickerStartDate" />
+    </div>
+
+    <!-- End Date -->
+    <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">End Date</label>
+        <DatePicker @bind-Value="DatePickerEndDate" />
+    </div>
+
+    <!-- Reset Button -->
+    <div class="flex flex-col gap-1 self-end">
+        <button class="px-3 py-2 bg-secondary hover:bg-secondary/80 text-foreground border border-border rounded-md text-xs font-semibold transition-all"
+                @onclick="ResetFilters">
+            Clear Filters
+        </button>
+    </div>
+</div>
 
 @if (!string.IsNullOrEmpty(_message))
 {
@@ -81,56 +148,13 @@ else
     </div>
 }
 
-@if (ModuleId.HasValue && _selectedModule != null)
+@if (_viewMode == "table")
 {
-    @if (_viewMode == "table")
-    {
-        <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
-            @if (_isLoading)
-            {
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm animate-pulse">
-                        <thead>
-                            <tr class="border-b border-border bg-muted/50">
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-border">
-                            @for (int i = 0; i < 8; i++)
-                            {
-                                <tr>
-                                    <td class="px-4 py-4">
-                                        <div class="h-3 bg-muted rounded w-20"></div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="h-3 bg-muted rounded w-32"></div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="h-5 bg-muted rounded-full w-16"></div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="flex gap-2">
-                                            <div class="h-7 bg-muted rounded w-20"></div>
-                                            <div class="h-7 bg-muted rounded w-20"></div>
-                                            <div class="h-7 bg-muted rounded w-20"></div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else if (_sessions == null || !_sessions.Any())
-            {
-                <div class="p-6 text-muted-foreground text-sm">No class sessions found. Try generating sessions for the current semester.</div>
-            }
-            else
-            {
-                <table class="w-full text-left border-collapse text-sm">
+    <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+        @if (_isLoading)
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm animate-pulse">
                     <thead>
                         <tr class="border-b border-border bg-muted/50">
                             <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
@@ -140,267 +164,173 @@ else
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
-                        @foreach (var session in _sessions)
+                        @for (int i = 0; i < 8; i++)
                         {
-                            <tr class="hover:bg-accent/40 transition-colors">
-                                <td class="px-4 py-3.5 font-mono text-foreground">@session.SessionDate.ToString("dd-MM-yyyy")</td>
-                                <td class="px-4 py-3.5 text-foreground">@session.ModuleName</td>
-                                <td class="px-4 py-3.5">
-                                    <span class="@GetBadgeClass(session.Status)">@session.Status</span>
+                            <tr>
+                                <td class="px-4 py-4">
+                                    <div class="h-3 bg-muted rounded w-20"></div>
                                 </td>
-                                <td class="px-4 py-3.5">
-                                    <div class="flex flex-wrap gap-2">
-                                        @if (DateTime.UtcNow <= session.StartDatetime.AddHours(24))
-                                        {
-                                            @if (session.Status == "Not Marked" || session.Status == "Late")
-                                            {
-                                                <button class="w-20 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => UpdateStatus(session.Id, "Present")'>Present</button>
-                                                <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => UpdateStatus(session.Id, "Absent")'>Absent</button>
-                                            }
-                                            <button class="w-20 bg-secondary hover:bg-secondary/80 text-foreground border border-border py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => OpenEditModal(session)">Edit</button>
-                                            <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => DeleteSession(session.Id)">Delete</button>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted-foreground text-xs italic">Locked</span>
-                                        }
+                                <td class="px-4 py-4">
+                                    <div class="h-3 bg-muted rounded w-32"></div>
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="h-5 bg-muted rounded-full w-16"></div>
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="flex gap-2">
+                                        <div class="h-7 bg-muted rounded w-20"></div>
+                                        <div class="h-7 bg-muted rounded w-20"></div>
+                                        <div class="h-7 bg-muted rounded w-20"></div>
                                     </div>
                                 </td>
                             </tr>
                         }
                     </tbody>
                 </table>
-                <div class="border-t border-border bg-card">
-                    <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        @if (_isLoading)
-        {
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
-                @for (int i = 0; i < 6; i++)
-                {
-                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-sm">
-                        <div>
-                            <div class="flex justify-between items-start mb-3">
-                                <div class="h-4 bg-muted rounded w-32"></div>
-                                <div class="h-5 bg-muted rounded w-16"></div>
-                            </div>
-                            <div class="space-y-2 my-4">
-                                <div class="h-3 bg-muted rounded w-24"></div>
-                                <div class="h-3 bg-muted rounded w-36"></div>
-                            </div>
-                        </div>
-                        <div class="border-t border-border pt-4 mt-2">
-                            <div class="flex gap-2">
-                                <div class="h-7 bg-muted rounded flex-1"></div>
-                                <div class="h-7 bg-muted rounded w-16"></div>
-                            </div>
-                        </div>
-                    </div>
-                }
             </div>
         }
         else if (_sessions == null || !_sessions.Any())
         {
-            <div class="bg-card border border-border rounded-lg shadow-sm p-6 text-muted-foreground text-sm">No class sessions found. Try generating sessions for the current semester.</div>
+            <div class="p-6 text-muted-foreground text-sm">No class sessions found. Try generating sessions for the current semester.</div>
         }
         else
         {
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                @foreach (var session in _sessions)
-                {
-                    var startLocal = session.StartDatetime + MyanmarOffset;
-                    var endLocal = session.EndDatetime + MyanmarOffset;
-                    
-                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-sm">
-                        <div>
-                            <div class="flex justify-between items-start mb-3">
-                                <h3 class="text-base font-bold text-foreground tracking-tight">@session.ModuleName</h3>
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                    <tr class="border-b border-border bg-muted/50">
+                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
+                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
+                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                    @foreach (var session in _sessions)
+                    {
+                        <tr class="hover:bg-accent/40 transition-colors">
+                            <td class="px-4 py-3.5 font-mono text-foreground">@session.SessionDate.ToString("dd-MM-yyyy")</td>
+                            <td class="px-4 py-3.5 text-foreground">@session.ModuleName</td>
+                            <td class="px-4 py-3.5">
                                 <span class="@GetBadgeClass(session.Status)">@session.Status</span>
-                            </div>
-                            
-                            <div class="space-y-2 my-4">
-                                <div class="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
-                                    <span>Date: @session.SessionDate.ToString("dd-MM-yyyy")</span>
-                                </div>
-                                <div class="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                    <span>Time: @startLocal.ToString("hh:mm tt") - @endLocal.ToString("hh:mm tt")</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="border-t border-border pt-4 mt-2">
-                            @if (DateTime.UtcNow <= session.StartDatetime.AddHours(24))
-                            {
-                                <div class="space-y-2">
-                                    @if (session.Status == "Not Marked" || session.Status == "Late")
+                            </td>
+                            <td class="px-4 py-3.5">
+                                <div class="flex flex-wrap gap-2">
+                                    @if (DateTime.UtcNow <= session.StartDatetime.AddHours(24))
                                     {
-                                        <div class="flex gap-2">
-                                            <button class="flex-1 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/30 py-1.5 rounded text-xs font-semibold transition-all" @onclick='() => UpdateStatus(session.Id, "Present")'>Present</button>
-                                            <button class="flex-1 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1.5 rounded text-xs font-semibold transition-all" @onclick='() => UpdateStatus(session.Id, "Absent")'>Absent</button>
-                                        </div>
+                                        @if (session.Status == "Not Marked" || session.Status == "Late")
+                                        {
+                                            <button class="w-20 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => UpdateStatus(session.Id, "Present")'>Present</button>
+                                            <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => UpdateStatus(session.Id, "Absent")'>Absent</button>
+                                        }
+                                        <button class="w-20 bg-secondary hover:bg-secondary/80 text-foreground border border-border py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => OpenEditModal(session)">Edit</button>
+                                        <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => DeleteSession(session.Id)">Delete</button>
                                     }
-                                    <div class="flex gap-2">
-                                        <button class="flex-1 bg-secondary hover:bg-secondary/80 text-foreground border border-border py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => OpenEditModal(session)">Edit</button>
-                                        <button class="bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 px-3 py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => DeleteSession(session.Id)">Delete</button>
-                                    </div>
+                                    else
+                                    {
+                                        <span class="text-muted-foreground text-xs italic">Locked</span>
+                                    }
                                 </div>
-                            }
-                            else
-                            {
-                                <div class="flex items-center justify-between text-xs text-muted-foreground italic pt-1">
-                                    <span>Locked</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
-            </div>
-            <div class="border border-border rounded-lg bg-card mt-6">
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="border-t border-border bg-card">
                 <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
             </div>
         }
-    }
+    </div>
 }
 else
 {
-    @if (_viewMode == "table")
+    @if (_isLoading)
     {
-        <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
-            @if (_isLoading)
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
+            @for (int i = 0; i < 6; i++)
             {
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm animate-pulse">
-                        <thead>
-                            <tr class="border-b border-border bg-muted/50">
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Teacher</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Semester</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-border">
-                            @for (int i = 0; i < 6; i++)
-                            {
-                                <tr>
-                                    <td class="px-4 py-4">
-                                        <div class="h-3 bg-muted rounded w-32 mb-1"></div>
-                                        <div class="h-2 bg-muted rounded w-16"></div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="h-3 bg-muted rounded w-24"></div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="h-3 bg-muted rounded w-20"></div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="h-7 bg-muted rounded w-24"></div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-sm">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="h-4 bg-muted rounded w-32"></div>
+                            <div class="h-5 bg-muted rounded w-16"></div>
+                        </div>
+                        <div class="space-y-2 my-4">
+                            <div class="h-3 bg-muted rounded w-24"></div>
+                            <div class="h-3 bg-muted rounded w-36"></div>
+                        </div>
+                    </div>
+                    <div class="border-t border-border pt-4 mt-2">
+                        <div class="flex gap-2">
+                            <div class="h-7 bg-muted rounded flex-1"></div>
+                            <div class="h-7 bg-muted rounded w-16"></div>
+                        </div>
+                    </div>
                 </div>
-            }
-            else if (_modules == null || !_modules.Any())
-            {
-                <div class="p-6 text-muted-foreground text-sm">No modules found. Please create a module first.</div>
-            }
-            else
-            {
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="border-b border-border bg-muted/50">
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Teacher</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Semester</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-border">
-                        @foreach (var mod in _modules)
-                        {
-                            <tr class="hover:bg-accent/40 transition-colors">
-                                <td class="px-4 py-3.5 font-semibold text-foreground">
-                                    <div>@mod.Name</div>
-                                    <div class="text-[10px] text-muted-foreground font-mono mt-0.5">@mod.ModuleCode</div>
-                                </td>
-                                <td class="px-4 py-3.5 text-muted-foreground">@mod.TeacherName</td>
-                                <td class="px-4 py-3.5 text-muted-foreground">@(string.IsNullOrEmpty(mod.SemesterName) ? "None" : mod.SemesterName)</td>
-                                <td class="px-4 py-3.5">
-                                    <button class="bg-primary/10 hover:bg-primary text-primary hover:text-white border border-primary/20 px-3 py-1.5 rounded transition-all text-xs font-semibold" @onclick="() => ViewSessions(mod.Id)">
-                                        View Sessions
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
             }
         </div>
     }
+    else if (_sessions == null || !_sessions.Any())
+    {
+        <div class="bg-card border border-border rounded-lg shadow-sm p-6 text-muted-foreground text-sm">No class sessions found. Try generating sessions for the current semester.</div>
+    }
     else
     {
-        @if (_isLoading)
-        {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
-                @for (int i = 0; i < 6; i++)
-                {
-                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-sm">
-                        <div>
-                            <div class="h-4 bg-muted rounded w-24 mb-3"></div>
-                            <div class="h-3 bg-muted rounded w-32 mb-4"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach (var session in _sessions)
+            {
+                var startLocal = session.StartDatetime + MyanmarOffset;
+                var endLocal = session.EndDatetime + MyanmarOffset;
+                
+                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-sm">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-base font-bold text-foreground tracking-tight">@session.ModuleName</h3>
+                            <span class="@GetBadgeClass(session.Status)">@session.Status</span>
                         </div>
-                        <div class="border-t border-border pt-4 mt-2">
-                            <div class="h-8 bg-muted rounded w-full"></div>
+                        
+                        <div class="space-y-2 my-4">
+                            <div class="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                                <span>Date: @session.SessionDate.ToString("dd-MM-yyyy")</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span>Time: @startLocal.ToString("hh:mm tt") - @endLocal.ToString("hh:mm tt")</span>
+                            </div>
                         </div>
                     </div>
-                }
-            </div>
-        }
-        else if (_modules == null || !_modules.Any())
-        {
-            <div class="bg-card border border-border rounded-lg shadow-sm p-6 text-muted-foreground text-sm">No modules found. Please create a module first.</div>
-        }
-        else
-        {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                @foreach (var mod in _modules)
-                {
-                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-sm">
-                        <div>
-                            <div class="flex justify-between items-start mb-3">
-                                <div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-secondary border border-border text-foreground rounded">@mod.ModuleCode</span>
-                                        <h3 class="text-base font-bold text-foreground tracking-tight">@mod.Name</h3>
+                    
+                    <div class="border-t border-border pt-4 mt-2">
+                        @if (DateTime.UtcNow <= session.StartDatetime.AddHours(24))
+                        {
+                            <div class="space-y-2">
+                                @if (session.Status == "Not Marked" || session.Status == "Late")
+                                {
+                                    <div class="flex gap-2">
+                                        <button class="flex-1 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/30 py-1.5 rounded text-xs font-semibold transition-all" @onclick='() => UpdateStatus(session.Id, "Present")'>Present</button>
+                                        <button class="flex-1 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1.5 rounded text-xs font-semibold transition-all" @onclick='() => UpdateStatus(session.Id, "Absent")'>Absent</button>
                                     </div>
-                                    <div class="flex items-center gap-2 text-xs text-muted-foreground mt-1 font-mono">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                        <span>@mod.TeacherName</span>
-                                    </div>
+                                }
+                                <div class="flex gap-2">
+                                    <button class="flex-1 bg-secondary hover:bg-secondary/80 text-foreground border border-border py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => OpenEditModal(session)">Edit</button>
+                                    <button class="bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 px-3 py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => DeleteSession(session.Id)">Delete</button>
                                 </div>
                             </div>
-                            <div class="text-xs text-muted-foreground mb-4 font-mono">
-                                Semester: <span class="text-foreground font-semibold">@(string.IsNullOrEmpty(mod.SemesterName) ? "None" : mod.SemesterName)</span>
+                        }
+                        else
+                        {
+                            <div class="flex items-center justify-between text-xs text-muted-foreground italic pt-1">
+                                <span>Locked</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                             </div>
-                        </div>
-                        <div class="border-t border-border pt-4 mt-2">
-                            <button class="w-full text-center bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded text-xs font-semibold transition-all" @onclick="() => ViewSessions(mod.Id)">
-                                View Sessions
-                            </button>
-                        </div>
+                        }
                     </div>
-                }
-            </div>
-        }
+                </div>
+            }
+        </div>
+        <div class="border border-border rounded-lg bg-card mt-6">
+            <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
+        </div>
     }
 }
 
@@ -473,6 +403,8 @@ else
 @code {
     private static string _viewMode = "table";
     private List<ClassSessionDto>? _sessions;
+    private List<ModuleDto>? _modules;
+    private List<SemesterDto>? _semesters;
     private bool _isLoading = true;
     private bool _isGenerating = false;
     private string _message = string.Empty;
@@ -491,6 +423,8 @@ else
     private string? _prevStatus;
     private int? _prevDayOfWeek;
     private long? _prevModuleId;
+    private string? _prevSearchTerm;
+    private string _localSearchTerm = string.Empty;
 
     [SupplyParameterFromQuery]
     public long? SemesterId { get; set; }
@@ -510,11 +444,14 @@ else
     [SupplyParameterFromQuery]
     public long? ModuleId { get; set; }
 
+    [SupplyParameterFromQuery]
+    public string? SearchTerm { get; set; }
+
     private ModuleDto? _selectedModule;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadModules();
+        await Task.WhenAll(LoadModules(), LoadSemesters());
     }
 
     protected override async Task OnParametersSetAsync()
@@ -524,7 +461,8 @@ else
             _prevEndDate != EndDate || 
             _prevStatus != Status || 
             _prevDayOfWeek != DayOfWeek ||
-            _prevModuleId != ModuleId)
+            _prevModuleId != ModuleId ||
+            _prevSearchTerm != SearchTerm)
         {
             _pageNumber = 1;
             _prevSemesterId = SemesterId;
@@ -533,29 +471,19 @@ else
             _prevStatus = Status;
             _prevDayOfWeek = DayOfWeek;
             _prevModuleId = ModuleId;
+            _prevSearchTerm = SearchTerm;
+            _localSearchTerm = SearchTerm ?? string.Empty;
         }
 
         if (ModuleId.HasValue)
         {
             await LoadSelectedModule(ModuleId.Value);
-            await LoadSessions();
         }
         else
         {
             _selectedModule = null;
-            _sessions = null;
-            await LoadModules();
         }
-    }
-
-    private void ViewSessions(long moduleId)
-    {
-        Navigation.NavigateTo($"/sessions?moduleId={moduleId}");
-    }
-
-    private void GoBackToModules()
-    {
-        Navigation.NavigateTo("/sessions");
+        await LoadSessions();
     }
 
     private async Task LoadSelectedModule(long moduleId)
@@ -605,6 +533,7 @@ else
             if (!string.IsNullOrEmpty(EndDate)) query.Add($"endDate={EndDate}");
             if (!string.IsNullOrEmpty(Status)) query.Add($"status={Uri.EscapeDataString(Status)}");
             if (DayOfWeek.HasValue) query.Add($"dayOfWeek={DayOfWeek}");
+            if (!string.IsNullOrEmpty(SearchTerm)) query.Add($"searchTerm={Uri.EscapeDataString(SearchTerm)}");
 
             query.Add($"pageNumber={_pageNumber}");
             query.Add($"pageSize={_pageSize}");
@@ -660,14 +589,7 @@ else
                     _message = result.Message;
                     _isError = false;
                     _pageNumber = 1;
-                    if (ModuleId.HasValue)
-                    {
-                        await LoadSessions();
-                    }
-                    else
-                    {
-                        await LoadModules();
-                    }
+                    await LoadSessions();
                 }
                 else
                 {
@@ -726,21 +648,8 @@ else
         };
     }
 
-    private List<ModuleDto>? _modules;
-    private bool _showEditModal = false;
-    private ClassSessionDto? _editingSession;
-    private long _editModuleId;
-    private DateOnly _editSessionDate;
-    private TimeOnly _editStartTime;
-    private TimeOnly _editEndTime;
-    private string _editStatus = string.Empty;
-    private bool _isSaving = false;
-
-    private static readonly TimeSpan MyanmarOffset = TimeSpan.FromHours(6.5);
-
     private async Task LoadModules()
     {
-        _isLoading = true;
         try
         {
             var result = await Http.GetFromJsonAsync<PagedResult<ModuleDto>>("api/modules");
@@ -754,11 +663,124 @@ else
             _message = ex.GetFriendlyErrorMessage("Error loading modules");
             _isError = true;
         }
-        finally
+    }
+
+    private async Task LoadSemesters()
+    {
+        try
         {
-            _isLoading = false;
+            var result = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>("api/semesters");
+            if (result != null && result.IsSuccess)
+            {
+                _semesters = result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.GetFriendlyErrorMessage("Error loading semesters");
+            _isError = true;
         }
     }
+
+    private void OnSemesterChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        SemesterId = string.IsNullOrEmpty(val) ? null : long.Parse(val);
+        ApplyFilters();
+    }
+
+    private void OnModuleChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        ModuleId = string.IsNullOrEmpty(val) ? null : long.Parse(val);
+        ApplyFilters();
+    }
+
+    private void OnStatusChanged(ChangeEventArgs e)
+    {
+        Status = e.Value?.ToString();
+        ApplyFilters();
+    }
+
+    private void OnDayOfWeekChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        DayOfWeek = string.IsNullOrEmpty(val) ? null : int.Parse(val);
+        ApplyFilters();
+    }
+
+    private void ResetFilters()
+    {
+        SemesterId = null;
+        ModuleId = null;
+        Status = null;
+        DayOfWeek = null;
+        StartDate = null;
+        EndDate = null;
+        SearchTerm = null;
+        _localSearchTerm = string.Empty;
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        var query = new List<string>();
+        if (SemesterId.HasValue) query.Add($"semesterId={SemesterId}");
+        if (ModuleId.HasValue) query.Add($"moduleId={ModuleId}");
+        if (!string.IsNullOrEmpty(StartDate)) query.Add($"startDate={StartDate}");
+        if (!string.IsNullOrEmpty(EndDate)) query.Add($"endDate={EndDate}");
+        if (!string.IsNullOrEmpty(Status)) query.Add($"status={Uri.EscapeDataString(Status)}");
+        if (DayOfWeek.HasValue) query.Add($"dayOfWeek={DayOfWeek}");
+        if (!string.IsNullOrEmpty(SearchTerm)) query.Add($"searchTerm={Uri.EscapeDataString(SearchTerm)}");
+
+        var queryString = query.Any() ? "?" + string.Join("&", query) : "";
+        Navigation.NavigateTo($"/sessions{queryString}");
+    }
+
+    private void TriggerSearch()
+    {
+        SearchTerm = string.IsNullOrWhiteSpace(_localSearchTerm) ? null : _localSearchTerm;
+        ApplyFilters();
+    }
+
+    private void OnSearchKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            TriggerSearch();
+        }
+    }
+
+    private DateOnly DatePickerStartDate
+    {
+        get => DateOnly.TryParse(StartDate, out var date) ? date : default;
+        set
+        {
+            StartDate = value == default ? null : value.ToString("yyyy-MM-dd");
+            ApplyFilters();
+        }
+    }
+
+    private DateOnly DatePickerEndDate
+    {
+        get => DateOnly.TryParse(EndDate, out var date) ? date : default;
+        set
+        {
+            EndDate = value == default ? null : value.ToString("yyyy-MM-dd");
+            ApplyFilters();
+        }
+    }
+
+    private bool _showEditModal = false;
+    private ClassSessionDto? _editingSession;
+    private long _editModuleId;
+    private DateOnly _editSessionDate;
+    private TimeOnly _editStartTime;
+    private TimeOnly _editEndTime;
+    private string _editStatus = string.Empty;
+    private bool _isSaving = false;
+
+    private static readonly TimeSpan MyanmarOffset = TimeSpan.FromHours(6.5);
 
     private void OpenEditModal(ClassSessionDto session)
     {

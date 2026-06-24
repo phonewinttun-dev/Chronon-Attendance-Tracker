@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ACST.Database.ApplicationDbContextModels.Models;
 using ACST.Domain.DTOs.Module;
+using ACST.Domain.DTOs.RecurringSchedule;
 using ACST.Domain.Features.GoogleCalendar;
 using ACST.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -60,6 +61,19 @@ public class ModuleService : IModuleService
                         SemesterName = m.Semester != null ? m.Semester.Name : null,
                         TotalValidSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled"),
                         PresentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Present"),
+                        Schedules = m.TblRecurringSchedules
+                            .Where(s => !s.IsDeleted)
+                            .Select(s => new RecurringScheduleDto
+                            {
+                                Id = s.Id,
+                                ModuleId = s.ModuleId,
+                                ModuleName = m.Name,
+                                SemesterId = s.SemesterId,
+                                SemesterName = s.Semester.Name,
+                                DayOfWeek = s.DayOfWeek,
+                                StartTime = s.StartTime,
+                                EndTime = s.EndTime
+                            }).ToList(),
                         CreatedAt = m.CreatedAt,
                         UpdatedAt = m.UpdatedAt
                     })
@@ -78,6 +92,7 @@ public class ModuleService : IModuleService
                     TotalValidSessions = m.TotalValidSessions,
                     PresentSessions = m.PresentSessions,
                     AttendanceRate = m.TotalValidSessions > 0 ? Math.Round((double)m.PresentSessions / m.TotalValidSessions * 100, 2) : 0,
+                    Schedules = m.Schedules,
                     CreatedAt = m.CreatedAt,
                     UpdatedAt = m.UpdatedAt
                 }).ToList();
@@ -97,6 +112,19 @@ public class ModuleService : IModuleService
                         SemesterName = m.Semester != null ? m.Semester.Name : null,
                         TotalValidSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled"),
                         PresentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Present"),
+                        Schedules = m.TblRecurringSchedules
+                            .Where(s => !s.IsDeleted)
+                            .Select(s => new RecurringScheduleDto
+                            {
+                                Id = s.Id,
+                                ModuleId = s.ModuleId,
+                                ModuleName = m.Name,
+                                SemesterId = s.SemesterId,
+                                SemesterName = s.Semester.Name,
+                                DayOfWeek = s.DayOfWeek,
+                                StartTime = s.StartTime,
+                                EndTime = s.EndTime
+                            }).ToList(),
                         CreatedAt = m.CreatedAt,
                         UpdatedAt = m.UpdatedAt
                     })
@@ -113,6 +141,7 @@ public class ModuleService : IModuleService
                     TotalValidSessions = m.TotalValidSessions,
                     PresentSessions = m.PresentSessions,
                     AttendanceRate = m.TotalValidSessions > 0 ? Math.Round((double)m.PresentSessions / m.TotalValidSessions * 100, 2) : 0,
+                    Schedules = m.Schedules,
                     CreatedAt = m.CreatedAt,
                     UpdatedAt = m.UpdatedAt
                 }).ToList();
@@ -145,6 +174,19 @@ public class ModuleService : IModuleService
                     SemesterName = m.Semester != null ? m.Semester.Name : null,
                     TotalValidSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled"),
                     PresentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Present"),
+                    Schedules = m.TblRecurringSchedules
+                        .Where(s => !s.IsDeleted)
+                        .Select(s => new RecurringScheduleDto
+                        {
+                            Id = s.Id,
+                            ModuleId = s.ModuleId,
+                            ModuleName = m.Name,
+                            SemesterId = s.SemesterId,
+                            SemesterName = s.Semester.Name,
+                            DayOfWeek = s.DayOfWeek,
+                            StartTime = s.StartTime,
+                            EndTime = s.EndTime
+                        }).ToList(),
                     m.CreatedAt,
                     m.UpdatedAt
                 })
@@ -166,6 +208,7 @@ public class ModuleService : IModuleService
                 TotalValidSessions = moduleData.TotalValidSessions,
                 PresentSessions = moduleData.PresentSessions,
                 AttendanceRate = moduleData.TotalValidSessions > 0 ? Math.Round((double)moduleData.PresentSessions / moduleData.TotalValidSessions * 100, 2) : 0,
+                Schedules = moduleData.Schedules,
                 CreatedAt = moduleData.CreatedAt,
                 UpdatedAt = moduleData.UpdatedAt
             });

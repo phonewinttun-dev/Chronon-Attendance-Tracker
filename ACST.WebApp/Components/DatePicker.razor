@@ -81,7 +81,7 @@
     {
         if (!_isFocused)
         {
-            _textValue = Value.ToString("dd-MM-yyyy");
+            _textValue = Value != default ? Value.ToString("dd-MM-yyyy") : string.Empty;
         }
         
         if (_viewDate == default)
@@ -125,7 +125,12 @@
     private void OnInputChanged(ChangeEventArgs e)
     {
         _textValue = e.Value?.ToString() ?? string.Empty;
-        if (DateOnly.TryParseExact(_textValue, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        if (string.IsNullOrWhiteSpace(_textValue))
+        {
+            Value = default;
+            ValueChanged.InvokeAsync(default);
+        }
+        else if (DateOnly.TryParseExact(_textValue, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
         {
             Value = date;
             ValueChanged.InvokeAsync(date);
@@ -135,7 +140,13 @@
     private void OnBlur()
     {
         _isFocused = false;
-        if (DateOnly.TryParseExact(_textValue, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        if (string.IsNullOrWhiteSpace(_textValue))
+        {
+            Value = default;
+            _textValue = string.Empty;
+            ValueChanged.InvokeAsync(default);
+        }
+        else if (DateOnly.TryParseExact(_textValue, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
         {
             Value = date;
             _textValue = date.ToString("dd-MM-yyyy");
@@ -143,7 +154,7 @@
         }
         else
         {
-            _textValue = Value.ToString("dd-MM-yyyy");
+            _textValue = Value != default ? Value.ToString("dd-MM-yyyy") : string.Empty;
         }
     }
 
