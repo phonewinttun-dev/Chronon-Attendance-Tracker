@@ -9,17 +9,22 @@ using ACST.Domain.Features.GoogleCalendar;
 using ACST.Shared;
 using Microsoft.EntityFrameworkCore;
 
+using ACST.Domain.Features.ClassSessions;
+using ACST.Domain.DTOs.ClassSession;
+
 namespace ACST.Domain.Features.Modules;
 
 public class ModuleService : IModuleService
 {
     private readonly AppDbContext _context;
     private readonly IGoogleCalendarService _googleCalendarService;
+    private readonly IClassSessionService _classSessionService;
 
-    public ModuleService(AppDbContext context, IGoogleCalendarService googleCalendarService)
+    public ModuleService(AppDbContext context, IGoogleCalendarService googleCalendarService, IClassSessionService classSessionService)
     {
         _context = context;
         _googleCalendarService = googleCalendarService;
+        _classSessionService = classSessionService;
     }
 
     public async Task<PagedResult<ModuleDto>> GetAllModulesAsync(string? searchTerm = null, int? pageNumber = null, int? pageSize = null, long? semesterId = null)
@@ -274,6 +279,12 @@ public class ModuleService : IModuleService
                     _context.TblRecurringSchedules.Add(schedule);
                 }
                 await _context.SaveChangesAsync();
+
+                await _classSessionService.GenerateSessionsAsync(new GenerateSessionsRequest
+                {
+                    SemesterId = request.SemesterId.Value,
+                    ModuleId = module.Id
+                });
             }
 
             var schedulesList = new List<RecurringScheduleDto>();
@@ -418,6 +429,15 @@ public class ModuleService : IModuleService
                     }
                 }
                 await _context.SaveChangesAsync();
+
+                if (request.SemesterId.HasValue)
+                {
+                    await _classSessionService.GenerateSessionsAsync(new GenerateSessionsRequest
+                    {
+                        SemesterId = request.SemesterId.Value,
+                        ModuleId = id
+                    });
+                }
             }
 
             var totalValid = await _context.TblSessions.CountAsync(s => s.ModuleId == id && !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled");

@@ -8,6 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
+using System.Collections.Generic;
+using ACST.Domain.Features.ClassSessions;
+using ACST.Domain.DTOs.RecurringSchedule;
+using ACST.Domain.DTOs.Module;
+
 namespace ACST.Domain.Tests.Features.Modules;
 
 public class ModuleServiceTests
@@ -23,8 +28,9 @@ public class ModuleServiceTests
             .Options;
             
         _context = new AppDbContext(options);
-        _googleCalendarMock = new GoogleCalendarService(new NullLogger<GoogleCalendarService>());
-        _service = new ModuleService(_context, _googleCalendarMock);
+        _googleCalendarMock = new DisabledGoogleCalendarService(new NullLogger<DisabledGoogleCalendarService>());
+        var classSessionService = new ClassSessionService(_context, _googleCalendarMock);
+        _service = new ModuleService(_context, _googleCalendarMock, classSessionService);
     }
 
     [Fact]
@@ -89,5 +95,49 @@ public class ModuleServiceTests
         var dbSession = await _context.TblSessions.FindAsync(session.Id);
         Assert.NotNull(dbSession);
         Assert.True(dbSession.IsDeleted);
+    }
+
+    [Fact]
+    public async Task CreateModuleAsync_WithSchedules_ShouldAutomaticallyGenerateClassSessions()
+    {
+        // Arrange
+        var semester = new TblSemester
+        {
+            Name = "Fall 2026",
+            StartDate = new DateOnly(2026, 9, 1),
+            EndDate = new DateOnly(2026, 9, 30) // 30 days
+        };
+        _context.TblSemesters.Add(semester);
+        await _context.SaveChangesAsync();
+
+        var request = new CreateModuleRequest
+        {
+            Name = "Software Engineering",
+            ModuleCode = "SE-301",
+            TeacherName = "Dr. Alice",
+            SemesterId = semester.Id,
+            Schedules = new List<CreateRecurringScheduleRequest>
+            {
+                new()
+                {
+                    DayOfWeek = (short)DayOfWeek.Monday, // Mondays in Sept 2026: 7, 14, 21, 28 (4 sessions)
+                    StartTime = new TimeOnly(9, 0),
+                    EndTime = new TimeOnly(11, 0)
+                }
+            }
+        };
+
+        // Act
+        var result = await _service.CreateModuleAsync(request);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+
+        var sessions = await _context.TblSessions
+            .Where(s => s.ModuleId == result.Data.Id && !s.IsDeleted)
+            .ToListAsync();
+
+        Assert.Equal(4, sessions.Count);
     }
 }

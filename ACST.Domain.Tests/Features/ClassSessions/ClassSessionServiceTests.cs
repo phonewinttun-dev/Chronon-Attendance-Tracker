@@ -26,7 +26,7 @@ public class ClassSessionServiceTests
         _context = new AppDbContext(options);
         
         // Use real mock or dummy
-        _googleCalendarMock = new GoogleCalendarService(new NullLogger<GoogleCalendarService>());
+        _googleCalendarMock = new DisabledGoogleCalendarService(new NullLogger<DisabledGoogleCalendarService>());
         _service = new ClassSessionService(_context, _googleCalendarMock);
     }
 

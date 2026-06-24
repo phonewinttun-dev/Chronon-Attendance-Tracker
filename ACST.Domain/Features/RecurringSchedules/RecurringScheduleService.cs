@@ -7,15 +7,23 @@ using ACST.Domain.DTOs.RecurringSchedule;
 using ACST.Shared;
 using Microsoft.EntityFrameworkCore;
 
+using ACST.Domain.Features.ClassSessions;
+using ACST.Domain.Features.GoogleCalendar;
+using ACST.Domain.DTOs.ClassSession;
+
 namespace ACST.Domain.Features.RecurringSchedules;
 
 public class RecurringScheduleService : IRecurringScheduleService
 {
     private readonly AppDbContext _context;
+    private readonly IClassSessionService _classSessionService;
+    private readonly IGoogleCalendarService _googleCalendarService;
 
-    public RecurringScheduleService(AppDbContext context)
+    public RecurringScheduleService(AppDbContext context, IClassSessionService classSessionService, IGoogleCalendarService googleCalendarService)
     {
         _context = context;
+        _classSessionService = classSessionService;
+        _googleCalendarService = googleCalendarService;
     }
 
     public async Task<Result<IEnumerable<RecurringScheduleDto>>> GetSchedulesByModuleAsync(long moduleId)
@@ -78,6 +86,12 @@ public class RecurringScheduleService : IRecurringScheduleService
             _context.TblRecurringSchedules.Add(schedule);
             await _context.SaveChangesAsync();
 
+            await _classSessionService.GenerateSessionsAsync(new GenerateSessionsRequest
+            {
+                SemesterId = semesterId,
+                ModuleId = moduleId
+            });
+
             // We must refetch to get module and semester names for DTO
             var created = await _context.TblRecurringSchedules
                 .Include(r => r.Module)
@@ -113,6 +127,20 @@ public class RecurringScheduleService : IRecurringScheduleService
             if (schedule == null) return Result.Failure("Recurring schedule not found.");
 
             schedule.IsDeleted = true;
+
+            // Cascade soft-delete future class sessions for this deleted schedule
+            var associatedSessions = await _context.TblSessions
+                .Where(s => s.RecurringScheduleId == id && !s.IsDeleted && s.StartDatetime >= DateTime.UtcNow)
+                .ToListAsync();
+            foreach (var s in associatedSessions)
+            {
+                s.IsDeleted = true;
+                if (!string.IsNullOrEmpty(s.GoogleEventId))
+                {
+                    await _googleCalendarService.DeleteEventAsync(s.GoogleEventId);
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             return Result.Success("Recurring schedule deleted successfully.");

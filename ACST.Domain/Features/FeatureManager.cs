@@ -25,7 +25,18 @@ namespace ACST.Domain.Features
             builder.Services.AddScoped<IModuleService, ModuleService>();
             builder.Services.AddScoped<ISemesterService, SemesterService>();
             builder.Services.AddScoped<IRecurringScheduleService, RecurringScheduleService>();
-            builder.Services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
+            var googleConfig = builder.Configuration.GetSection("GoogleCalendar");
+            var enabled = googleConfig.GetValue<bool>("Enabled", true);
+            var hasCredentials = !string.IsNullOrEmpty(googleConfig["ClientId"]) && !string.IsNullOrEmpty(googleConfig["ClientSecret"]);
+
+            if (enabled && hasCredentials)
+            {
+                builder.Services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
+            }
+            else
+            {
+                builder.Services.AddScoped<IGoogleCalendarService, DisabledGoogleCalendarService>();
+            }
             builder.Services.AddScoped<IHolidayService, HolidayService>();
             builder.Services.AddScoped<IClassSessionService, ClassSessionService>();
             builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
