@@ -2,6 +2,8 @@
 @using ACST.WebApp.Models
 @using System.Globalization
 @inject HttpClient Http
+@inject NavigationManager Navigation
+
 
 <PageTitle>Calendar</PageTitle>
 
@@ -15,10 +17,12 @@
     <div class="flex items-center gap-3 relative">
         <!-- Google Calendar Sync Notice Badge -->
         <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-[1.02] focus:outline-none 
-                       @(_googleCalendarEnabled ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20" : "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20")"
+                       @(!_googleCalendarEnabled ? "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20" : 
+                         (!_googleCalendarConnected ? "bg-blue-500/10 border-blue-500/20 text-blue-500 hover:bg-blue-500/20" : 
+                           "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20"))"
                 @onclick="ToggleSettings">
-            <span class="w-1.5 h-1.5 rounded-full animate-pulse @(_googleCalendarEnabled ? "bg-emerald-500" : "bg-amber-500")"></span>
-            @(_googleCalendarEnabled ? "Google Calendar Active" : "Google Calendar Disabled (Local Mode)")
+            <span class="w-1.5 h-1.5 rounded-full animate-pulse @(!_googleCalendarEnabled ? "bg-amber-500" : (!_googleCalendarConnected ? "bg-blue-500" : "bg-emerald-500"))"></span>
+            @(!_googleCalendarEnabled ? "Google Calendar Disabled (Local Mode)" : (!_googleCalendarConnected ? "Google Calendar Setup Required" : "Google Calendar Connected"))
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 ml-0.5"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
 
@@ -32,25 +36,53 @@
                 
                 @if (_googleCalendarEnabled)
                 {
-                    <div class="space-y-3">
-                        <div class="bg-emerald-500/10 border border-emerald-500/20 rounded p-2.5 text-xs text-emerald-500">
-                            <strong>Integration Connected!</strong> Class sessions will be automatically created, updated, and deleted on your Google Calendar.
+                    @if (_googleCalendarConnected)
+                    {
+                        <div class="space-y-3">
+                            <div class="bg-emerald-500/10 border border-emerald-500/20 rounded p-2.5 text-xs text-emerald-500">
+                                <strong>Integration Connected!</strong> Class sessions will be automatically created, updated, and deleted on your Google Calendar.
+                            </div>
+                            <div class="space-y-1.5 border-t border-border pt-2 pb-1">
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-muted-foreground">Target Calendar:</span>
+                                    <span class="font-mono text-foreground font-semibold">Primary</span>
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-muted-foreground">Features:</span>
+                                    <span class="text-foreground text-right font-medium">Auto-sync, Magic Links</span>
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-muted-foreground">Local Auth Cache:</span>
+                                    <span class="text-foreground text-right font-mono">ChrononGoogleAuthStore</span>
+                                </div>
+                            </div>
+                            <div class="border-t border-border pt-3">
+                                <button class="w-full text-center text-xs py-2 px-3 border border-destructive/20 bg-destructive/10 text-destructive rounded hover:bg-destructive/20 font-semibold transition-colors focus:outline-none"
+                                        disabled="@_isDisconnecting"
+                                        @onclick="DisconnectGoogleCalendar">
+                                    @(_isDisconnecting ? "Disconnecting..." : "Disconnect Google Calendar")
+                                </button>
+                            </div>
                         </div>
-                        <div class="space-y-1.5 border-t border-border pt-2">
-                            <div class="flex justify-between text-xs">
-                                <span class="text-muted-foreground">Target Calendar:</span>
-                                <span class="font-mono text-foreground font-semibold">Primary</span>
+                    }
+                    else
+                    {
+                        <div class="space-y-3">
+                            <div class="bg-amber-500/10 border border-amber-500/20 rounded p-2.5 text-xs text-amber-500">
+                                <strong>OAuth Authorization Required</strong> The integration is configured but not connected to your Google account.
                             </div>
-                            <div class="flex justify-between text-xs">
-                                <span class="text-muted-foreground">Features:</span>
-                                <span class="text-foreground text-right font-medium">Auto-sync, Magic Links</span>
-                            </div>
-                            <div class="flex justify-between text-xs">
-                                <span class="text-muted-foreground">Local Auth Cache:</span>
-                                <span class="text-foreground text-right font-mono">Google.Apis.Auth</span>
+                            <p class="text-xs text-muted-foreground leading-relaxed">
+                                Click below to authorize Chronon to synchronize classes with your Google Calendar.
+                            </p>
+                            <div class="pt-1">
+                                <button class="w-full text-center text-xs py-2 px-3 bg-primary text-primary-foreground rounded hover:bg-primary/95 font-semibold transition-colors focus:outline-none flex items-center justify-center gap-1.5 shadow"
+                                        @onclick="ConnectGoogleCalendar">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.478 0-6.3-2.822-6.3-6.3s2.822-6.3 6.3-6.3c1.706 0 3.199.687 4.3 1.78l3.18-3.18C19.123 2.548 15.93 1 12.24 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 11.753-5.005 11.753-11.24 0-.763-.08-1.505-.229-2.215H12.24z"/></svg>
+                                    Connect Google Calendar
+                                </button>
                             </div>
                         </div>
-                    </div>
+                    }
                 }
                 else
                 {
@@ -285,7 +317,9 @@
     private bool _isError = false;
 
     private bool _googleCalendarEnabled = false;
+    private bool _googleCalendarConnected = false;
     private bool _showCalendarSettings = false;
+    private bool _isDisconnecting = false;
 
     private DateOnly _viewDate = DateOnly.FromDateTime(DateTime.Today);
     private List<DateOnly> _calendarDays = new();
@@ -522,15 +556,61 @@
     {
         try
         {
-            var status = await Http.GetFromJsonAsync<GoogleCalendarStatusResponse>("api/googlecalendar/status");
+            var status = await Http.GetFromJsonAsync<GoogleCalendarStatusResponse>("api/google-auth/status");
             if (status != null)
             {
                 _googleCalendarEnabled = status.IsEnabled;
+                _googleCalendarConnected = status.IsConnected;
             }
         }
         catch
         {
             _googleCalendarEnabled = false;
+            _googleCalendarConnected = false;
+        }
+    }
+
+    private void ConnectGoogleCalendar()
+    {
+        try
+        {
+            var redirectUrl = $"{Navigation.BaseUri}calendar";
+            var connectUrl = new Uri(Http.BaseAddress!, $"api/google-auth/connect?redirectUrl={Uri.EscapeDataString(redirectUrl)}").ToString();
+            Navigation.NavigateTo(connectUrl, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            _message = $"Failed to initiate connection: {ex.Message}";
+            _isError = true;
+        }
+    }
+
+    private async Task DisconnectGoogleCalendar()
+    {
+        _isDisconnecting = true;
+        try
+        {
+            var response = await Http.PostAsync("api/google-auth/disconnect", null);
+            if (response.IsSuccessStatusCode)
+            {
+                _message = "Disconnected from Google Calendar successfully.";
+                _isError = false;
+                await LoadGoogleCalendarStatus();
+            }
+            else
+            {
+                _message = "Failed to disconnect from Google Calendar.";
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = $"Error disconnecting: {ex.Message}";
+            _isError = true;
+        }
+        finally
+        {
+            _isDisconnecting = false;
         }
     }
 
@@ -542,5 +622,6 @@
     private class GoogleCalendarStatusResponse
     {
         public bool IsEnabled { get; set; }
+        public bool IsConnected { get; set; }
     }
 }

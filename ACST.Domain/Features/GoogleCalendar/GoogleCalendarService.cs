@@ -3,6 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using ACST.Shared;
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Auth.OAuth2.Requests;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
@@ -39,17 +41,35 @@ public class GoogleCalendarService : IGoogleCalendarService
         var clientId = section["ClientId"] ?? throw new InvalidOperationException("GoogleCalendar:ClientId configuration is missing.");
         var clientSecret = section["ClientSecret"] ?? throw new InvalidOperationException("GoogleCalendar:ClientSecret configuration is missing.");
 
-        var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-            new ClientSecrets
+        var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+        {
+            ClientSecrets = new ClientSecrets
             {
                 ClientId = clientId,
                 ClientSecret = clientSecret
             },
-            new[] { CalendarService.Scope.Calendar },
-            "user",
-            CancellationToken.None,
-            new FileDataStore("Google.Apis.Auth")
-        );
+            Scopes = new[] { CalendarService.Scope.Calendar },
+            DataStore = new FileDataStore("ChrononGoogleAuthStore")
+        });
+
+        var token = await flow.LoadTokenAsync("user", CancellationToken.None);
+        if (token == null)
+        {
+            throw new InvalidOperationException("User is not connected to Google Calendar. Please authorize first.");
+        }
+
+        var credential = new UserCredential(flow, "user", token);
+
+        // Handle token expiration and automatic token refreshing
+        if (credential.Token.IsStale)
+        {
+            _logger.LogInformation("Google Calendar access token is expired/stale. Refreshing token.");
+            bool refreshed = await credential.RefreshTokenAsync(CancellationToken.None);
+            if (!refreshed)
+            {
+                throw new InvalidOperationException("Failed to refresh Google Calendar token. Please reconnect.");
+            }
+        }
 
         _calendarService = new CalendarService(new BaseClientService.Initializer
         {
@@ -61,6 +81,171 @@ public class GoogleCalendarService : IGoogleCalendarService
     }
 
     #endregion
+
+    #region Connection Management
+
+    public async Task<Result<bool>> IsConnectedAsync()
+    {
+        try
+        {
+            var section = _configuration.GetSection("GoogleCalendar");
+            var clientId = section["ClientId"];
+            var clientSecret = section["ClientSecret"];
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+            {
+                return Result<bool>.Success(false, "Google Calendar configuration is missing credentials.");
+            }
+
+            var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+            {
+                ClientSecrets = new ClientSecrets
+                {
+                    ClientId = clientId,
+                    ClientSecret = clientSecret
+                },
+                Scopes = new[] { CalendarService.Scope.Calendar },
+                DataStore = new FileDataStore("ChrononGoogleAuthStore")
+            });
+
+            var token = await flow.LoadTokenAsync("user", CancellationToken.None);
+            if (token == null)
+            {
+                return Result<bool>.Success(false, "No token found in store.");
+            }
+
+            var credential = new UserCredential(flow, "user", token);
+            if (credential.Token.IsStale)
+            {
+                try
+                {
+                    bool refreshed = await credential.RefreshTokenAsync(CancellationToken.None);
+                    if (!refreshed)
+                    {
+                        return Result<bool>.Success(false, "Token is expired/stale and could not be refreshed.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to refresh token during status check.");
+                    return Result<bool>.Success(false, $"Token is expired/stale and refresh failed: {ex.Message}");
+                }
+            }
+
+            return Result<bool>.Success(true, "Token is present and valid.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking Google Calendar connection status.");
+            return Result<bool>.Failure($"Error checking connection status: {ex.Message}");
+        }
+    }
+
+    public Task<Result<string>> GetAuthorizationUrlAsync(string redirectUri, string? state)
+    {
+        try
+        {
+            var section = _configuration.GetSection("GoogleCalendar");
+            var clientId = section["ClientId"] ?? throw new InvalidOperationException("GoogleCalendar:ClientId configuration is missing.");
+            var clientSecret = section["ClientSecret"] ?? throw new InvalidOperationException("GoogleCalendar:ClientSecret configuration is missing.");
+
+            var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+            {
+                ClientSecrets = new ClientSecrets
+                {
+                    ClientId = clientId,
+                    ClientSecret = clientSecret
+                },
+                Scopes = new[] { CalendarService.Scope.Calendar },
+                DataStore = new FileDataStore("ChrononGoogleAuthStore")
+            });
+
+            var request = (GoogleAuthorizationCodeRequestUrl)flow.CreateAuthorizationCodeRequest(redirectUri);
+            request.AccessType = "offline";
+            request.ApprovalPrompt = "force";
+            if (!string.IsNullOrEmpty(state))
+            {
+                request.State = state;
+            }
+
+            return Task.FromResult(Result<string>.Success(request.Build().ToString(), "Authorization URL generated successfully."));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate authorization URL.");
+            return Task.FromResult(Result<string>.Failure($"Failed to generate authorization URL: {ex.Message}"));
+        }
+    }
+
+    public async Task<Result> ExchangeCodeAndStoreTokenAsync(string code, string redirectUri)
+    {
+        try
+        {
+            var section = _configuration.GetSection("GoogleCalendar");
+            var clientId = section["ClientId"] ?? throw new InvalidOperationException("GoogleCalendar:ClientId configuration is missing.");
+            var clientSecret = section["ClientSecret"] ?? throw new InvalidOperationException("GoogleCalendar:ClientSecret configuration is missing.");
+
+            var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+            {
+                ClientSecrets = new ClientSecrets
+                {
+                    ClientId = clientId,
+                    ClientSecret = clientSecret
+                },
+                Scopes = new[] { CalendarService.Scope.Calendar },
+                DataStore = new FileDataStore("ChrononGoogleAuthStore")
+            });
+
+            await flow.ExchangeCodeForTokenAsync("user", code, redirectUri, CancellationToken.None);
+            
+            // Force re-initialization of calendar service with the new token
+            _calendarService = null;
+
+            return Result.Success("Token exchanged and stored successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to exchange authorization code.");
+            return Result.Failure($"Failed to exchange authorization code: {ex.Message}");
+        }
+    }
+
+    public async Task<Result> DisconnectAsync()
+    {
+        try
+        {
+            var section = _configuration.GetSection("GoogleCalendar");
+            var clientId = section["ClientId"];
+            var clientSecret = section["ClientSecret"];
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+            {
+                return Result.Failure("Google Calendar configuration is missing credentials.");
+            }
+
+            var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+            {
+                ClientSecrets = new ClientSecrets
+                {
+                    ClientId = clientId,
+                    ClientSecret = clientSecret
+                },
+                Scopes = new[] { CalendarService.Scope.Calendar },
+                DataStore = new FileDataStore("ChrononGoogleAuthStore")
+            });
+
+            await flow.DeleteTokenAsync("user", CancellationToken.None);
+            _calendarService = null;
+
+            return Result.Success("Disconnected successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to disconnect Google Calendar.");
+            return Result.Failure($"Failed to disconnect Google Calendar: {ex.Message}");
+        }
+    }
+
+    #endregion
+
 
     #region CreateEvent
 

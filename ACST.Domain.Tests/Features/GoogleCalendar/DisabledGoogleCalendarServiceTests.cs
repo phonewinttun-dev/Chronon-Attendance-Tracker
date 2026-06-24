@@ -52,4 +52,48 @@ public class DisabledGoogleCalendarServiceTests
         // Assert
         Assert.True(result.IsSuccess);
     }
+
+    [Fact]
+    public async Task IsConnectedAsync_ShouldReturnSuccess_WithFalse()
+    {
+        // Act
+        var result = await _service.IsConnectedAsync();
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.False(result.Data);
+    }
+
+    [Fact]
+    public async Task GetAuthorizationUrlAsync_ShouldReturnFailure()
+    {
+        // Act
+        var result = await _service.GetAuthorizationUrlAsync("http://redirect", "state");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains("disabled", result.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ExchangeCodeAndStoreTokenAsync_ShouldReturnFailure()
+    {
+        // Act
+        var result = await _service.ExchangeCodeAndStoreTokenAsync("code", "http://redirect");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains("disabled", result.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task DisconnectAsync_ShouldReturnFailure()
+    {
+        // Act
+        var result = await _service.DisconnectAsync();
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains("disabled", result.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }

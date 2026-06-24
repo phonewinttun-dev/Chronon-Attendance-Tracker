@@ -367,3 +367,4 @@ system_loading_screen.json
 insert_mock_data.sql
 oauth.json
 .env
+seed_timetable.sql

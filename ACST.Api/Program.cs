@@ -11,6 +11,7 @@ try
         .CreateLogger();
 
     var builder = WebApplication.CreateBuilder(args);
+    builder.Configuration.AddUserSecrets<Program>(optional: true);
     builder.Host.UseSerilog();
 
     builder.Services.AddControllers();

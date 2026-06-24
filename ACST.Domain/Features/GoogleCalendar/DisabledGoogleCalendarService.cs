@@ -45,4 +45,28 @@ public class DisabledGoogleCalendarService : IGoogleCalendarService
     }
 
     #endregion
+
+    #region Connection Management
+
+    public Task<Result<bool>> IsConnectedAsync()
+    {
+        return Task.FromResult(Result<bool>.Success(false, "Google Calendar integration is disabled."));
+    }
+
+    public Task<Result<string>> GetAuthorizationUrlAsync(string redirectUri, string? state)
+    {
+        return Task.FromResult(Result<string>.Failure("Google Calendar integration is disabled."));
+    }
+
+    public Task<Result> ExchangeCodeAndStoreTokenAsync(string code, string redirectUri)
+    {
+        return Task.FromResult(Result.Failure("Google Calendar integration is disabled."));
+    }
+
+    public Task<Result> DisconnectAsync()
+    {
+        return Task.FromResult(Result.Failure("Google Calendar integration is disabled."));
+    }
+
+    #endregion
 }
