@@ -9,6 +9,7 @@ public class ClassSessionDto
     public long RecurringScheduleId { get; set; }
     public long ModuleId { get; set; }
     public string ModuleName { get; set; } = string.Empty;
+    public string ModuleCode { get; set; } = string.Empty;
     public long SemesterId { get; set; }
     public string SemesterName { get; set; } = string.Empty;
     public DateOnly SessionDate { get; set; }

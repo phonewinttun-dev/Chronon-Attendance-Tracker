@@ -158,14 +158,14 @@
 <!-- Calendar Container -->
 <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden flex flex-col">
     <!-- Days of Week Header -->
-    <div class="grid grid-cols-7 border-b border-border bg-muted/40 text-center font-semibold text-xs text-muted-foreground uppercase tracking-wider">
-        <div class="py-3 border-r border-border">Monday</div>
-        <div class="py-3 border-r border-border">Tuesday</div>
-        <div class="py-3 border-r border-border">Wednesday</div>
-        <div class="py-3 border-r border-border">Thursday</div>
-        <div class="py-3 border-r border-border">Friday</div>
-        <div class="py-3 border-r border-border">Saturday</div>
-        <div class="py-3">Sunday</div>
+    <div class="grid grid-cols-7 border-b border-border bg-muted/40 text-center font-bold text-[10px] text-muted-foreground uppercase tracking-wider">
+        <div class="py-2.5 border-r border-border">Sun</div>
+        <div class="py-2.5 border-r border-border">Mon</div>
+        <div class="py-2.5 border-r border-border">Tue</div>
+        <div class="py-2.5 border-r border-border">Wed</div>
+        <div class="py-2.5 border-r border-border">Thu</div>
+        <div class="py-2.5 border-r border-border">Fri</div>
+        <div class="py-2.5">Sat</div>
     </div>
 
     <!-- Calendar Grid -->
@@ -174,7 +174,7 @@
         <div class="grid grid-cols-7 auto-rows-fr divide-y divide-x divide-border border-b border-border animate-pulse bg-card">
             @for (int i = 0; i < 42; i++)
             {
-                <div class="min-h-[120px] p-2 flex flex-col bg-card">
+                <div class="h-[140px] p-2 flex flex-col bg-card">
                     <div class="flex justify-between items-center mb-2">
                         <div class="h-3 bg-muted rounded w-3"></div>
                         <div class="h-5 bg-muted rounded-full w-5"></div>
@@ -204,7 +204,7 @@
                 var daySessions = GetSessionsForDay(day);
                 var dayHolidays = GetHolidaysForDay(day);
 
-                <div class="min-h-[120px] p-2 flex flex-col bg-card hover:bg-muted/30 transition-colors
+                <div class="h-[140px] p-2 flex flex-col bg-card hover:bg-muted/30 transition-colors
                             @(isCurrentMonth ? "" : "bg-background/40 opacity-40")">
                     <!-- Day Indicator Header -->
                     <div class="flex justify-between items-center mb-1">
@@ -227,18 +227,18 @@
                             🎉 @hol.Name
                         </div>
                     }
-
+                    
                     <!-- Sessions List -->
-                    <div class="flex-1 flex flex-col gap-1 mt-1 overflow-y-auto">
+                    <div class="flex-1 flex flex-col gap-0.5 mt-1 pr-1 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
                         @foreach (var session in daySessions)
                         {
                             <button type="button" 
-                                    class="w-full text-left p-1.5 rounded border text-xs transition-all hover:scale-[1.02] focus:outline-none @GetSessionStyleClass(session.Status)"
-                                    @onclick="() => OpenSessionDetails(session)">
-                                <div class="font-semibold truncate">@session.ModuleName</div>
-                                <div class="font-mono text-[9px] mt-0.5 opacity-80">
-                                    @FormatTime(session.StartDatetime) - @FormatTime(session.EndDatetime)
-                                </div>
+                                    class="w-full flex items-center gap-1.5 py-0.5 px-1 rounded hover:bg-muted/40 text-left transition-colors focus:outline-none @(session.Status == "Cancelled" ? "opacity-40 line-through" : "")"
+                                    @onclick="() => OpenSessionDetails(session)"
+                                    title="@session.ModuleCode (@FormatTime(session.StartDatetime) - @FormatTime(session.EndDatetime))">
+                                <span class="w-1.5 h-1.5 rounded-full shrink-0 @GetDotColorClass(session.Status)"></span>
+                                <span class="text-[10px] font-mono text-muted-foreground shrink-0">@FormatGoogleCalendarTime(session.StartDatetime)</span>
+                                <span class="font-medium text-[11px] text-foreground truncate">@session.ModuleCode</span>
                             </button>
                         }
                     </div>
@@ -265,7 +265,7 @@
             <!-- Session Info -->
             <div class="mb-5 bg-muted/40 border border-border p-4 rounded-lg">
                 <div class="text-xs font-semibold text-muted-foreground">Module</div>
-                <div class="text-sm font-bold text-foreground mb-3">@_selectedSession.ModuleName</div>
+                <div class="text-sm font-bold text-foreground mb-3">@_selectedSession.ModuleName (@_selectedSession.ModuleCode)</div>
                 
                 <div class="text-xs font-semibold text-muted-foreground">Scheduled Time</div>
                 <div class="text-xs font-mono text-foreground">
@@ -349,8 +349,8 @@
         _calendarDays.Clear();
         var firstDayOfMonth = new DateOnly(_viewDate.Year, _viewDate.Month, 1);
         
-        // Find Monday of the starting week.
-        int offset = ((int)firstDayOfMonth.DayOfWeek - 1 + 7) % 7;
+        // Find Sunday of the starting week.
+        int offset = (int)firstDayOfMonth.DayOfWeek;
         var startDate = firstDayOfMonth.AddDays(-offset);
 
         for (int i = 0; i < 42; i++)
@@ -617,6 +617,29 @@
     private void ToggleSettings()
     {
         _showCalendarSettings = !_showCalendarSettings;
+    }
+
+    private string FormatGoogleCalendarTime(DateTime utcTime)
+    {
+        var localTime = utcTime + MyanmarOffset;
+        if (localTime.Minute == 0)
+        {
+            return localTime.ToString("htt").ToLower();
+        }
+        return localTime.ToString("h:mmtt").ToLower();
+    }
+
+    private string GetDotColorClass(string status)
+    {
+        return status switch
+        {
+            "Present" => "bg-emerald-500",
+            "Absent" => "bg-destructive",
+            "Late" => "bg-amber-500",
+            "Cancelled" => "bg-muted-foreground/45",
+            "Holiday" => "bg-purple-500",
+            _ => "bg-blue-500"
+        };
     }
 
     private class GoogleCalendarStatusResponse
