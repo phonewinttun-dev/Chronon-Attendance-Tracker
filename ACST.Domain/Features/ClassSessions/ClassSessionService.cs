@@ -188,26 +188,30 @@ public class ClassSessionService : IClassSessionService
                             var startUtc = DateTime.SpecifyKind(startDateTimeLocal - MyanmarOffset, DateTimeKind.Utc);
                             var endUtc = DateTime.SpecifyKind(endDateTimeLocal - MyanmarOffset, DateTimeKind.Utc);
 
-                            var sessionToken = Guid.NewGuid();
+                             var sessionToken = Guid.NewGuid();
 
-                            // Mock google event creation
-                            var description = $"Module: {schedule.Module.Name}\n\nMark Attendance: https://localhost:7119/api/attendance/magic-link/{sessionToken}";
-                            var googleResult = await _googleCalendarService.CreateEventAsync(schedule.Module.Name, startUtc, endUtc, description, sessionToken);
+                             // Mock google event creation if enabled
+                             Result<string> googleResult = Result<string>.Failure("Google Calendar sync disabled.");
+                             if (request.SyncWithGoogleCalendar)
+                             {
+                                 var description = $"Module: {schedule.Module.Name}\n\nMark Attendance: https://localhost:7119/api/attendance/magic-link/{sessionToken}";
+                                 googleResult = await _googleCalendarService.CreateEventAsync(schedule.Module.Name, startUtc, endUtc, description, sessionToken);
+                             }
 
-                            var session = new TblSession
-                            {
-                                RecurringScheduleId = schedule.Id,
-                                ModuleId = schedule.ModuleId,
-                                SemesterId = semester.Id,
-                                SessionDate = date,
-                                StartDatetime = startUtc,
-                                EndDatetime = endUtc,
-                                Status = status,
-                                MagicLinkToken = sessionToken,
-                                GoogleEventId = googleResult.IsSuccess ? googleResult.Data : null,
-                                IsDeleted = false
-                            };
-                            newSessions.Add(session);
+                             var session = new TblSession
+                             {
+                                 RecurringScheduleId = schedule.Id,
+                                 ModuleId = schedule.ModuleId,
+                                 SemesterId = semester.Id,
+                                 SessionDate = date,
+                                 StartDatetime = startUtc,
+                                 EndDatetime = endUtc,
+                                 Status = status,
+                                 MagicLinkToken = sessionToken,
+                                 GoogleEventId = googleResult.IsSuccess ? googleResult.Data : null,
+                                 IsDeleted = false
+                             };
+                             newSessions.Add(session);
                             createdCount++;
                         }
                     }

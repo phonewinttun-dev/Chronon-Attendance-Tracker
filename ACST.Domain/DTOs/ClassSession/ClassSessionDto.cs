@@ -31,6 +31,8 @@ public class GenerateSessionsRequest
     public long SemesterId { get; set; }
     
     public long? ModuleId { get; set; }
+
+    public bool SyncWithGoogleCalendar { get; set; } = true;
 }
 
 public class UpdateClassSessionRequest

@@ -124,7 +124,8 @@ public class ModuleServiceTests
                     StartTime = new TimeOnly(9, 0),
                     EndTime = new TimeOnly(11, 0)
                 }
-            }
+            },
+            GenerateSessions = true
         };
 
         // Act

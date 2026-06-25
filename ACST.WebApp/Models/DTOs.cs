@@ -160,6 +160,8 @@ public class CreateModuleRequest
     public string TeacherName { get; set; } = string.Empty;
     public long? SemesterId { get; set; }
     public List<CreateRecurringScheduleRequest> Schedules { get; set; } = new();
+    public bool GenerateSessions { get; set; } = false;
+    public bool SyncWithGoogleCalendar { get; set; } = false;
 }
 
 public class CreateRecurringScheduleRequest

@@ -280,11 +280,15 @@ public class ModuleService : IModuleService
                 }
                 await _context.SaveChangesAsync();
 
-                await _classSessionService.GenerateSessionsAsync(new GenerateSessionsRequest
+                if (request.GenerateSessions)
                 {
-                    SemesterId = request.SemesterId.Value,
-                    ModuleId = module.Id
-                });
+                    await _classSessionService.GenerateSessionsAsync(new GenerateSessionsRequest
+                    {
+                        SemesterId = request.SemesterId.Value,
+                        ModuleId = module.Id,
+                        SyncWithGoogleCalendar = request.SyncWithGoogleCalendar
+                    });
+                }
             }
 
             var schedulesList = new List<RecurringScheduleDto>();

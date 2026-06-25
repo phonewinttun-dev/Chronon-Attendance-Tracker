@@ -169,9 +169,17 @@
             </button>
         </div>
 
-        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="CreateModule" disabled="@_isSubmitting">
-            @(_isSubmitting ? "Creating..." : "Create Module")
-        </button>
+        <div class="flex items-center gap-3">
+            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="OnCreateModuleClicked" disabled="@_isSubmitting">
+                @(_isSubmitting ? "Creating..." : "Create Module")
+            </button>
+            @if (_newModuleSchedules.Any())
+            {
+                <button type="button" class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="OnGenerateSessionsClicked" disabled="@_isSubmitting">
+                    Generate Sessions
+                </button>
+            }
+        </div>
     </div>
 }
 
@@ -647,6 +655,36 @@
     </div>
 }
 
+@if (_showCreateModuleConfirm)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg">
+            <h3 class="text-lg font-bold text-foreground mb-2">Generate Sessions?</h3>
+            <p class="text-sm text-muted-foreground mb-6">Do you want to generate class sessions for this module now?</p>
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelCreateModuleConfirm">Cancel</button>
+                <button class="px-4 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmCreateModuleNo">No</button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmCreateModuleYes">Yes</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showGenerateSessionsConfirm)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg">
+            <h3 class="text-lg font-bold text-foreground mb-2">Generate Class Sessions?</h3>
+            <p class="text-sm text-muted-foreground mb-6">Confirm the generation of class sessions for this module. Would you also like to sync them with Google Calendar?</p>
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelGenerateSessionsConfirm">Cancel</button>
+                <button class="px-4 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmGenerateSessionsOnly">Generate Sessions</button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmGenerateSessionsAndSync">Sync with Google Calendar</button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private static string _viewMode = "table";
     private List<ModuleDto>? _modules;
@@ -657,6 +695,8 @@
     private bool _showCreateForm = false;
     private bool _isSubmitting = false;
     private bool _isSubmittingSchedule = false;
+    private bool _showCreateModuleConfirm = false;
+    private bool _showGenerateSessionsConfirm = false;
     private string _message = string.Empty;
     private bool _isError = false;
     private string _searchTerm = string.Empty;
@@ -1269,6 +1309,65 @@
             _message = "An error occurred while deleting the timetable.";
             _isError = true;
         }
+    }
+
+    private void OnCreateModuleClicked()
+    {
+        if (_newModuleSchedules.Any())
+        {
+            _showCreateModuleConfirm = true;
+        }
+        else
+        {
+            _newModule.GenerateSessions = false;
+            _newModule.SyncWithGoogleCalendar = false;
+            _ = CreateModule();
+        }
+    }
+
+    private void CancelCreateModuleConfirm()
+    {
+        _showCreateModuleConfirm = false;
+    }
+
+    private void ConfirmCreateModuleYes()
+    {
+        _showCreateModuleConfirm = false;
+        _showGenerateSessionsConfirm = true;
+    }
+
+    private async Task ConfirmCreateModuleNo()
+    {
+        _showCreateModuleConfirm = false;
+        _newModule.GenerateSessions = false;
+        _newModule.SyncWithGoogleCalendar = false;
+        await CreateModule();
+    }
+
+    private void OnGenerateSessionsClicked()
+    {
+        _showGenerateSessionsConfirm = true;
+    }
+
+    private void CancelGenerateSessionsConfirm()
+    {
+        _showGenerateSessionsConfirm = false;
+    }
+
+    private async Task ConfirmGenerateSessionsOnly()
+    {
+        _showGenerateSessionsConfirm = false;
+        _newModule.GenerateSessions = true;
+        _newModule.SyncWithGoogleCalendar = false;
+        await CreateModule();
+    }
+
+    private async Task ConfirmGenerateSessionsAndSync()
+    {
+        _showGenerateSessionsConfirm = false;
+        _newModule.GenerateSessions = true;
+        _newModule.SyncWithGoogleCalendar = true;
+        await CreateModule();
     }
 
     private string GetDayOfWeekName(short dayOfWeek)
