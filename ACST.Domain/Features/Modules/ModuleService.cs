@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ACST.Database.ApplicationDbContextModels.Models;
 using ACST.Domain.DTOs.Module;
 using ACST.Domain.DTOs.RecurringSchedule;
@@ -27,7 +23,7 @@ public class ModuleService : IModuleService
         _classSessionService = classSessionService;
     }
 
-    public async Task<PagedResult<ModuleDto>> GetAllModulesAsync(string? searchTerm = null, int? pageNumber = null, int? pageSize = null, long? semesterId = null)
+    public async Task<PagedResult<ModuleDto>> GetAllModulesAsync(int? pageNumber = null, int? pageSize = null, long? semesterId = null)
     {
         try
         {
@@ -41,12 +37,6 @@ public class ModuleService : IModuleService
                 query = query.Where(m => m.SemesterId == semesterId.Value);
             }
 
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                query = query.Where(m => EF.Functions.ToTsVector("english", m.Name + " " + (m.TeacherName ?? ""))
-                    .Matches(searchTerm));
-            }
-
             query = query.OrderBy(m => m.Name);
 
             int totalCount = await query.CountAsync();
@@ -58,11 +48,11 @@ public class ModuleService : IModuleService
                 var rawItems = await query
                     .Select(m => new
                     {
-                        Id = m.Id,
-                        Name = m.Name,
-                        ModuleCode = m.ModuleCode,
-                        TeacherName = m.TeacherName,
-                        SemesterId = m.SemesterId,
+                        m.Id,
+                        m.Name,
+                        m.ModuleCode,
+                        m.TeacherName,
+                        m.SemesterId,
                         SemesterName = m.Semester != null ? m.Semester.Name : null,
                         TotalValidSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled"),
                         PresentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Present"),
@@ -79,8 +69,8 @@ public class ModuleService : IModuleService
                                 StartTime = s.StartTime,
                                 EndTime = s.EndTime
                             }).ToList(),
-                        CreatedAt = m.CreatedAt,
-                        UpdatedAt = m.UpdatedAt
+                        m.CreatedAt,
+                        m.UpdatedAt
                     })
                     .Skip((pageNumber.Value - 1) * pageSize.Value)
                     .Take(pageSize.Value)
@@ -109,11 +99,11 @@ public class ModuleService : IModuleService
                 var rawItems = await query
                     .Select(m => new
                     {
-                        Id = m.Id,
-                        Name = m.Name,
-                        ModuleCode = m.ModuleCode,
-                        TeacherName = m.TeacherName,
-                        SemesterId = m.SemesterId,
+                        m.Id,
+                        m.Name,
+                        m.ModuleCode,
+                        m.TeacherName,
+                        m.SemesterId,
                         SemesterName = m.Semester != null ? m.Semester.Name : null,
                         TotalValidSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled"),
                         PresentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Present"),

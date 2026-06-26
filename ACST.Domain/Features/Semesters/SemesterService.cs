@@ -22,19 +22,13 @@ public class SemesterService : ISemesterService
         _googleCalendarService = googleCalendarService;
     }
 
-    public async Task<PagedResult<SemesterDto>> GetAllSemestersAsync(string? searchTerm = null, int? pageNumber = null, int? pageSize = null)
+    public async Task<PagedResult<SemesterDto>> GetAllSemestersAsync(int? pageNumber = null, int? pageSize = null)
     {
         try
         {
             var query = _context.TblSemesters
                 .AsNoTracking()
                 .Where(s => !s.IsDeleted);
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                query = query.Where(s => EF.Functions.ToTsVector("english", s.Name)
-                    .Matches(searchTerm));
-            }
 
             query = query.OrderByDescending(s => s.StartDate);
 

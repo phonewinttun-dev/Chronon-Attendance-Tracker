@@ -6,6 +6,7 @@ using ACST.Domain.Features.Holidays;
 using ACST.Domain.Features.Modules;
 using ACST.Domain.Features.RecurringSchedules;
 using ACST.Domain.Features.Semesters;
+using ACST.Domain.Features.Search;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -40,6 +41,7 @@ namespace ACST.Domain.Features
             builder.Services.AddScoped<IHolidayService, HolidayService>();
             builder.Services.AddScoped<IClassSessionService, ClassSessionService>();
             builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+            builder.Services.AddScoped<ISearchService, SearchService>();
         }
     }
 }

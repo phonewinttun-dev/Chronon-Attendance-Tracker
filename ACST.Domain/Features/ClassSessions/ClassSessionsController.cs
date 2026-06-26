@@ -18,9 +18,9 @@ public class ClassSessionsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] long? semesterId, [FromQuery] long? moduleId, [FromQuery] DateOnly? startDate, [FromQuery] DateOnly? endDate, [FromQuery] string? status, [FromQuery] int? dayOfWeek, [FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery] string? searchTerm)
+    public async Task<IActionResult> Get([FromQuery] long? semesterId, [FromQuery] long? moduleId, [FromQuery] DateOnly? startDate, [FromQuery] DateOnly? endDate, [FromQuery] string? status, [FromQuery] int? dayOfWeek, [FromQuery] int? pageNumber, [FromQuery] int? pageSize)
     {
-        var result = await _sessionService.GetSessionsAsync(semesterId, moduleId, startDate, endDate, status, dayOfWeek, pageNumber, pageSize, searchTerm);
+        var result = await _sessionService.GetSessionsAsync(semesterId, moduleId, startDate, endDate, status, dayOfWeek, pageNumber, pageSize);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 

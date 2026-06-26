@@ -637,20 +637,56 @@ else
         _isLoading = true;
         try
         {
-            var query = new List<string>();
-            if (SemesterId.HasValue) query.Add($"semesterId={SemesterId}");
-            if (ModuleId.HasValue) query.Add($"moduleId={ModuleId}");
-            if (!string.IsNullOrEmpty(StartDate)) query.Add($"startDate={StartDate}");
-            if (!string.IsNullOrEmpty(EndDate)) query.Add($"endDate={EndDate}");
-            if (!string.IsNullOrEmpty(Status)) query.Add($"status={Uri.EscapeDataString(Status)}");
-            if (DayOfWeek.HasValue) query.Add($"dayOfWeek={DayOfWeek}");
-            if (!string.IsNullOrEmpty(SearchTerm)) query.Add($"searchTerm={Uri.EscapeDataString(SearchTerm)}");
+            PagedResult<ClassSessionDto>? result = null;
+            if (!string.IsNullOrEmpty(SearchTerm))
+            {
+                var query = new List<string>();
+                query.Add($"name={Uri.EscapeDataString(SearchTerm)}");
+                if (SemesterId.HasValue) query.Add($"semesterId={SemesterId}");
+                if (ModuleId.HasValue) query.Add($"moduleId={ModuleId}");
+                query.Add($"pageNumber={_pageNumber}");
+                query.Add($"pageSize={_pageSize}");
 
-            query.Add($"pageNumber={_pageNumber}");
-            query.Add($"pageSize={_pageSize}");
+                var queryString = "?" + string.Join("&", query);
+                var searchResult = await Http.GetFromJsonAsync<PagedResult<SearchClassSessionDto>>($"api/search/sessions{queryString}");
+                if (searchResult != null && searchResult.IsSuccess)
+                {
+                    result = new PagedResult<ClassSessionDto>
+                    {
+                        IsSuccess = searchResult.IsSuccess,
+                        Message = searchResult.Message,
+                        Data = searchResult.Data.Select(s => new ClassSessionDto
+                        {
+                            Id = s.Id,
+                            ModuleId = s.ModuleId,
+                            ModuleName = s.ModuleName,
+                            ModuleCode = s.ModuleCode,
+                            SessionDate = s.SessionDate,
+                            Status = s.Status,
+                            StartDatetime = s.StartDatetime,
+                            EndDatetime = s.EndDatetime
+                        }).ToList(),
+                        Pagination = searchResult.Pagination
+                    };
+                }
+            }
+            else
+            {
+                var query = new List<string>();
+                if (SemesterId.HasValue) query.Add($"semesterId={SemesterId}");
+                if (ModuleId.HasValue) query.Add($"moduleId={ModuleId}");
+                if (!string.IsNullOrEmpty(StartDate)) query.Add($"startDate={StartDate}");
+                if (!string.IsNullOrEmpty(EndDate)) query.Add($"endDate={EndDate}");
+                if (!string.IsNullOrEmpty(Status)) query.Add($"status={Uri.EscapeDataString(Status)}");
+                if (DayOfWeek.HasValue) query.Add($"dayOfWeek={DayOfWeek}");
 
-            var queryString = query.Any() ? "?" + string.Join("&", query) : "";
-            var result = await Http.GetFromJsonAsync<PagedResult<ClassSessionDto>>($"api/classsessions{queryString}");
+                query.Add($"pageNumber={_pageNumber}");
+                query.Add($"pageSize={_pageSize}");
+
+                var queryString = query.Any() ? "?" + string.Join("&", query) : "";
+                result = await Http.GetFromJsonAsync<PagedResult<ClassSessionDto>>($"api/classsessions{queryString}");
+            }
+
             if (result != null && result.IsSuccess)
             {
                 _sessions = result.Data;

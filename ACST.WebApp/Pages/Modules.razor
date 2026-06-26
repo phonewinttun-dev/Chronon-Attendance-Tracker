@@ -981,21 +981,50 @@
         try
         {
             var semFilter = _filterSemesterId.HasValue ? $"&semesterId={_filterSemesterId.Value}" : "";
-            var modResult = await Http.GetFromJsonAsync<PagedResult<ModuleDto>>($"api/modules?searchTerm={Uri.EscapeDataString(_searchTerm)}&pageNumber={_pageNumber}&pageSize={_pageSize}{semFilter}");
-            if (modResult != null && modResult.IsSuccess)
+            if (!string.IsNullOrWhiteSpace(_searchTerm))
             {
-                _modules = modResult.Data;
-                _pageNumber = modResult.Pagination.PageNumber;
-                _pageSize = modResult.Pagination.PageSize;
-                _totalPages = modResult.Pagination.TotalPages;
-                _totalCount = modResult.Pagination.TotalCount;
-                _hasPrevious = modResult.Pagination.HasPreviousPage;
-                _hasNext = modResult.Pagination.HasNextPage;
-
-                if (_selectedModuleId > 0 && _modules != null)
+                var searchResult = await Http.GetFromJsonAsync<PagedResult<SearchModuleDto>>($"api/search/modules?name={Uri.EscapeDataString(_searchTerm)}&pageNumber={_pageNumber}&pageSize={_pageSize}{semFilter}");
+                if (searchResult != null && searchResult.IsSuccess)
                 {
-                    _selectedModule = _modules.FirstOrDefault(m => m.Id == _selectedModuleId);
+                    _modules = searchResult.Data.Select(m => new ModuleDto
+                    {
+                        Id = m.Id,
+                        Name = m.Name,
+                        ModuleCode = m.ModuleCode,
+                        TeacherName = m.TeacherName,
+                        SemesterId = m.SemesterId,
+                        SemesterName = m.SemesterName,
+                        Schedules = new(),
+                        TotalValidSessions = 0,
+                        PresentSessions = 0,
+                        AttendanceRate = 0
+                    }).ToList();
+                    _pageNumber = searchResult.Pagination.PageNumber;
+                    _pageSize = searchResult.Pagination.PageSize;
+                    _totalPages = searchResult.Pagination.TotalPages;
+                    _totalCount = searchResult.Pagination.TotalCount;
+                    _hasPrevious = searchResult.Pagination.HasPreviousPage;
+                    _hasNext = searchResult.Pagination.HasNextPage;
                 }
+            }
+            else
+            {
+                var modResult = await Http.GetFromJsonAsync<PagedResult<ModuleDto>>($"api/modules?pageNumber={_pageNumber}&pageSize={_pageSize}{semFilter}");
+                if (modResult != null && modResult.IsSuccess)
+                {
+                    _modules = modResult.Data;
+                    _pageNumber = modResult.Pagination.PageNumber;
+                    _pageSize = modResult.Pagination.PageSize;
+                    _totalPages = modResult.Pagination.TotalPages;
+                    _totalCount = modResult.Pagination.TotalCount;
+                    _hasPrevious = modResult.Pagination.HasPreviousPage;
+                    _hasNext = modResult.Pagination.HasNextPage;
+                }
+            }
+
+            if (_selectedModuleId > 0 && _modules != null)
+            {
+                _selectedModule = _modules.FirstOrDefault(m => m.Id == _selectedModuleId);
             }
             
             var semResult = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>("api/semesters");

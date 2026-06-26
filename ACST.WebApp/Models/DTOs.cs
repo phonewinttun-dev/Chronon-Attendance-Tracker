@@ -221,3 +221,42 @@ public class PagedResult<T>
     public List<T> Data { get; set; } = new();
     public Pagination Pagination { get; set; } = null!;
 }
+
+public class SearchModuleDto
+{
+    public long Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string ModuleCode { get; set; } = string.Empty;
+    public string TeacherName { get; set; } = string.Empty;
+    public long? SemesterId { get; set; }
+    public string? SemesterName { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
+public class SearchSemesterDto
+{
+    public long Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public DateOnly StartDate { get; set; }
+    public DateOnly EndDate { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
+public class SearchClassSessionDto
+{
+    public long Id { get; set; }
+    public long ModuleId { get; set; }
+    public string ModuleName { get; set; } = string.Empty;
+    public string ModuleCode { get; set; } = string.Empty;
+    public long SemesterId { get; set; }
+    public string SemesterName { get; set; } = string.Empty;
+    public DateOnly SessionDate { get; set; }
+    public DateTime StartDatetime { get; set; }
+    public DateTime EndDatetime { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public Guid MagicLinkToken { get; set; }
+    public string? GoogleEventId { get; set; }
+}
+

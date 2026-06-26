@@ -360,7 +360,32 @@ else
         _isLoading = true;
         try
         {
-            var result = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>($"api/semesters?searchTerm={Uri.EscapeDataString(_searchTerm)}&pageNumber={_pageNumber}&pageSize={_pageSize}");
+            PagedResult<SemesterDto>? result = null;
+            if (!string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                var searchResult = await Http.GetFromJsonAsync<PagedResult<SearchSemesterDto>>($"api/search/semesters?name={Uri.EscapeDataString(_searchTerm)}&pageNumber={_pageNumber}&pageSize={_pageSize}");
+                if (searchResult != null && searchResult.IsSuccess)
+                {
+                    result = new PagedResult<SemesterDto>
+                    {
+                        IsSuccess = searchResult.IsSuccess,
+                        Message = searchResult.Message,
+                        Data = searchResult.Data.Select(s => new SemesterDto
+                        {
+                            Id = s.Id,
+                            Name = s.Name,
+                            StartDate = s.StartDate,
+                            EndDate = s.EndDate
+                        }).ToList(),
+                        Pagination = searchResult.Pagination
+                    };
+                }
+            }
+            else
+            {
+                result = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>($"api/semesters?pageNumber={_pageNumber}&pageSize={_pageSize}");
+            }
+
             if (result != null && result.IsSuccess)
             {
                 _semesters = result.Data;

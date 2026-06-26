@@ -17,9 +17,9 @@ public class ModulesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string? searchTerm, [FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery] long? semesterId)
+    public async Task<IActionResult> GetAll([FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery] long? semesterId)
     {
-        var result = await _moduleService.GetAllModulesAsync(searchTerm, pageNumber, pageSize, semesterId);
+        var result = await _moduleService.GetAllModulesAsync(pageNumber, pageSize, semesterId);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 

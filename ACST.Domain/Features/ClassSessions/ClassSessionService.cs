@@ -22,7 +22,7 @@ public class ClassSessionService : IClassSessionService
         _googleCalendarService = googleCalendarService;
     }
 
-    public async Task<PagedResult<ClassSessionDto>> GetSessionsAsync(long? semesterId, long? moduleId, DateOnly? startDate, DateOnly? endDate, string? status, int? dayOfWeek = null, int? pageNumber = null, int? pageSize = null, string? searchTerm = null)
+    public async Task<PagedResult<ClassSessionDto>> GetSessionsAsync(long? semesterId, long? moduleId, DateOnly? startDate, DateOnly? endDate, string? status, int? dayOfWeek = null, int? pageNumber = null, int? pageSize = null)
     {
         try
         {
@@ -38,10 +38,6 @@ public class ClassSessionService : IClassSessionService
             if (endDate.HasValue) query = query.Where(s => s.SessionDate <= endDate.Value);
             if (!string.IsNullOrEmpty(status)) query = query.Where(s => s.Status == status);
             if (dayOfWeek.HasValue) query = query.Where(s => (int)s.SessionDate.DayOfWeek == dayOfWeek.Value);
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                query = query.Where(s => s.Module.Name.Contains(searchTerm) || (s.Module.TeacherName != null && s.Module.TeacherName.Contains(searchTerm)));
-            }
 
             int totalCount = await query.CountAsync();
             List<ClassSessionDto> items;
