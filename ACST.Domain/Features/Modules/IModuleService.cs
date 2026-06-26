@@ -7,7 +7,7 @@ namespace ACST.Domain.Features.Modules;
 
 public interface IModuleService
 {
-    Task<PagedResult<ModuleDto>> GetAllModulesAsync(int? pageNumber = null, int? pageSize = null, long? semesterId = null);
+    Task<PagedResult<ModuleDto>> GetAllModulesAsync(PaginationRequest request, long? semesterId = null);
     Task<Result<ModuleDto>> GetModuleByIdAsync(long id);
     Task<Result<ModuleDto>> CreateModuleAsync(CreateModuleRequest request);
     Task<Result<ModuleDto>> UpdateModuleAsync(long id, UpdateModuleRequest request);
