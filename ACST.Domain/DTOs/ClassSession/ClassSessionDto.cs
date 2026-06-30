@@ -1,3 +1,4 @@
+using ACST.Shared;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,6 +19,16 @@ public class ClassSessionDto
     public string Status { get; set; } = string.Empty;
     public Guid MagicLinkToken { get; set; }
     public string? GoogleEventId { get; set; }
+}
+
+public class GetClassSessionsRequest : PaginationRequest
+{
+    public long? SemesterId { get; set; }
+    public long? ModuleId { get; set; }
+    public DateOnly? StartDate { get; set; }
+    public DateOnly? EndDate { get; set; }
+    public string? Status { get; set; }
+    public int? DayOfWeek { get; set; }
 }
 
 public class UpdateSessionStatusRequest

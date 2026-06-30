@@ -1,12 +1,14 @@
+using ACST.Database.ApplicationDbContextModels.Models;
+using ACST.Domain.DTOs.ClassSession;
+using ACST.Domain.DTOs.Module;
+using ACST.Domain.Features.GoogleCalendar;
+using ACST.Shared;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ACST.Database.ApplicationDbContextModels.Models;
-using ACST.Domain.DTOs.ClassSession;
-using ACST.Domain.Features.GoogleCalendar;
-using ACST.Shared;
-using Microsoft.EntityFrameworkCore;
 
 namespace ACST.Domain.Features.ClassSessions;
 
@@ -22,34 +24,33 @@ public class ClassSessionService : IClassSessionService
         _googleCalendarService = googleCalendarService;
     }
 
-    public async Task<PagedResult<ClassSessionDto>> GetSessionsAsync(long? semesterId, long? moduleId, DateOnly? startDate, DateOnly? endDate, string? status, int? dayOfWeek = null, int? pageNumber = null, int? pageSize = null)
+    private IQueryable<TblSession> activeSession => _context.TblSessions
+        .Include(s => s.Module)
+        .Include(s => s.Semester)
+        .AsNoTracking()
+        .Where(s => !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
+
+    #region Get All Sessions
+    public async Task<PagedResult<ClassSessionDto>> GetSessionsAsync(GetClassSessionsRequest request, PaginationRequest paginationRequest)
     {
+        if (paginationRequest is null)
+        {
+            return PagedResult<ClassSessionDto>.Failure("Pagination request cannot be null.");
+        }
         try
         {
-            var query = _context.TblSessions
-                .Include(s => s.Module)
-                .Include(s => s.Semester)
-                .AsNoTracking()
-                .Where(s => !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
-
-            if (semesterId.HasValue) query = query.Where(s => s.SemesterId == semesterId.Value);
-            if (moduleId.HasValue) query = query.Where(s => s.ModuleId == moduleId.Value);
-            if (startDate.HasValue) query = query.Where(s => s.SessionDate >= startDate.Value);
-            if (endDate.HasValue) query = query.Where(s => s.SessionDate <= endDate.Value);
-            if (!string.IsNullOrEmpty(status)) query = query.Where(s => s.Status == status);
-            if (dayOfWeek.HasValue) query = query.Where(s => (int)s.SessionDate.DayOfWeek == dayOfWeek.Value);
-
+            var query = activeSession;
             int totalCount = await query.CountAsync();
-            List<ClassSessionDto> items;
-            Pagination pagination;
+            if (totalCount == 0)
+            {
+                return PagedResult<ClassSessionDto>.Failure("No sessions found.");
+            }
 
             var orderedQuery = query.OrderBy(s => s.StartDatetime);
 
-            if (pageNumber.HasValue && pageSize.HasValue)
-            {
-                items = await orderedQuery
-                    .Skip((pageNumber.Value - 1) * pageSize.Value)
-                    .Take(pageSize.Value)
+            var items = await orderedQuery
+                    .Skip((paginationRequest.PageNumber - 1) * paginationRequest.PageSize)
+                    .Take(paginationRequest.PageSize)
                     .Select(s => new ClassSessionDto
                     {
                         Id = s.Id,
@@ -68,49 +69,23 @@ public class ClassSessionService : IClassSessionService
                     })
                     .ToListAsync();
 
-                pagination = new Pagination(pageNumber.Value, pageSize.Value, totalCount);
-            }
-            else
-            {
-                items = await orderedQuery
-                    .Select(s => new ClassSessionDto
-                    {
-                        Id = s.Id,
-                        RecurringScheduleId = s.RecurringScheduleId,
-                        ModuleId = s.ModuleId,
-                        ModuleName = s.Module.Name,
-                        ModuleCode = s.Module.ModuleCode,
-                        SemesterId = s.SemesterId,
-                        SemesterName = s.Semester.Name,
-                        SessionDate = s.SessionDate,
-                        StartDatetime = s.StartDatetime,
-                        EndDatetime = s.EndDatetime,
-                        Status = s.Status,
-                        MagicLinkToken = s.MagicLinkToken,
-                        GoogleEventId = s.GoogleEventId
-                    })
-                    .ToListAsync();
+                var pagination = new Pagination(paginationRequest.PageNumber, paginationRequest.PageSize, totalCount);
 
-                pagination = new Pagination(1, totalCount > 0 ? totalCount : 1, totalCount);
-            }
-
-            return PagedResult<ClassSessionDto>.Success(items, pagination);
+                return PagedResult<ClassSessionDto>.Success(items, pagination);
         }
         catch (Exception ex)
         {
             return PagedResult<ClassSessionDto>.Failure($"Failed to retrieve sessions: {ex.Message}");
         }
     }
+    #endregion
 
+    #region Get Session By Id
     public async Task<Result<ClassSessionDto>> GetSessionByIdAsync(long id)
     {
         try
         {
-            var s = await _context.TblSessions
-                .Include(s => s.Module)
-                .Include(s => s.Semester)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
+            var s = await activeSession.FirstOrDefaultAsync(s => s.Id == id);
 
             if (s == null) return Result<ClassSessionDto>.Failure("Session not found.");
 
@@ -136,7 +111,9 @@ public class ClassSessionService : IClassSessionService
             return Result<ClassSessionDto>.Failure($"Error getting session: {ex.Message}");
         }
     }
+    #endregion
 
+    #region Generate Sessions
     public async Task<Result> GenerateSessionsAsync(GenerateSessionsRequest request)
     {
         try
@@ -230,6 +207,7 @@ public class ClassSessionService : IClassSessionService
             return Result.Failure($"Failed to generate sessions: {ex.Message}");
         }
     }
+    #endregion
 
     public async Task<Result> UpdateSessionStatusAsync(long id, UpdateSessionStatusRequest request)
     {

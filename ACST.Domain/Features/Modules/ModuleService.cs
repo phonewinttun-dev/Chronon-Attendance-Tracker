@@ -375,7 +375,7 @@ public class ModuleService : IModuleService
                         ModuleId = s.ModuleId,
                         ModuleName = module.Name,
                         SemesterId = s.SemesterId,
-                        SemesterName = s.Semester != null ? s.Semester.Name : null, 
+                        SemesterName = s.Semester != null ? s.Semester.Name : null,
                         DayOfWeek = s.DayOfWeek,
                         StartTime = s.StartTime,
                         EndTime = s.EndTime,
@@ -711,7 +711,7 @@ public class ModuleService : IModuleService
                 })
                 .ToListAsync();
             await transaction.CommitAsync();
-            // 6. Asynchronous Out-of-Transaction Cleanup for External Services
+            // Asynchronous Out-of-Transaction Cleanup for External Services
             // Prevents holding DB locks during slow Google Calendar API calls
             foreach (var eventId in googleEventsToDelete)
             {
@@ -721,7 +721,7 @@ public class ModuleService : IModuleService
                 }
                 catch (Exception)
                 {
-                    _logger.LogWarning(calendarEx, "Failed to delete orphaned Google Calendar event {EventId}", eventId);
+                    //_logger.LogWarning(calendarEx, "Failed to delete orphaned Google Calendar event {EventId}", eventId);
                 }
             }
             return Result<ModuleDto>.Success(new ModuleDto

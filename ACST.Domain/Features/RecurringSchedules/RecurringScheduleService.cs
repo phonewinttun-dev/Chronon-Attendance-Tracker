@@ -64,13 +64,21 @@ public class RecurringScheduleService : IRecurringScheduleService
         try
         {
             var moduleExists = await _context.TblModules.AnyAsync(m => m.Id == moduleId && !m.IsDeleted);
-            if (!moduleExists) return Result<RecurringScheduleDto>.Failure("Module not found.");
+            if (!moduleExists)
+            {
+                return Result<RecurringScheduleDto>.Failure("Module not found.");
+            }
 
             var semesterExists = await _context.TblSemesters.AnyAsync(s => s.Id == semesterId && !s.IsDeleted);
-            if (!semesterExists) return Result<RecurringScheduleDto>.Failure("Semester not found.");
-
+            if (!semesterExists)
+            {
+                return Result<RecurringScheduleDto>.Failure("Semester not found.");
+            }
+            
             if (request.StartTime >= request.EndTime)
+            {
                 return Result<RecurringScheduleDto>.Failure("Start time must be before end time.");
+            }
 
             var schedule = new TblRecurringSchedule
             {
