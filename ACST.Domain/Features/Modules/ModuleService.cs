@@ -571,7 +571,7 @@ public class ModuleService : IModuleService
     //}
     public async Task<Result<ModuleDto>> UpdateModuleAsync(long id, UpdateModuleRequest request)
     {
-        // 1. Early Validation (Fail-Fast)
+        // Validation
         if (request.Schedules != null)
         {
             if (request.Schedules.Any() && !request.SemesterId.HasValue)
@@ -604,12 +604,14 @@ public class ModuleService : IModuleService
                 }
                 semesterName = semester.Name;
             }
-            // Direct field assignment for updates
+
             module.Name = request.Name;
             module.ModuleCode = request.ModuleCode;
             module.TeacherName = request.TeacherName;
             module.SemesterId = request.SemesterId;
+
             var googleEventsToDelete = new List<string>();
+
             if (request.Schedules != null)
             {
                 var existingSchedules = await _context.TblRecurringSchedules
@@ -628,7 +630,7 @@ public class ModuleService : IModuleService
                     {
                         sch.IsDeleted = true;
                     }
-                    // Batch load all associated sessions (fixes N+1 query problem)
+                    // Batch load all associated sessions
                     var associatedSessions = await _context.TblSessions
                         .Where(s => toDeleteIds.Contains(s.RecurringScheduleId) && !s.IsDeleted && s.StartDatetime >= DateTime.UtcNow)
                         .ToListAsync();

@@ -8,7 +8,7 @@ namespace ACST.Domain.Features.ClassSessions;
 
 public interface IClassSessionService
 {
-    Task<PagedResult<ClassSessionDto>> GetSessionsAsync(long? semesterId, long? moduleId, DateOnly? startDate, DateOnly? endDate, string? status, int? dayOfWeek = null, int? pageNumber = null, int? pageSize = null);
+    Task<PagedResult<ClassSessionDto>> GetSessionsAsync(GetClassSessionsRequest request);
     Task<Result<ClassSessionDto>> GetSessionByIdAsync(long id);
     Task<Result> GenerateSessionsAsync(GenerateSessionsRequest request);
     Task<Result> UpdateSessionStatusAsync(long id, UpdateSessionStatusRequest request);

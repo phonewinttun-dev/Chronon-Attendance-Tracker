@@ -31,15 +31,22 @@ public class ClassSessionService : IClassSessionService
         .Where(s => !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
 
     #region Get All Sessions
-    public async Task<PagedResult<ClassSessionDto>> GetSessionsAsync(GetClassSessionsRequest request, PaginationRequest paginationRequest)
+    public async Task<PagedResult<ClassSessionDto>> GetSessionsAsync(GetClassSessionsRequest request)
     {
-        if (paginationRequest is null)
+        if (request is null)
         {
-            return PagedResult<ClassSessionDto>.Failure("Pagination request cannot be null.");
+            return PagedResult<ClassSessionDto>.Failure("Request cannot be null.");
         }
         try
         {
             var query = activeSession;
+            if (request.SemesterId.HasValue) query = query.Where(s => s.SemesterId == request.SemesterId.Value);
+            if (request.ModuleId.HasValue) query = query.Where(s => s.ModuleId == request.ModuleId.Value);
+            if (request.StartDate.HasValue) query = query.Where(s => s.SessionDate >= request.StartDate.Value);
+            if (request.EndDate.HasValue) query = query.Where(s => s.SessionDate <= request.EndDate.Value);
+            if (!string.IsNullOrEmpty(request.Status)) query = query.Where(s => s.Status == request.Status);
+            if (request.DayOfWeek.HasValue) query = query.Where(s => (int)s.SessionDate.DayOfWeek == request.DayOfWeek.Value);
+
             int totalCount = await query.CountAsync();
             if (totalCount == 0)
             {
@@ -49,8 +56,8 @@ public class ClassSessionService : IClassSessionService
             var orderedQuery = query.OrderBy(s => s.StartDatetime);
 
             var items = await orderedQuery
-                    .Skip((paginationRequest.PageNumber - 1) * paginationRequest.PageSize)
-                    .Take(paginationRequest.PageSize)
+                    .Skip((request.PageNumber - 1) * request.PageSize)
+                    .Take(request.PageSize)
                     .Select(s => new ClassSessionDto
                     {
                         Id = s.Id,
@@ -69,9 +76,9 @@ public class ClassSessionService : IClassSessionService
                     })
                     .ToListAsync();
 
-                var pagination = new Pagination(paginationRequest.PageNumber, paginationRequest.PageSize, totalCount);
+            var pagination = new Pagination(request.PageNumber, request.PageSize, totalCount);
 
-                return PagedResult<ClassSessionDto>.Success(items, pagination);
+            return PagedResult<ClassSessionDto>.Success(items, pagination);
         }
         catch (Exception ex)
         {
@@ -160,9 +167,11 @@ public class ClassSessionService : IClassSessionService
                             // Convert local time in Myanmar to UTC
                             var startDateTimeLocal = new DateTime(date.Year, date.Month, date.Day, schedule.StartTime.Hour, schedule.StartTime.Minute, schedule.StartTime.Second);
                             var endDateTimeLocal = new DateTime(date.Year, date.Month, date.Day, schedule.EndTime.Hour, schedule.EndTime.Minute, schedule.EndTime.Second);
+
+                            var startUtc = DateTime.UtcNow;
+                            var endUtc = DateTime.UtcNow;
+
                             
-                            var startUtc = DateTime.SpecifyKind(startDateTimeLocal - MyanmarOffset, DateTimeKind.Utc);
-                            var endUtc = DateTime.SpecifyKind(endDateTimeLocal - MyanmarOffset, DateTimeKind.Utc);
 
                              var sessionToken = Guid.NewGuid();
 
@@ -209,6 +218,7 @@ public class ClassSessionService : IClassSessionService
     }
     #endregion
 
+    #region Update Session Status
     public async Task<Result> UpdateSessionStatusAsync(long id, UpdateSessionStatusRequest request)
     {
         try
@@ -236,7 +246,9 @@ public class ClassSessionService : IClassSessionService
             return Result.Failure($"Failed to update session status: {ex.Message}");
         }
     }
+    #endregion
 
+    #region Mark Attendance with Magic Link
     public async Task<Result<string>> MarkAttendanceWithMagicLinkAsync(Guid token)
     {
         try
@@ -275,7 +287,9 @@ public class ClassSessionService : IClassSessionService
             return Result<string>.Failure($"Error processing attendance link: {ex.Message}");
         }
     }
+    #endregion
 
+    #region Update Session
     public async Task<Result> UpdateSessionAsync(long id, UpdateClassSessionRequest request)
     {
         try
@@ -317,7 +331,9 @@ public class ClassSessionService : IClassSessionService
             return Result.Failure($"Failed to update session: {ex.Message}");
         }
     }
+    #endregion
 
+    #region Delete Session  
     public async Task<Result> DeleteSessionAsync(long id)
     {
         try
@@ -345,4 +361,5 @@ public class ClassSessionService : IClassSessionService
             return Result.Failure($"Failed to delete session: {ex.Message}");
         }
     }
+    #endregion
 }

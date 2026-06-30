@@ -377,7 +377,7 @@ public class ClassSessionServiceTests
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _service.GetSessionsAsync(null, null, null, null, null);
+        var result = await _service.GetSessionsAsync(new GetClassSessionsRequest());
 
         // Assert
         Assert.True(result.IsSuccess);
