@@ -356,6 +356,24 @@
 }
 else
 {
+    <!-- Filter Bar for Semester -->
+    <div class="flex flex-wrap items-center gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm">
+        <div class="flex flex-col gap-1">
+            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Filter by Semester</label>
+            <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[200px]"
+                    value="@SemesterId" @onchange="OnSemesterChanged">
+                <option value="">All Semesters</option>
+                @if (_semesters != null)
+                {
+                    @foreach (var sem in _semesters)
+                    {
+                        <option value="@sem.Id">@sem.Name</option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
+
     @if (_isLoadingModules)
     {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-sans">
@@ -363,14 +381,20 @@ else
             {
                 <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-sm animate-pulse">
                     <div>
-                        <div class="flex justify-between items-start mb-3">
-                            <div class="h-4 bg-muted rounded w-24"></div>
-                            <div class="h-4 bg-muted rounded w-20"></div>
+                        <div class="flex justify-between items-center mb-3 border-b border-border/30 pb-2">
+                            <div class="h-3 bg-muted rounded w-28"></div>
+                            <div class="h-3 bg-muted rounded w-10"></div>
                         </div>
-                        <div class="h-3 bg-muted rounded w-28 mb-4"></div>
+                        <div class="mb-4">
+                            <div class="mb-1.5">
+                                <div class="h-3 bg-muted rounded w-12 mb-1"></div>
+                                <div class="h-4 bg-muted rounded w-44"></div>
+                            </div>
+                            <div class="h-3 bg-muted rounded w-24"></div>
+                        </div>
                     </div>
                     <div class="flex gap-2 border-t border-border pt-4 mt-2">
-                        <div class="h-7 bg-muted rounded flex-1"></div>
+                        <div class="h-8 bg-muted rounded w-full"></div>
                     </div>
                 </div>
             }
@@ -384,61 +408,77 @@ else
     }
     else
     {
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-sans">
-            @foreach (var mod in _modules)
-            {
-                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-sm">
-                    <div>
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-secondary border border-border text-foreground rounded">@mod.ModuleCode</span>
-                                    <h3 class="text-base font-bold text-foreground tracking-tight">@mod.Name</h3>
-                                </div>
-                                <div class="flex items-center gap-2 text-xs text-muted-foreground mt-1.5 font-mono">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                    <span>@mod.TeacherName</span>
-                                </div>
-                            </div>
-                            <div class="flex flex-col items-end gap-1.5 shrink-0">
-                                <span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full @(string.IsNullOrEmpty(mod.SemesterName) ? "bg-muted text-muted-foreground border border-border" : "bg-primary/10 text-primary border border-primary/20")">
+        var filteredModules = _modules;
+        if (SemesterId.HasValue && _modules != null)
+        {
+            filteredModules = _modules.Where(m => m.SemesterId == SemesterId.Value).ToList();
+        }
+
+        if (filteredModules == null || !filteredModules.Any())
+        {
+            <div class="bg-card border border-border rounded-lg shadow-sm p-6 text-muted-foreground text-sm font-sans">
+                No modules found for the selected semester.
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-sans">
+                @foreach (var mod in filteredModules)
+                {
+                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-sm">
+                        <div>
+                            <!-- Top row: Semester Name & Attendance Rate -->
+                            <div class="flex justify-between items-center gap-2 mb-3 border-b border-border/30 pb-2">
+                                <span class="px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-full @(string.IsNullOrEmpty(mod.SemesterName) ? "bg-muted text-muted-foreground border border-border" : "bg-primary/10 text-primary border border-primary/20") truncate max-w-[200px]" title="@mod.SemesterName">
                                     @(string.IsNullOrEmpty(mod.SemesterName) ? "No Semester" : mod.SemesterName)
                                 </span>
                                 @if (mod.TotalValidSessions > 0)
                                 {
-                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(mod.AttendanceRate)">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-sans border @GetBadgeBorderAndBg(mod.AttendanceRate) shrink-0">
                                         @mod.AttendanceRate%
                                     </span>
                                 }
                             </div>
+
+                            <!-- Module code, Name, and Teacher -->
+                            <div class="mb-4">
+                                <div class="mb-1.5">
+                                    <span class="inline-block px-1.5 py-0.5 text-[9px] font-mono font-bold bg-secondary border border-border text-foreground rounded mb-1">@mod.ModuleCode</span>
+                                    <h3 class="text-base font-bold text-foreground tracking-tight">@mod.Name</h3>
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    <span>@mod.TeacherName</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Attendance Metrics -->
+                            @if (mod.TotalValidSessions > 0)
+                            {
+                                <div class="grid grid-cols-3 gap-x-2 text-xs font-mono text-muted-foreground border-t border-border/30 pt-3 mb-4">
+                                    <div>Valid: <span class="text-foreground font-semibold">@mod.TotalValidSessions</span></div>
+                                    <div>Present: <span class="text-primary font-bold">@mod.PresentSessions</span></div>
+                                    <div>Absent: <span class="text-destructive font-semibold">@(mod.TotalValidSessions - mod.PresentSessions)</span></div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mb-4 text-xs text-muted-foreground italic border-t border-border/30 pt-3">
+                                    No sessions scheduled.
+                                </div>
+                            }
                         </div>
                         
-                        <!-- Attendance Metrics -->
-                        @if (mod.TotalValidSessions > 0)
-                        {
-                            <div class="grid grid-cols-3 gap-x-2 text-xs font-mono text-muted-foreground border-t border-border/30 pt-3 mb-4">
-                                <div>Valid: <span class="text-foreground font-semibold">@mod.TotalValidSessions</span></div>
-                                <div>Present: <span class="text-primary font-bold">@mod.PresentSessions</span></div>
-                                <div>Absent: <span class="text-destructive font-semibold">@(mod.TotalValidSessions - mod.PresentSessions)</span></div>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="mb-4 text-xs text-muted-foreground italic border-t border-border/30 pt-3">
-                                No sessions scheduled.
-                            </div>
-                        }
+                        <div class="border-t border-border pt-4 mt-2">
+                            <button class="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 rounded-md text-xs font-semibold text-center transition-all shadow-sm"
+                                    @onclick="() => NavigateToModuleSessions(mod.Id)">
+                                View Sessions
+                            </button>
+                        </div>
                     </div>
-                    
-                    <div class="border-t border-border pt-4 mt-2">
-                        <button class="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 rounded-md text-xs font-semibold text-center transition-all shadow-sm"
-                                @onclick="() => NavigateToModuleSessions(mod.Id)">
-                            View Sessions
-                        </button>
-                    </div>
-                </div>
-            }
-        </div>
+                }
+            </div>
+        }
     }
 }
 
@@ -561,6 +601,22 @@ else
     protected override async Task OnInitializedAsync()
     {
         await Task.WhenAll(LoadModules(), LoadSemesters());
+
+        if (!SemesterId.HasValue && _semesters != null && _semesters.Any())
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(6.5));
+            var currentSemester = _semesters.FirstOrDefault(s => s.StartDate <= today && today <= s.EndDate);
+            if (currentSemester == null)
+            {
+                currentSemester = _semesters.OrderByDescending(s => s.StartDate).FirstOrDefault();
+            }
+            if (currentSemester != null)
+            {
+                SemesterId = currentSemester.Id;
+                _prevSemesterId = SemesterId;
+                ApplyFilters();
+            }
+        }
     }
 
     protected override async Task OnParametersSetAsync()
