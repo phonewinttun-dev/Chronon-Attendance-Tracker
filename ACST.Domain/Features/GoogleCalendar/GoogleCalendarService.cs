@@ -107,7 +107,9 @@ public class GoogleCalendarService : IGoogleCalendarService
                 DataStore = new FileDataStore("ChrononGoogleAuthStore")
             });
 
-            var token = await flow.LoadTokenAsync("user", CancellationToken.None);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+
+            var token = await flow.LoadTokenAsync("user", cts.Token);
             if (token == null)
             {
                 return Result<bool>.Success(false, "No token found in store.");
@@ -118,7 +120,7 @@ public class GoogleCalendarService : IGoogleCalendarService
             {
                 try
                 {
-                    bool refreshed = await credential.RefreshTokenAsync(CancellationToken.None);
+                    bool refreshed = await credential.RefreshTokenAsync(cts.Token);
                     if (!refreshed)
                     {
                         return Result<bool>.Success(false, "Token is expired/stale and could not be refreshed.");

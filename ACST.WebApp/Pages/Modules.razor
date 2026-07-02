@@ -25,47 +25,50 @@
     </div>
 </div>
 
-<div class="flex flex-wrap items-center gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm">
-    <!-- Search Box -->
-    <div class="flex-1 min-w-[240px] flex flex-col gap-1">
-        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-sans">Search Modules</label>
-        <div class="relative flex items-center">
-            <input type="text" 
-                   class="w-full pl-9 pr-24 py-2.5 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring transition-all placeholder:text-muted-foreground" 
-                   placeholder="Search by module name or code" 
-                   @bind="_searchTerm" 
-                   @onkeyup="OnSearchKeyUp" />
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            </div>
-            @if (!string.IsNullOrEmpty(_searchTerm))
-            {
-                <button class="absolute right-[76px] text-muted-foreground hover:text-foreground text-xs focus:outline-none" @onclick="ClearSearch" title="Clear search">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+@if (!_showCreateForm)
+{
+    <div class="flex flex-wrap items-center gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm">
+        <!-- Search Box -->
+        <div class="flex-1 min-w-[240px] flex flex-col gap-1">
+            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-sans">Search Modules</label>
+            <div class="relative flex items-center">
+                <input type="text" 
+                       class="w-full pl-9 pr-24 py-2.5 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring transition-all placeholder:text-muted-foreground" 
+                       placeholder="Search by module name or code" 
+                       @bind="_searchTerm" 
+                       @onkeyup="OnSearchKeyUp" />
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </div>
+                @if (!string.IsNullOrEmpty(_searchTerm))
+                {
+                    <button class="absolute right-[76px] text-muted-foreground hover:text-foreground text-xs focus:outline-none" @onclick="ClearSearch" title="Clear search">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                }
+                <button class="absolute right-0 top-0 bottom-0 px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-r-md text-xs font-semibold transition-all focus:outline-none" @onclick="TriggerSearch">
+                    Search
                 </button>
-            }
-            <button class="absolute right-0 top-0 bottom-0 px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-r-md text-xs font-semibold transition-all focus:outline-none" @onclick="TriggerSearch">
-                Search
-            </button>
+            </div>
+        </div>
+
+        <!-- Semester Filter -->
+        <div class="flex flex-col gap-1 min-w-[200px]">
+            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-sans">Semester</label>
+            <select class="p-2.5 bg-background border border-border rounded-md text-foreground font-sans text-xs focus:outline-none focus:ring-1 focus:ring-ring w-full"
+                    value="@_selectedFilterSemesterIdStr" @onchange="OnSemesterFilterChanged">
+                <option value="">All Semesters</option>
+                @if (_semesters != null)
+                {
+                    @foreach (var sem in _semesters)
+                    {
+                        <option value="@sem.Id">@sem.Name</option>
+                    }
+                }
+            </select>
         </div>
     </div>
-
-    <!-- Semester Filter -->
-    <div class="flex flex-col gap-1 min-w-[200px]">
-        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-sans">Semester</label>
-        <select class="p-2.5 bg-background border border-border rounded-md text-foreground font-sans text-xs focus:outline-none focus:ring-1 focus:ring-ring w-full"
-                value="@_selectedFilterSemesterIdStr" @onchange="OnSemesterFilterChanged">
-            <option value="">All Semesters</option>
-            @if (_semesters != null)
-            {
-                @foreach (var sem in _semesters)
-                {
-                    <option value="@sem.Id">@sem.Name</option>
-                }
-            }
-        </select>
-    </div>
-</div>
+}
 
 
 @if (!string.IsNullOrEmpty(_message))

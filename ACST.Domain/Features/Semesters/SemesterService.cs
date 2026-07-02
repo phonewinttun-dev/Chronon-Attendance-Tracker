@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hangfire;
 
 namespace ACST.Domain.Features.Semesters;
 
@@ -15,11 +16,16 @@ public class SemesterService : ISemesterService
 {
     private readonly AppDbContext _context;
     private readonly IGoogleCalendarService _googleCalendarService;
+    private readonly IBackgroundJobClient? _backgroundJobClient;
 
-    public SemesterService(AppDbContext context, IGoogleCalendarService googleCalendarService)
+    public SemesterService(
+        AppDbContext context, 
+        IGoogleCalendarService googleCalendarService,
+        IBackgroundJobClient? backgroundJobClient = null)
     {
         _context = context;
         _googleCalendarService = googleCalendarService;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     private IQueryable<TblSemester> ActiveSemesterQuery => _context.TblSemesters
@@ -147,7 +153,7 @@ public class SemesterService : ISemesterService
                 return Result<SemesterDto>.Failure("Start date cannot be after end date.");
             }
 
-            var semester = await ActiveSemesterQuery.FirstOrDefaultAsync(s => s.Id == id);
+            var semester = await _context.TblSemesters.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
 
             if (semester is null)
             {
@@ -193,7 +199,7 @@ public class SemesterService : ISemesterService
     {
         try
         {
-            var semester = await ActiveSemesterQuery.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+            var semester = await _context.TblSemesters.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
 
             if (semester == null)
             {
@@ -233,7 +239,15 @@ public class SemesterService : ISemesterService
 
                 if (!string.IsNullOrEmpty(session.GoogleEventId))
                 {
-                    await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
+                    if (_backgroundJobClient is not null)
+                    {
+                        _backgroundJobClient.Enqueue<IGoogleCalendarService>(service => 
+                            service.DeleteEventAsync(session.GoogleEventId));
+                    }
+                    else
+                    {
+                        await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
+                    }
                 }
             }
 

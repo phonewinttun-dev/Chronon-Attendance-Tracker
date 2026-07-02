@@ -6,6 +6,7 @@ using ACST.Database.ApplicationDbContextModels.Models;
 using ACST.Domain.DTOs.RecurringSchedule;
 using ACST.Shared;
 using Microsoft.EntityFrameworkCore;
+using Hangfire;
 
 using ACST.Domain.Features.ClassSessions;
 using ACST.Domain.Features.GoogleCalendar;
@@ -18,12 +19,18 @@ public class RecurringScheduleService : IRecurringScheduleService
     private readonly AppDbContext _context;
     private readonly IClassSessionService _classSessionService;
     private readonly IGoogleCalendarService _googleCalendarService;
+    private readonly IBackgroundJobClient? _backgroundJobClient;
 
-    public RecurringScheduleService(AppDbContext context, IClassSessionService classSessionService, IGoogleCalendarService googleCalendarService)
+    public RecurringScheduleService(
+        AppDbContext context, 
+        IClassSessionService classSessionService, 
+        IGoogleCalendarService googleCalendarService,
+        IBackgroundJobClient? backgroundJobClient = null)
     {
         _context = context;
         _classSessionService = classSessionService;
         _googleCalendarService = googleCalendarService;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     #region Get schedules by module
@@ -149,7 +156,15 @@ public class RecurringScheduleService : IRecurringScheduleService
                 s.IsDeleted = true;
                 if (!string.IsNullOrEmpty(s.GoogleEventId))
                 {
-                    await _googleCalendarService.DeleteEventAsync(s.GoogleEventId);
+                    if (_backgroundJobClient is not null)
+                    {
+                        _backgroundJobClient.Enqueue<IGoogleCalendarService>(service => 
+                            service.DeleteEventAsync(s.GoogleEventId));
+                    }
+                    else
+                    {
+                        await _googleCalendarService.DeleteEventAsync(s.GoogleEventId);
+                    }
                 }
             }
 

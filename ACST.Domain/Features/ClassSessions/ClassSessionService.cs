@@ -315,7 +315,15 @@ public class ClassSessionService : IClassSessionService
 
             if (request.Status == "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
             {
-                await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Cancelled");
+                if (_backgroundJobClient is not null)
+                {
+                    _backgroundJobClient.Enqueue<IGoogleCalendarService>(service => 
+                        service.UpdateEventStatusAsync(session.GoogleEventId, "Cancelled"));
+                }
+                else
+                {
+                    await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Cancelled");
+                }
             }
 
             return Result.Success("Session status updated successfully.");
@@ -400,11 +408,27 @@ public class ClassSessionService : IClassSessionService
 
             if (request.Status == "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
             {
-                await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Cancelled");
+                if (_backgroundJobClient is not null)
+                {
+                    _backgroundJobClient.Enqueue<IGoogleCalendarService>(service => 
+                        service.UpdateEventStatusAsync(session.GoogleEventId, "Cancelled"));
+                }
+                else
+                {
+                    await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Cancelled");
+                }
             }
             else if (oldStatus == "Cancelled" && request.Status != "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
             {
-                await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Confirmed");
+                if (_backgroundJobClient is not null)
+                {
+                    _backgroundJobClient.Enqueue<IGoogleCalendarService>(service => 
+                        service.UpdateEventStatusAsync(session.GoogleEventId, "Confirmed"));
+                }
+                else
+                {
+                    await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Confirmed");
+                }
             }
 
             return Result.Success("Session updated successfully.");
@@ -436,7 +460,15 @@ public class ClassSessionService : IClassSessionService
 
             if (!string.IsNullOrEmpty(session.GoogleEventId))
             {
-                await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
+                if (_backgroundJobClient is not null)
+                {
+                    _backgroundJobClient.Enqueue<IGoogleCalendarService>(service => 
+                        service.DeleteEventAsync(session.GoogleEventId));
+                }
+                else
+                {
+                    await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
+                }
             }
 
             return Result.Success("Session deleted successfully.");

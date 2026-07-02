@@ -1,4 +1,4 @@
-CREATE TABLE public."TblSemester" (
+CREATE TABLE IF NOT EXISTS public."TblSemester" (
   "Id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   "Name" text NOT NULL,
   "StartDate" date NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE public."TblSemester" (
   CONSTRAINT TblSemester_pkey PRIMARY KEY ("Id")
 );
 
-CREATE TABLE public."TblModule" (
+CREATE TABLE IF NOT EXISTS public."TblModule" (
   "Id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   "Name" text NOT NULL,
   "ModuleCode" text NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE public."TblModule" (
   CONSTRAINT TblModule_semester_id_fkey FOREIGN KEY ("SemesterId") REFERENCES public."TblSemester"("Id")
 );
 
-CREATE TABLE public."TblRecurringSchedule" (
+CREATE TABLE IF NOT EXISTS public."TblRecurringSchedule" (
   "Id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   "ModuleId" bigint NOT NULL,
   "SemesterId" bigint NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE public."TblRecurringSchedule" (
   CONSTRAINT recurring_schedules_semester_id_fkey FOREIGN KEY ("SemesterId") REFERENCES public."TblSemester"("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE public."TblSession" (
+CREATE TABLE IF NOT EXISTS public."TblSession" (
   "Id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   "RecurringScheduleId" bigint NOT NULL,
   "ModuleId" bigint NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE public."TblSession" (
   CONSTRAINT class_sessions_semester_id_fkey FOREIGN KEY ("SemesterId") REFERENCES public."TblSemester"("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE public."TblSemesterDashboardSummary" (
+CREATE TABLE IF NOT EXISTS public."TblSemesterDashboardSummary" (
   "SemesterId" bigint NOT NULL,
   "SemesterName" text NOT NULL,
   "StartDate" date NOT NULL,

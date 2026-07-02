@@ -4,6 +4,7 @@ using ACST.Domain.DTOs.RecurringSchedule;
 using ACST.Domain.Features.GoogleCalendar;
 using ACST.Shared;
 using Microsoft.EntityFrameworkCore;
+using Hangfire;
 
 using ACST.Domain.Features.ClassSessions;
 using ACST.Domain.DTOs.ClassSession;
@@ -15,12 +16,18 @@ public class ModuleService : IModuleService
     private readonly AppDbContext _context;
     private readonly IGoogleCalendarService _googleCalendarService;
     private readonly IClassSessionService _classSessionService;
+    private readonly IBackgroundJobClient? _backgroundJobClient;
 
-    public ModuleService(AppDbContext context, IGoogleCalendarService googleCalendarService, IClassSessionService classSessionService)
+    public ModuleService(
+        AppDbContext context, 
+        IGoogleCalendarService googleCalendarService, 
+        IClassSessionService classSessionService,
+        IBackgroundJobClient? backgroundJobClient = null)
     {
         _context = context;
         _googleCalendarService = googleCalendarService;
         _classSessionService = classSessionService;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     private IQueryable<TblModule> ActiveModuleQuery => _context.TblModules
@@ -717,13 +724,21 @@ public class ModuleService : IModuleService
             // Prevents holding DB locks during slow Google Calendar API calls
             foreach (var eventId in googleEventsToDelete)
             {
-                try
+                if (_backgroundJobClient is not null)
                 {
-                    await _googleCalendarService.DeleteEventAsync(eventId);
+                    _backgroundJobClient.Enqueue<IGoogleCalendarService>(service => 
+                        service.DeleteEventAsync(eventId));
                 }
-                catch (Exception)
+                else
                 {
-                    //_logger.LogWarning(calendarEx, "Failed to delete orphaned Google Calendar event {EventId}", eventId);
+                    try
+                    {
+                        await _googleCalendarService.DeleteEventAsync(eventId);
+                    }
+                    catch (Exception)
+                    {
+                        //_logger.LogWarning(calendarEx, "Failed to delete orphaned Google Calendar event {EventId}", eventId);
+                    }
                 }
             }
             return Result<ModuleDto>.Success(new ModuleDto
@@ -785,7 +800,15 @@ public class ModuleService : IModuleService
 
                 if (!string.IsNullOrEmpty(session.GoogleEventId))
                 {
-                    await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
+                    if (_backgroundJobClient is not null)
+                    {
+                        _backgroundJobClient.Enqueue<IGoogleCalendarService>(service => 
+                            service.DeleteEventAsync(session.GoogleEventId));
+                    }
+                    else
+                    {
+                        await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
+                    }
                 }
             }
 
