@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +21,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<TblSession> TblSessions { get; set; }
 
+    public virtual DbSet<TblSemesterDashboardSummary> TblSemesterDashboardSummaries { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -41,6 +43,23 @@ public partial class AppDbContext : DbContext
             .HasPostgresExtension("extensions", "uuid-ossp")
             .HasPostgresExtension("moddatetime")
             .HasPostgresExtension("vault", "supabase_vault");
+
+        modelBuilder.Entity<TblSemesterDashboardSummary>(entity =>
+        {
+            entity.HasKey(e => e.SemesterId).HasName("TblSemesterDashboardSummary_pkey");
+
+            entity.ToTable("TblSemesterDashboardSummary");
+
+            entity.Property(e => e.SemesterId).ValueGeneratedNever().HasColumnName("SemesterId");
+            entity.Property(e => e.WarningsJson).HasDefaultValueSql("'[]'::text");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
+
+            entity.HasOne(d => d.Semester)
+                .WithOne()
+                .HasForeignKey<TblSemesterDashboardSummary>(d => d.SemesterId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("TblSemesterDashboardSummary_semester_id_fkey");
+        });
 
         modelBuilder.Entity<TblHoliday>(entity =>
         {

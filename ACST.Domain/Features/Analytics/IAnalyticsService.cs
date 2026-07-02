@@ -12,4 +12,6 @@ public interface IAnalyticsService
     Task<Result<DashboardSummaryDto>> GetDashboardSummaryAsync(long semesterId);
     Task<Result<DashboardDailyWeeklyDto>> GetDashboardDailyWeeklyAsync(long semesterId);
     Task<Result<List<ModuleAnalyticsDto>>> GetDashboardModulesAsync(long semesterId);
+    Task UpdateSemesterDashboardSummaryAsync(long semesterId);
+    Task UpdateAllActiveSemesterSummariesAsync();
 }

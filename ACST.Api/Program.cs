@@ -1,4 +1,5 @@
 using ACST.Domain.Features;
+using ACST.Domain.Features.Analytics;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Scalar.AspNetCore;
@@ -57,6 +58,15 @@ try
     app.UseHttpsRedirection();
 
     app.UseHangfireDashboard();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+        recurringJobManager.AddOrUpdate<IAnalyticsService>(
+            "daily-dashboard-update",
+            service => service.UpdateAllActiveSemesterSummariesAsync(),
+            Cron.Daily);
+    }
 
     app.UseAuthorization();
 

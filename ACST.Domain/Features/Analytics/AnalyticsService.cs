@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ACST.Database.ApplicationDbContextModels.Models;
 using ACST.Domain.DTOs.Analytics;
@@ -90,57 +91,52 @@ public class AnalyticsService : IAnalyticsService
     {
         try
         {
-            var semester = await _context.TblSemesters
+            var cache = await _context.TblSemesterDashboardSummaries
                 .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.Id == semesterId && !s.IsDeleted);
+                .FirstOrDefaultAsync(c => c.SemesterId == semesterId);
 
-            if (semester == null)
+            if (cache == null)
             {
-                return Result<DashboardSummaryDto>.Failure("Semester not found.");
+                await UpdateSemesterDashboardSummaryAsync(semesterId);
+                cache = await _context.TblSemesterDashboardSummaries
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.SemesterId == semesterId);
+
+                if (cache == null)
+                {
+                    return Result<DashboardSummaryDto>.Failure("Semester not found or failed to calculate summary.");
+                }
             }
-
-            var sessions = await _context.TblSessions
-                .AsNoTracking()
-                .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted))
-                .ToListAsync();
-
-            var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(6.5)); // Myanmar Time
-
-            int todaySessions = sessions.Count(s => s.SessionDate == today);
-            int upcomingSessions = sessions.Count(s => s.SessionDate > today && s.SessionDate <= today.AddDays(7));
-
-            var overallStats = CalculateStats(sessions);
-            double healthRate = Math.Round(overallStats.AttendanceRate, 2);
 
             var warnings = new List<string>();
-            if (healthRate < 60)
+            try
             {
-                warnings.Add("Critical: Overall attendance is below 60%.");
+                warnings = JsonSerializer.Deserialize<List<string>>(cache.WarningsJson) ?? new List<string>();
             }
-            else if (healthRate < 75)
+            catch
             {
-                warnings.Add("Warning: Overall attendance is below 75%.");
+                // Fallback silently if deserialization fails
             }
 
             return Result<DashboardSummaryDto>.Success(new DashboardSummaryDto
             {
-                TodaySessionsCount = todaySessions,
-                UpcomingSessionsCount = upcomingSessions,
-                SemesterHealthRate = healthRate,
+                TodaySessionsCount = cache.TodaySessionsCount,
+                UpcomingSessionsCount = cache.UpcomingSessionsCount,
+                SemesterHealthRate = cache.SemesterHealthRate,
                 Warnings = warnings,
                 
-                SemesterName = semester.Name,
-                StartDate = semester.StartDate,
-                EndDate = semester.EndDate,
+                SemesterName = cache.SemesterName,
+                StartDate = cache.StartDate,
+                EndDate = cache.EndDate,
                 
-                TotalSessions = overallStats.Total,
-                PresentSessions = overallStats.Present,
-                AbsentSessions = overallStats.Absent,
-                LateSessions = 0,
-                CancelledSessions = overallStats.Cancelled,
-                HolidaySessions = overallStats.Holiday,
-                ValidSessions = overallStats.Valid,
-                CalculatedRate = healthRate,
+                TotalSessions = cache.TotalSessions,
+                PresentSessions = cache.PresentSessions,
+                AbsentSessions = cache.AbsentSessions,
+                LateSessions = cache.LateSessions,
+                CancelledSessions = cache.CancelledSessions,
+                HolidaySessions = cache.HolidaySessions,
+                ValidSessions = cache.ValidSessions,
+                CalculatedRate = cache.CalculatedRate,
                 
                 DailyAttendance = new(),
                 WeeklyAttendance = new(),
@@ -309,6 +305,80 @@ public class AnalyticsService : IAnalyticsService
         }
     }
     #endregion
+
+    public async Task UpdateSemesterDashboardSummaryAsync(long semesterId)
+    {
+        var semester = await _context.TblSemesters
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == semesterId && !s.IsDeleted);
+
+        if (semester == null) return;
+
+        var sessions = await _context.TblSessions
+            .AsNoTracking()
+            .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted))
+            .ToListAsync();
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(6.5)); // Myanmar Time
+
+        int todaySessions = sessions.Count(s => s.SessionDate == today);
+        int upcomingSessions = sessions.Count(s => s.SessionDate > today && s.SessionDate <= today.AddDays(7));
+
+        var overallStats = CalculateStats(sessions);
+        double healthRate = Math.Round(overallStats.AttendanceRate, 2);
+
+        var warnings = new List<string>();
+        if (healthRate < 60)
+        {
+            warnings.Add("Critical: Overall attendance is below 60%.");
+        }
+        else if (healthRate < 75)
+        {
+            warnings.Add("Warning: Overall attendance is below 75%.");
+        }
+
+        var summary = await _context.TblSemesterDashboardSummaries
+            .FirstOrDefaultAsync(s => s.SemesterId == semesterId);
+
+        if (summary == null)
+        {
+            summary = new TblSemesterDashboardSummary { SemesterId = semesterId };
+            _context.TblSemesterDashboardSummaries.Add(summary);
+        }
+
+        summary.SemesterName = semester.Name;
+        summary.StartDate = semester.StartDate;
+        summary.EndDate = semester.EndDate;
+        summary.SemesterHealthRate = healthRate;
+        summary.TodaySessionsCount = todaySessions;
+        summary.UpcomingSessionsCount = upcomingSessions;
+        summary.TotalSessions = overallStats.Total;
+        summary.PresentSessions = overallStats.Present;
+        summary.AbsentSessions = overallStats.Absent;
+        summary.LateSessions = 0;
+        summary.CancelledSessions = overallStats.Cancelled;
+        summary.HolidaySessions = overallStats.Holiday;
+        summary.ValidSessions = overallStats.Valid;
+        summary.CalculatedRate = healthRate;
+        summary.WarningsJson = JsonSerializer.Serialize(warnings);
+        summary.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAllActiveSemesterSummariesAsync()
+    {
+        var activeSemesters = await _context.TblSemesters
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted)
+            .Select(s => s.Id)
+            .ToListAsync();
+
+        foreach (var semesterId in activeSemesters)
+        {
+            await UpdateSemesterDashboardSummaryAsync(semesterId);
+        }
+    }
 
     private record SessionStats(int Total, int Present, int Absent, int Cancelled, int Holiday)
     {

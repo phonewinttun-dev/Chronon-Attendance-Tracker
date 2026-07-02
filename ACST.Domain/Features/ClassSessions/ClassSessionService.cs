@@ -2,11 +2,13 @@ using ACST.Database.ApplicationDbContextModels.Models;
 using ACST.Domain.DTOs.ClassSession;
 using ACST.Domain.DTOs.Module;
 using ACST.Domain.Features.GoogleCalendar;
+using ACST.Domain.Features.Analytics;
 using ACST.Shared;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,18 +22,21 @@ public class ClassSessionService : IClassSessionService
     private readonly IGoogleCalendarService _googleCalendarService;
     private readonly IConfiguration? _configuration;
     private readonly IBackgroundJobClient? _backgroundJobClient;
+    private readonly IServiceProvider? _serviceProvider;
     private static readonly TimeSpan MyanmarOffset = TimeSpan.FromHours(6.5);
 
     public ClassSessionService(
         AppDbContext context, 
         IGoogleCalendarService googleCalendarService,
         IConfiguration? configuration = null,
-        IBackgroundJobClient? backgroundJobClient = null)
+        IBackgroundJobClient? backgroundJobClient = null,
+        IServiceProvider? serviceProvider = null)
     {
         _context = context;
         _googleCalendarService = googleCalendarService;
         _configuration = configuration;
         _backgroundJobClient = backgroundJobClient;
+        _serviceProvider = serviceProvider;
     }
 
     private IQueryable<TblSession> activeSession => _context.TblSessions
@@ -226,6 +231,8 @@ public class ClassSessionService : IClassSessionService
                 _context.TblSessions.AddRange(newSessions);
                 await _context.SaveChangesAsync();
 
+                await TriggerDashboardSummaryUpdateAsync(request.SemesterId);
+
                 if (request.SyncWithGoogleCalendar)
                 {
                     foreach (var session in newSessions)
@@ -304,6 +311,8 @@ public class ClassSessionService : IClassSessionService
             session.Status = request.Status;
             await _context.SaveChangesAsync();
 
+            await TriggerDashboardSummaryUpdateAsync(session.SemesterId);
+
             if (request.Status == "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
             {
                 await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Cancelled");
@@ -350,6 +359,8 @@ public class ClassSessionService : IClassSessionService
             session.Status = "Present";
             await _context.SaveChangesAsync();
 
+            await TriggerDashboardSummaryUpdateAsync(session.SemesterId);
+
             return Result<string>.Success("Attendance successfully marked.");
         }
         catch (Exception ex)
@@ -385,6 +396,8 @@ public class ClassSessionService : IClassSessionService
 
             await _context.SaveChangesAsync();
 
+            await TriggerDashboardSummaryUpdateAsync(session.SemesterId);
+
             if (request.Status == "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
             {
                 await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Cancelled");
@@ -419,6 +432,8 @@ public class ClassSessionService : IClassSessionService
             session.IsDeleted = true;
             await _context.SaveChangesAsync();
 
+            await TriggerDashboardSummaryUpdateAsync(session.SemesterId);
+
             if (!string.IsNullOrEmpty(session.GoogleEventId))
             {
                 await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
@@ -432,4 +447,21 @@ public class ClassSessionService : IClassSessionService
         }
     }
     #endregion
+
+    private async Task TriggerDashboardSummaryUpdateAsync(long semesterId)
+    {
+        if (_backgroundJobClient is not null)
+        {
+            _backgroundJobClient.Enqueue<IAnalyticsService>(service => service.UpdateSemesterDashboardSummaryAsync(semesterId));
+        }
+        else if (_serviceProvider is not null)
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var analyticsService = scope.ServiceProvider.GetService<IAnalyticsService>();
+            if (analyticsService is not null)
+            {
+                await analyticsService.UpdateSemesterDashboardSummaryAsync(semesterId);
+            }
+        }
+    }
 }

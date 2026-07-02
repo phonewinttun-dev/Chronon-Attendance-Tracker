@@ -57,3 +57,25 @@ CREATE TABLE public."TblSession" (
   CONSTRAINT class_sessions_module_id_fkey FOREIGN KEY ("ModuleId") REFERENCES public."TblModule"("Id") ON DELETE CASCADE,
   CONSTRAINT class_sessions_semester_id_fkey FOREIGN KEY ("SemesterId") REFERENCES public."TblSemester"("Id") ON DELETE CASCADE
 );
+
+CREATE TABLE public."TblSemesterDashboardSummary" (
+  "SemesterId" bigint NOT NULL,
+  "SemesterName" text NOT NULL,
+  "StartDate" date NOT NULL,
+  "EndDate" date NOT NULL,
+  "SemesterHealthRate" double precision NOT NULL,
+  "TodaySessionsCount" integer NOT NULL,
+  "UpcomingSessionsCount" integer NOT NULL,
+  "TotalSessions" integer NOT NULL,
+  "PresentSessions" integer NOT NULL,
+  "AbsentSessions" integer NOT NULL,
+  "LateSessions" integer NOT NULL,
+  "CancelledSessions" integer NOT NULL,
+  "HolidaySessions" integer NOT NULL,
+  "ValidSessions" integer NOT NULL,
+  "CalculatedRate" double precision NOT NULL,
+  "WarningsJson" text NOT NULL DEFAULT '[]'::text,
+  "UpdatedAt" timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT TblSemesterDashboardSummary_pkey PRIMARY KEY ("SemesterId"),
+  CONSTRAINT TblSemesterDashboardSummary_semester_id_fkey FOREIGN KEY ("SemesterId") REFERENCES public."TblSemester"("Id") ON DELETE CASCADE
+);

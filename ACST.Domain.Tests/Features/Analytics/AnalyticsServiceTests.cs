@@ -86,6 +86,20 @@ public class AnalyticsServiceTests
         _context.TblSessions.AddRange(sessions);
         await _context.SaveChangesAsync();
 
+        // Verify cache miss fallback works first and creates the entry
+        var initialResult = await _service.GetDashboardSummaryAsync(1);
+        Assert.True(initialResult.IsSuccess);
+        Assert.Equal("Test Semester", initialResult.Data.SemesterName);
+
+        // Verify precalculated entry exists in database
+        var cachedRecord = await _context.TblSemesterDashboardSummaries.FirstOrDefaultAsync(c => c.SemesterId == 1);
+        Assert.NotNull(cachedRecord);
+        Assert.Equal("Test Semester", cachedRecord.SemesterName);
+
+        // Manually mutate the cached record to prove subsequent reads serve from cache
+        cachedRecord.SemesterName = "Cached Test Semester";
+        await _context.SaveChangesAsync();
+
         // Act
         var result = await _service.GetDashboardSummaryAsync(1);
         var dailyWeeklyResult = await _service.GetDashboardDailyWeeklyAsync(1);
@@ -96,7 +110,7 @@ public class AnalyticsServiceTests
         var data = result.Data;
         Assert.NotNull(data);
 
-        Assert.Equal("Test Semester", data.SemesterName);
+        Assert.Equal("Cached Test Semester", data.SemesterName);
         Assert.Equal(new DateOnly(2026, 1, 1), data.StartDate);
         Assert.Equal(new DateOnly(2026, 1, 31), data.EndDate);
 
