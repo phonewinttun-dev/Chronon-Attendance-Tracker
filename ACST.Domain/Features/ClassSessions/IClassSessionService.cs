@@ -15,4 +15,5 @@ public interface IClassSessionService
     Task<Result<string>> MarkAttendanceWithMagicLinkAsync(Guid token);
     Task<Result> UpdateSessionAsync(long id, UpdateClassSessionRequest request);
     Task<Result> DeleteSessionAsync(long id);
+    Task SyncGoogleCalendarEventAsync(long sessionId);
 }

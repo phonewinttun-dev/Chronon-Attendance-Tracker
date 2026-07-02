@@ -721,6 +721,11 @@ public class ModuleServiceTests
         {
             return Task.FromResult(Result.Success("Fake session deleted."));
         }
+
+        public Task SyncGoogleCalendarEventAsync(long sessionId)
+        {
+            return Task.CompletedTask;
+        }
     }
 
     #endregion

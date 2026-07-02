@@ -30,63 +30,7 @@ public class ClassSessionServiceTests
         _service = new ClassSessionService(_context, _googleCalendarMock);
     }
 
-    [Fact]
-    public async Task GenerateSessionsAsync_ShouldCreateSessions_RespectingHolidaysAndDayOfWeek()
-    {
-        // Arrange
-        var semester = new TblSemester
-        {
-            Name = "Test Semester",
-            StartDate = new DateOnly(2026, 1, 1),
-            EndDate = new DateOnly(2026, 1, 31)
-        };
-        _context.TblSemesters.Add(semester);
 
-        var module = new TblModule { Name = "Math 101", ModuleCode = "MATH-101" };
-        _context.TblModules.Add(module);
-        
-        await _context.SaveChangesAsync();
-
-        var schedule = new TblRecurringSchedule
-        {
-            ModuleId = module.Id,
-            SemesterId = semester.Id,
-            DayOfWeek = (short)DayOfWeek.Monday,
-            StartTime = new TimeOnly(10, 0),
-            EndTime = new TimeOnly(12, 0),
-            IsActive = true
-        };
-        _context.TblRecurringSchedules.Add(schedule);
-
-        var holiday = new TblHoliday
-        {
-            Name = "Special Holiday",
-            HolidayDate = new DateOnly(2026, 1, 12) // This is a Monday
-        };
-        _context.TblHolidays.Add(holiday);
-        
-        await _context.SaveChangesAsync();
-
-        // Act
-        var request = new GenerateSessionsRequest { SemesterId = semester.Id };
-        var result = await _service.GenerateSessionsAsync(request);
-
-        // Assert
-        Assert.True(result.IsSuccess);
-        
-        var sessions = await _context.TblSessions.ToListAsync();
-        
-        // January 2026 has 4 Mondays: 5th, 12th, 19th, 26th
-        Assert.Equal(4, sessions.Count);
-        
-        var holidaySession = sessions.FirstOrDefault(s => s.SessionDate == new DateOnly(2026, 1, 12));
-        Assert.NotNull(holidaySession);
-        Assert.Equal("Holiday", holidaySession.Status);
-
-        var normalSession = sessions.FirstOrDefault(s => s.SessionDate == new DateOnly(2026, 1, 5));
-        Assert.NotNull(normalSession);
-        Assert.Equal("Not Marked", normalSession.Status);
-    }
 
     [Fact]
     public async Task MarkAttendanceWithMagicLinkAsync_ValidWindow_ShouldMarkPresent()

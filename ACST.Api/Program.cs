@@ -1,4 +1,6 @@
 using ACST.Domain.Features;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -18,6 +20,16 @@ try
 
     // Add Domain feature services and DB Context
     builder.AddDomain();
+
+    // Configure Hangfire Background Jobs
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    builder.Services.AddHangfire(config => config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(connectionString)));
+
+    builder.Services.AddHangfireServer();
 
     // Add CORS policy for Blazor WebApp
     builder.Services.AddCors(options =>
@@ -43,6 +55,8 @@ try
     app.UseCors("AllowAll");
 
     app.UseHttpsRedirection();
+
+    app.UseHangfireDashboard();
 
     app.UseAuthorization();
 

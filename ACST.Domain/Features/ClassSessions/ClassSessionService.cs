@@ -3,8 +3,10 @@ using ACST.Domain.DTOs.ClassSession;
 using ACST.Domain.DTOs.Module;
 using ACST.Domain.Features.GoogleCalendar;
 using ACST.Shared;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +18,20 @@ public class ClassSessionService : IClassSessionService
 {
     private readonly AppDbContext _context;
     private readonly IGoogleCalendarService _googleCalendarService;
+    private readonly IConfiguration? _configuration;
+    private readonly IBackgroundJobClient? _backgroundJobClient;
     private static readonly TimeSpan MyanmarOffset = TimeSpan.FromHours(6.5);
 
-    public ClassSessionService(AppDbContext context, IGoogleCalendarService googleCalendarService)
+    public ClassSessionService(
+        AppDbContext context, 
+        IGoogleCalendarService googleCalendarService,
+        IConfiguration? configuration = null,
+        IBackgroundJobClient? backgroundJobClient = null)
     {
         _context = context;
         _googleCalendarService = googleCalendarService;
+        _configuration = configuration;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     private IQueryable<TblSession> activeSession => _context.TblSessions
@@ -125,9 +135,14 @@ public class ClassSessionService : IClassSessionService
     {
         try
         {
+            // Verify that the semester exists
             var semester = await _context.TblSemesters.FirstOrDefaultAsync(s => s.Id == request.SemesterId && !s.IsDeleted);
-            if (semester == null) return Result.Failure("Semester not found.");
+            if (semester is null)
+            {
+                return Result.Failure("Semester not found.");
+            }
 
+            // Query active recurring schedules with their modules
             var schedulesQuery = _context.TblRecurringSchedules
                 .Include(r => r.Module)
                 .Where(r => r.SemesterId == request.SemesterId && r.IsActive && !r.IsDeleted && (r.Module == null || !r.Module.IsDeleted));
@@ -140,80 +155,133 @@ public class ClassSessionService : IClassSessionService
             var schedules = await schedulesQuery.ToListAsync();
             if (!schedules.Any()) return Result.Failure("No active recurring schedules found for this semester.");
 
+            // Load active holidays and map to a HashSet for O(1) lookups
             var holidays = await _context.TblHolidays
                 .Where(h => !h.IsDeleted && h.HolidayDate >= semester.StartDate && h.HolidayDate <= semester.EndDate)
                 .Select(h => h.HolidayDate)
                 .ToListAsync();
 
-            var existingSessions = await _context.TblSessions
+            var holidaySet = new HashSet<DateOnly>(holidays);
+
+            // Fetch existing sessions and map to a HashSet of composite keys for O(1) lookups
+            var existingSessionsQuery = await _context.TblSessions
                 .Where(s => s.SemesterId == semester.Id && !s.IsDeleted)
                 .Select(s => new { s.RecurringScheduleId, s.SessionDate })
                 .ToListAsync();
+
+            var existingSessionsSet = new HashSet<(long RecurringScheduleId, DateOnly SessionDate)>
+                (existingSessionsQuery.Select(e => (e.RecurringScheduleId, e.SessionDate)));
+
+            // Dynamic Timezone Handling
+            string timezoneId = "Asia/Yangon";
+            TimeZoneInfo localTimeZone = TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
 
             var newSessions = new List<TblSession>();
             int createdCount = 0;
 
             foreach (var schedule in schedules)
             {
-                for (var date = semester.StartDate; date <= semester.EndDate; date = date.AddDays(1))
+                // Find the first date matching the day of the week constraint mathematically
+                int daysToAdd = ((int)schedule.DayOfWeek - (int)semester.StartDate.DayOfWeek + 7) % 7;
+                var firstDate = semester.StartDate.AddDays(daysToAdd);
+
+                // Iterate only over target weekdays
+                for (var date = firstDate; date <= semester.EndDate; date = date.AddDays(7))
                 {
-                    if ((short)date.DayOfWeek == schedule.DayOfWeek)
+                    if (!existingSessionsSet.Contains((schedule.Id, date)))
                     {
-                        bool exists = existingSessions.Any(e => e.RecurringScheduleId == schedule.Id && e.SessionDate == date);
-                        if (!exists)
+                        var status = holidaySet.Contains(date) ? "Holiday" : "Not Marked";
+
+                        // Convert local time to UTC dynamically based on TimeZoneInfo rules
+                        var startDateTimeLocal = new DateTime(date.Year, date.Month, date.Day, schedule.StartTime.Hour, schedule.StartTime.Minute, schedule.StartTime.Second);
+                        var endDateTimeLocal = new DateTime(date.Year, date.Month, date.Day, schedule.EndTime.Hour, schedule.EndTime.Minute, schedule.EndTime.Second);
+
+                        var startUtc = TimeZoneInfo.ConvertTimeToUtc(startDateTimeLocal, localTimeZone);
+                        var endUtc = TimeZoneInfo.ConvertTimeToUtc(endDateTimeLocal, localTimeZone);
+
+                        var sessionToken = Guid.NewGuid();
+
+                        var session = new TblSession
                         {
-                            var status = holidays.Contains(date) ? "Holiday" : "Not Marked";
+                            RecurringScheduleId = schedule.Id,
+                            ModuleId = schedule.ModuleId,
+                            SemesterId = semester.Id,
+                            SessionDate = date,
+                            StartDatetime = startUtc,
+                            EndDatetime = endUtc,
+                            Status = status,
+                            MagicLinkToken = sessionToken,
+                            GoogleEventId = null,
+                            IsDeleted = false
+                        };
+                        newSessions.Add(session);
+                        createdCount++;
+                    }
+                }
+            }
 
-                            // Convert local time in Myanmar to UTC
-                            var startDateTimeLocal = new DateTime(date.Year, date.Month, date.Day, schedule.StartTime.Hour, schedule.StartTime.Minute, schedule.StartTime.Second);
-                            var endDateTimeLocal = new DateTime(date.Year, date.Month, date.Day, schedule.EndTime.Hour, schedule.EndTime.Minute, schedule.EndTime.Second);
+            // Bulk save generated sessions to database
+            if (newSessions.Any())
+            {
+                _context.TblSessions.AddRange(newSessions);
+                await _context.SaveChangesAsync();
 
-                            var startUtc = DateTime.UtcNow;
-                            var endUtc = DateTime.UtcNow;
-
-                            
-
-                             var sessionToken = Guid.NewGuid();
-
-                             // Mock google event creation if enabled
-                             Result<string> googleResult = Result<string>.Failure("Google Calendar sync disabled.");
-                             if (request.SyncWithGoogleCalendar)
-                             {
-                                 var description = $"Module: {schedule.Module.Name}\n\nMark Attendance: https://localhost:7119/api/attendance/magic-link/{sessionToken}";
-                                 googleResult = await _googleCalendarService.CreateEventAsync(schedule.Module.Name, startUtc, endUtc, description, sessionToken);
-                             }
-
-                             var session = new TblSession
-                             {
-                                 RecurringScheduleId = schedule.Id,
-                                 ModuleId = schedule.ModuleId,
-                                 SemesterId = semester.Id,
-                                 SessionDate = date,
-                                 StartDatetime = startUtc,
-                                 EndDatetime = endUtc,
-                                 Status = status,
-                                 MagicLinkToken = sessionToken,
-                                 GoogleEventId = googleResult.IsSuccess ? googleResult.Data : null,
-                                 IsDeleted = false
-                             };
-                             newSessions.Add(session);
-                            createdCount++;
+                if (request.SyncWithGoogleCalendar)
+                {
+                    foreach (var session in newSessions)
+                    {
+                        if (_backgroundJobClient is not null)
+                        {
+                            _backgroundJobClient.Enqueue<IClassSessionService>(service => 
+                                service.SyncGoogleCalendarEventAsync(session.Id));
+                        }
+                        else
+                        {
+                            await SyncGoogleCalendarEventAsync(session.Id);
                         }
                     }
                 }
             }
 
-            if (newSessions.Any())
-            {
-                _context.TblSessions.AddRange(newSessions);
-                await _context.SaveChangesAsync();
-            }
-
             return Result.Success($"Successfully generated {createdCount} new class sessions.");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return Result.Failure($"Failed to generate sessions: {ex.Message}");
+            return Result.Failure("Failed to generate sessions due to an unexpected error.");
+        }
+    }
+
+    public async Task SyncGoogleCalendarEventAsync(long sessionId)
+    {
+        var sessionData = await _context.TblSessions
+            .AsNoTracking()
+            .Where(s => s.Id == sessionId && !s.IsDeleted)
+            .Select(s => new
+            {
+                s.StartDatetime,
+                s.EndDatetime,
+                s.MagicLinkToken,
+                ModuleName = s.Module.Name
+            })
+            .FirstOrDefaultAsync();
+
+        if (sessionData == null) return;
+
+        var baseUrl = _configuration?["BaseUrl"] ?? "https://localhost:7119";
+        var description = $"Module: {sessionData.ModuleName}\n\nMark Attendance: {baseUrl.TrimEnd('/')}/api/attendance/magic-link/{sessionData.MagicLinkToken}";
+
+        var googleResult = await _googleCalendarService.CreateEventAsync(
+            sessionData.ModuleName, 
+            sessionData.StartDatetime, 
+            sessionData.EndDatetime, 
+            description, 
+            sessionData.MagicLinkToken);
+
+        if (googleResult.IsSuccess)
+        {
+            await _context.TblSessions
+                .Where(s => s.Id == sessionId)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(s => s.GoogleEventId, googleResult.Data));
         }
     }
     #endregion
@@ -257,7 +325,7 @@ public class ClassSessionService : IClassSessionService
             if (session == null) return Result<string>.Failure("Invalid attendance link.");
 
             var nowUtc = DateTime.UtcNow;
-            
+
             // Allow 15 mins before to 1 hour after
             var validFrom = session.StartDatetime.AddMinutes(-15);
             var validTo = session.EndDatetime.AddHours(1);
@@ -309,7 +377,7 @@ public class ClassSessionService : IClassSessionService
             session.SessionDate = request.SessionDate;
             session.StartDatetime = DateTime.SpecifyKind(request.StartDatetime, DateTimeKind.Utc);
             session.EndDatetime = DateTime.SpecifyKind(request.EndDatetime, DateTimeKind.Utc);
-            
+
             var oldStatus = session.Status;
             session.Status = request.Status;
 
@@ -333,7 +401,7 @@ public class ClassSessionService : IClassSessionService
     }
     #endregion
 
-    #region Delete Session  
+    #region Delete Session
     public async Task<Result> DeleteSessionAsync(long id)
     {
         try
