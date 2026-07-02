@@ -74,6 +74,7 @@ CREATE TABLE public."TblSemesterDashboardSummary" (
   "HolidaySessions" integer NOT NULL,
   "ValidSessions" integer NOT NULL,
   "CalculatedRate" double precision NOT NULL,
+  "TodayAttendanceRate" double precision,
   "WarningsJson" text NOT NULL DEFAULT '[]'::text,
   "UpdatedAt" timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT TblSemesterDashboardSummary_pkey PRIMARY KEY ("SemesterId"),

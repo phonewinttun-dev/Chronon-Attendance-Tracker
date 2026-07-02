@@ -47,6 +47,7 @@ public class DashboardSummaryDto
     public int HolidaySessions { get; set; }
     public int ValidSessions { get; set; }
     public double CalculatedRate { get; set; }
+    public double? TodayAttendanceRate { get; set; }
 
     // Breakdowns
     public List<DailyAttendanceDto> DailyAttendance { get; set; } = new();

@@ -19,6 +19,7 @@ public partial class TblSemesterDashboardSummary
     public int HolidaySessions { get; set; }
     public int ValidSessions { get; set; }
     public double CalculatedRate { get; set; }
+    public double? TodayAttendanceRate { get; set; }
     public string WarningsJson { get; set; } = "[]";
     public DateTime UpdatedAt { get; set; }
 

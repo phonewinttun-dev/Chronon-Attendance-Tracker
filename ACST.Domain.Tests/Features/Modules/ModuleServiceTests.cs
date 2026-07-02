@@ -644,6 +644,18 @@ public class ModuleServiceTests
         Assert.True(result.IsSuccess);
     }
 
+    [Fact]
+    public async Task GetAllModulesAsync_WhenNoModulesExist_ShouldReturnSuccessWithEmptyList()
+    {
+        // Act
+        var result = await _service.GetAllModulesAsync(new PaginationRequest());
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Empty(result.Data);
+        Assert.Equal(0, result.Pagination.TotalCount);
+    }
+
     #endregion
 
     #region Helper Test Doubles

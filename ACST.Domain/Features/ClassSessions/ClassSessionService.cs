@@ -65,7 +65,7 @@ public class ClassSessionService : IClassSessionService
             int totalCount = await query.CountAsync();
             if (totalCount == 0)
             {
-                return PagedResult<ClassSessionDto>.Failure("No sessions found.");
+                return PagedResult<ClassSessionDto>.Success(new List<ClassSessionDto>(), new Pagination(request.PageNumber, request.PageSize, 0));
             }
 
             var orderedQuery = query.OrderBy(s => s.StartDatetime);

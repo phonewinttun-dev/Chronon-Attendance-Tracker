@@ -48,7 +48,7 @@ public class ModuleService : IModuleService
             int totalCount = await query.CountAsync();
             if (totalCount == 0)
             {
-                return PagedResult<ModuleDto>.Failure("No modules found.");
+                return PagedResult<ModuleDto>.Success(new List<ModuleDto>(), new Pagination(request.PageNumber, request.PageSize, 0));
             }
 
             query = query.OrderBy(m => m.Name);

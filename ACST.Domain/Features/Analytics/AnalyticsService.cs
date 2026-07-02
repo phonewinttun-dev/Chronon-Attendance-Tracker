@@ -137,6 +137,7 @@ public class AnalyticsService : IAnalyticsService
                 HolidaySessions = cache.HolidaySessions,
                 ValidSessions = cache.ValidSessions,
                 CalculatedRate = cache.CalculatedRate,
+                TodayAttendanceRate = cache.TodayAttendanceRate,
                 
                 DailyAttendance = new(),
                 WeeklyAttendance = new(),
@@ -324,6 +325,17 @@ public class AnalyticsService : IAnalyticsService
         int todaySessions = sessions.Count(s => s.SessionDate == today);
         int upcomingSessions = sessions.Count(s => s.SessionDate > today && s.SessionDate <= today.AddDays(7));
 
+        var todaySessionsList = sessions.Where(s => s.SessionDate == today).ToList();
+        double? todayAttendanceRate = null;
+        if (todaySessionsList.Any())
+        {
+            var todayStats = CalculateStats(todaySessionsList);
+            if (todayStats.Valid > 0)
+            {
+                todayAttendanceRate = Math.Round(todayStats.AttendanceRate, 2);
+            }
+        }
+
         var overallStats = CalculateStats(sessions);
         double healthRate = Math.Round(overallStats.AttendanceRate, 2);
 
@@ -352,6 +364,7 @@ public class AnalyticsService : IAnalyticsService
         summary.SemesterHealthRate = healthRate;
         summary.TodaySessionsCount = todaySessions;
         summary.UpcomingSessionsCount = upcomingSessions;
+        summary.TodayAttendanceRate = todayAttendanceRate;
         summary.TotalSessions = overallStats.Total;
         summary.PresentSessions = overallStats.Present;
         summary.AbsentSessions = overallStats.Absent;

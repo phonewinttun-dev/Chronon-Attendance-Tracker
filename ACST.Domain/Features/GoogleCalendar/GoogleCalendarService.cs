@@ -246,7 +246,6 @@ public class GoogleCalendarService : IGoogleCalendarService
 
     #endregion
 
-
     #region CreateEvent
 
     public async Task<Result<string>> CreateEventAsync(string title, DateTime startUtc, DateTime endUtc, string description, Guid sessionToken)

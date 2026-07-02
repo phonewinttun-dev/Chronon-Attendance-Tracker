@@ -332,4 +332,16 @@ public class ClassSessionServiceTests
         Assert.Single(sessions);
         Assert.Equal(session1.Id, sessions.First().Id);
     }
+
+    [Fact]
+    public async Task GetSessionsAsync_WhenNoSessionsExist_ShouldReturnSuccessWithEmptyList()
+    {
+        // Act
+        var result = await _service.GetSessionsAsync(new GetClassSessionsRequest());
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Empty(result.Data);
+        Assert.Equal(0, result.Pagination.TotalCount);
+    }
 }

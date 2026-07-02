@@ -126,6 +126,7 @@ public class AnalyticsServiceTests
         // Present (1) / Valid (3) * 100 = 33.33%
         Assert.Equal(33.33, data.SemesterHealthRate);
         Assert.Equal(33.33, data.CalculatedRate);
+        Assert.Null(data.TodayAttendanceRate); // No sessions scheduled for today in this test
 
         // Verify that breakdowns are empty in summary DTO
         Assert.Empty(data.DailyAttendance);
@@ -204,5 +205,66 @@ public class AnalyticsServiceTests
         Assert.Equal(1, mod1.TotalPresent);
         Assert.Equal(1, mod1.TotalAbsent);
         Assert.Equal(33.33, mod1.AttendanceRate);
+    }
+
+    [Fact]
+    public async Task GetDashboardSummaryAsync_ShouldCalculateTodayAttendanceRateCorrectly()
+    {
+        // Arrange
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(6.5));
+        var semester = new TblSemester
+        {
+            Id = 2,
+            Name = "Semester 2",
+            StartDate = today.AddDays(-10),
+            EndDate = today.AddDays(10)
+        };
+        _context.TblSemesters.Add(semester);
+
+        var module = new TblModule { Id = 2, Name = "Module 2", ModuleCode = "MOD-2", SemesterId = 2 };
+        _context.TblModules.Add(module);
+
+        var schedule = new TblRecurringSchedule { Id = 2, ModuleId = 2, SemesterId = 2 };
+        _context.TblRecurringSchedules.Add(schedule);
+
+        // Add sessions for today:
+        // 1. Session today - Present (valid)
+        // 2. Session today - Absent (valid)
+        // 3. Session today - Cancelled (excluded)
+        var sessions = new[]
+        {
+            new TblSession
+            {
+                Id = 10, SemesterId = 2, ModuleId = 2, RecurringScheduleId = 2,
+                SessionDate = today, StartDatetime = DateTime.UtcNow, EndDatetime = DateTime.UtcNow.AddHours(1),
+                Status = "Present"
+            },
+            new TblSession
+            {
+                Id = 11, SemesterId = 2, ModuleId = 2, RecurringScheduleId = 2,
+                SessionDate = today, StartDatetime = DateTime.UtcNow.AddHours(2), EndDatetime = DateTime.UtcNow.AddHours(3),
+                Status = "Absent"
+            },
+            new TblSession
+            {
+                Id = 12, SemesterId = 2, ModuleId = 2, RecurringScheduleId = 2,
+                SessionDate = today, StartDatetime = DateTime.UtcNow.AddHours(4), EndDatetime = DateTime.UtcNow.AddHours(5),
+                Status = "Cancelled"
+            }
+        };
+
+        _context.TblSessions.AddRange(sessions);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.GetDashboardSummaryAsync(2);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var data = result.Data;
+        Assert.NotNull(data);
+        
+        // Present (1) / Valid (2) * 100 = 50%
+        Assert.Equal(50.0, data.TodayAttendanceRate);
     }
 }

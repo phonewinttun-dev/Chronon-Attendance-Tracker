@@ -93,7 +93,7 @@ else
     else
     {
         <!-- Metrics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-card border border-border p-6 rounded-lg shadow-sm">
                 <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Today's Classes</h3>
                 <div class="text-3xl font-bold text-foreground font-mono">
@@ -109,9 +109,16 @@ else
             </div>
 
             <div class="bg-card border border-border p-6 rounded-lg shadow-sm relative overflow-hidden hover:border-primary/50 transition-all cursor-pointer" @onclick="() => SetActiveTab(Tab.Module)">
-                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Attendance Rate</h3>
+                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Semester Attendance</h3>
                 <div class="text-3xl font-bold font-mono @GetHealthColorClass(_summary.SemesterHealthRate)">
                     @_summary.SemesterHealthRate%
+                </div>
+            </div>
+
+            <div class="bg-card border border-border p-6 rounded-lg shadow-sm relative overflow-hidden hover:border-primary/50 transition-all cursor-pointer" @onclick="() => SetActiveTab(Tab.Daily)">
+                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Today's Attendance</h3>
+                <div class="text-3xl font-bold font-mono @GetHealthColorClass(_summary.TodayAttendanceRate ?? 0)">
+                    @(_summary.TodayAttendanceRate ?? 0)%
                 </div>
             </div>
         </div>
@@ -786,8 +793,8 @@ else
 
     private RenderFragment RenderDashboardSkeletons => __builder =>
     {
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            @for (int i = 0; i < 3; i++)
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            @for (int i = 0; i < 4; i++)
             {
                 <div class="bg-card border border-border p-6 rounded-lg shadow-sm animate-pulse">
                     <div class="h-4 bg-muted rounded w-24 mb-3"></div>
