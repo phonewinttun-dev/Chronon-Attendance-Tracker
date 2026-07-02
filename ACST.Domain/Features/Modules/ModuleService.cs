@@ -750,6 +750,7 @@ public class ModuleService : IModuleService
     }
     #endregion
 
+    #region Delete Module
     public async Task<Result> DeleteModuleAsync(long id)
     {
         try
@@ -797,4 +798,5 @@ public class ModuleService : IModuleService
             return Result.Failure($"Failed to delete module: {ex.Message}");
         }
     }
+    #endregion
 }

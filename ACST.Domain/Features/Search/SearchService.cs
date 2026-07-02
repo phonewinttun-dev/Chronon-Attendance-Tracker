@@ -14,6 +14,7 @@ namespace ACST.Domain.Features.Search
             _context = context;
         }
 
+        #region Search Module
         public async Task<PagedResult<SearchModuleDto>> SearchModuleAsync(SearchDto searchRequest, int pageNumber = 1, int pageSize = 10, long? semesterId = null)
         {
             try
@@ -75,7 +76,9 @@ namespace ACST.Domain.Features.Search
                 return PagedResult<SearchModuleDto>.Failure($"Failed to search modules: {ex.Message}");
             }
         }
+        #endregion
 
+        #region Search Semester
         public async Task<PagedResult<SearchSemesterDto>> SearchSemesterAsync(SearchDto searchRequest, int pageNumber = 1, int pageSize = 10)
         {
             try
@@ -117,7 +120,9 @@ namespace ACST.Domain.Features.Search
                 return PagedResult<SearchSemesterDto>.Failure($"Failed to search semesters: {ex.Message}");
             }
         }
+        #endregion
 
+        #region Search Session
         public async Task<PagedResult<SearchClassSessionDto>> SearchSessionAsync(SearchDto searchRequest, int pageNumber = 1, int pageSize = 10, long? semesterId = null, long? moduleId = null)
         {
             try
@@ -171,6 +176,7 @@ namespace ACST.Domain.Features.Search
                 return PagedResult<SearchClassSessionDto>.Failure($"Failed to search class sessions: {ex.Message}");
             }
         }
+        #endregion
     }
 }
 

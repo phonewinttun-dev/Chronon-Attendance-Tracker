@@ -260,3 +260,10 @@ public class SearchClassSessionDto
     public string? GoogleEventId { get; set; }
 }
 
+public class DashboardDailyWeeklyDto
+{
+    public List<DailyAttendanceDto> DailyAttendance { get; set; } = new();
+    public List<WeeklyAttendanceDto> WeeklyAttendance { get; set; } = new();
+    public List<MonthlyAttendanceDto> MonthlyAttendance { get; set; } = new();
+}
+

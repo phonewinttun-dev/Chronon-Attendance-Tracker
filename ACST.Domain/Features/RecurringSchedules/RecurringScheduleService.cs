@@ -26,6 +26,7 @@ public class RecurringScheduleService : IRecurringScheduleService
         _googleCalendarService = googleCalendarService;
     }
 
+    #region Get schedules by module
     public async Task<Result<IEnumerable<RecurringScheduleDto>>> GetSchedulesByModuleAsync(long moduleId)
     {
         try
@@ -58,7 +59,9 @@ public class RecurringScheduleService : IRecurringScheduleService
             return Result<IEnumerable<RecurringScheduleDto>>.Failure($"Failed to retrieve recurring schedules: {ex.Message}");
         }
     }
+    #endregion
 
+    #region Create schedule
     public async Task<Result<RecurringScheduleDto>> CreateScheduleAsync(long moduleId, long semesterId, CreateRecurringScheduleRequest request)
     {
         try
@@ -74,7 +77,7 @@ public class RecurringScheduleService : IRecurringScheduleService
             {
                 return Result<RecurringScheduleDto>.Failure("Semester not found.");
             }
-            
+
             if (request.StartTime >= request.EndTime)
             {
                 return Result<RecurringScheduleDto>.Failure("Start time must be before end time.");
@@ -100,7 +103,6 @@ public class RecurringScheduleService : IRecurringScheduleService
                 ModuleId = moduleId
             });
 
-            // We must refetch to get module and semester names for DTO
             var created = await _context.TblRecurringSchedules
                 .Include(r => r.Module)
                 .Include(r => r.Semester)
@@ -126,7 +128,9 @@ public class RecurringScheduleService : IRecurringScheduleService
             return Result<RecurringScheduleDto>.Failure($"Failed to create recurring schedule: {ex.Message}");
         }
     }
+    #endregion
 
+    #region Delete Schedule
     public async Task<Result> DeleteScheduleAsync(long id)
     {
         try
@@ -158,4 +162,5 @@ public class RecurringScheduleService : IRecurringScheduleService
             return Result.Failure($"Failed to delete recurring schedule: {ex.Message}");
         }
     }
+    #endregion
 }

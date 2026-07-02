@@ -116,4 +116,6 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 | :--- | :--- | :--- | :--- |
 | `GET` | `api/Analytics/overall/{semesterId}` | `GetOverall` | Retrieves overall statistics and analytics summary for a given semester ID. |
 | `GET` | `api/Analytics/modules/{moduleId}/{semesterId}` | `GetByModule` | Retrieves detailed, module-level analytics for a specific module and semester. |
-| `GET` | `api/Analytics/dashboard/{semesterId}` | `GetDashboardSummary` | Retrieves the quick-glance dashboard metrics and summary for a given semester. |
+| `GET` | `api/semesters/{id}/dashboard/summary` | `GetDashboardSummary` | Retrieves overall attendance rate for current semester & warnings. |
+| `GET` | `api/semesters/{id}/dashboard/daily-weekly` | `GetDashboardDailyWeekly` | Retrieves day/week chart data. |
+| `GET` | `api/semesters/{id}/dashboard/modules` | `GetDashboardModules` | Retrieves module breakdown. |

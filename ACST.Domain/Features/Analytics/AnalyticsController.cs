@@ -30,10 +30,24 @@ public class AnalyticsController : ControllerBase
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
-    [HttpGet("dashboard/{semesterId}")]
-    public async Task<IActionResult> GetDashboardSummary(long semesterId)
+    [HttpGet("/api/semesters/{id}/dashboard/summary")]
+    public async Task<IActionResult> GetDashboardSummary(long id)
     {
-        var result = await _analyticsService.GetDashboardSummaryAsync(semesterId);
+        var result = await _analyticsService.GetDashboardSummaryAsync(id);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpGet("/api/semesters/{id}/dashboard/daily-weekly")]
+    public async Task<IActionResult> GetDashboardDailyWeekly(long id)
+    {
+        var result = await _analyticsService.GetDashboardDailyWeeklyAsync(id);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpGet("/api/semesters/{id}/dashboard/modules")]
+    public async Task<IActionResult> GetDashboardModules(long id)
+    {
+        var result = await _analyticsService.GetDashboardModulesAsync(id);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 }

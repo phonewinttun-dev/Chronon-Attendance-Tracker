@@ -37,7 +37,7 @@ public class AnalyticsServiceTests
         };
         _context.TblSemesters.Add(semester);
 
-        var module = new TblModule { Id = 1, Name = "Module 1", ModuleCode = "MOD-1" };
+        var module = new TblModule { Id = 1, Name = "Module 1", ModuleCode = "MOD-1", SemesterId = 1 };
         _context.TblModules.Add(module);
 
         var schedule = new TblRecurringSchedule { Id = 1, ModuleId = 1, SemesterId = 1 };
@@ -88,6 +88,8 @@ public class AnalyticsServiceTests
 
         // Act
         var result = await _service.GetDashboardSummaryAsync(1);
+        var dailyWeeklyResult = await _service.GetDashboardDailyWeeklyAsync(1);
+        var modulesResult = await _service.GetDashboardModulesAsync(1);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -102,7 +104,7 @@ public class AnalyticsServiceTests
         Assert.Equal(5, data.TotalSessions);
         Assert.Equal(1, data.PresentSessions);
         Assert.Equal(1, data.AbsentSessions);
-        Assert.Equal(1, data.LateSessions);
+        Assert.Equal(0, data.LateSessions);
         Assert.Equal(1, data.CancelledSessions);
         Assert.Equal(1, data.HolidaySessions);
         Assert.Equal(3, data.ValidSessions); // 5 - (1 cancelled + 1 holiday)
@@ -111,17 +113,28 @@ public class AnalyticsServiceTests
         Assert.Equal(33.33, data.SemesterHealthRate);
         Assert.Equal(33.33, data.CalculatedRate);
 
+        // Verify that breakdowns are empty in summary DTO
+        Assert.Empty(data.DailyAttendance);
+        Assert.Empty(data.WeeklyAttendance);
+        Assert.Empty(data.MonthlyAttendance);
+        Assert.Empty(data.ModuleAttendance);
+
+        // Assert DailyWeekly breakdown
+        Assert.True(dailyWeeklyResult.IsSuccess);
+        var dwData = dailyWeeklyResult.Data;
+        Assert.NotNull(dwData);
+
         // Daily breakdown
         // Mondays: 4 sessions (Jan 5 - Present, Jan 12 - Absent, Jan 19 - Late, Jan 26 - Cancelled)
         // Valid Monday sessions = 3 (Total 4 - Cancelled 1)
         // Present Monday sessions = 1
         // Monday Rate = 1/3 * 100 = 33.33%
-        var mondayStats = data.DailyAttendance.FirstOrDefault(d => d.DayOfWeek == "Monday");
+        var mondayStats = dwData.DailyAttendance.FirstOrDefault(d => d.DayOfWeek == "Monday");
         Assert.NotNull(mondayStats);
         Assert.Equal(4, mondayStats.TotalSessions);
         Assert.Equal(1, mondayStats.Present);
         Assert.Equal(1, mondayStats.Absent);
-        Assert.Equal(1, mondayStats.Late);
+        Assert.Equal(0, mondayStats.Late);
         Assert.Equal(1, mondayStats.Cancelled);
         Assert.Equal(3, mondayStats.ValidSessions);
         Assert.Equal(33.33, mondayStats.AttendanceRate);
@@ -129,7 +142,7 @@ public class AnalyticsServiceTests
         // Thursdays: 1 session (Jan 15 - Holiday)
         // Valid Thursday sessions = 0 (Total 1 - Holiday 1)
         // Thursday Rate = 0%
-        var thursdayStats = data.DailyAttendance.FirstOrDefault(d => d.DayOfWeek == "Thursday");
+        var thursdayStats = dwData.DailyAttendance.FirstOrDefault(d => d.DayOfWeek == "Thursday");
         Assert.NotNull(thursdayStats);
         Assert.Equal(1, thursdayStats.TotalSessions);
         Assert.Equal(0, thursdayStats.Present);
@@ -138,17 +151,10 @@ public class AnalyticsServiceTests
         Assert.Equal(0, thursdayStats.AttendanceRate);
 
         // Weekly breakdown (calendar weeks starting Monday)
-        // Sessions:
-        // Jan 5 (Mon) -> Week starting Jan 5 (Mon)
-        // Jan 12 (Mon) -> Week starting Jan 12 (Mon)
-        // Jan 15 (Thu) -> Week starting Jan 12 (Mon)
-        // Jan 19 (Mon) -> Week starting Jan 19 (Mon)
-        // Jan 26 (Mon) -> Week starting Jan 26 (Mon)
-        
-        Assert.Equal(4, data.WeeklyAttendance.Count);
+        Assert.Equal(4, dwData.WeeklyAttendance.Count);
 
         // Week 1 (Jan 5 - Jan 11): Jan 5 session (Present) -> 100%
-        var w1 = data.WeeklyAttendance.FirstOrDefault(w => w.WeekStartDate == new DateOnly(2026, 1, 5));
+        var w1 = dwData.WeeklyAttendance.FirstOrDefault(w => w.WeekStartDate == new DateOnly(2026, 1, 5));
         Assert.NotNull(w1);
         Assert.Equal(1, w1.TotalSessions);
         Assert.Equal(1, w1.Present);
@@ -156,7 +162,7 @@ public class AnalyticsServiceTests
         Assert.Equal(100.0, w1.AttendanceRate);
 
         // Week 2 (Jan 12 - Jan 18): Jan 12 (Absent), Jan 15 (Holiday) -> Valid = 1, Present = 0 -> 0%
-        var w2 = data.WeeklyAttendance.FirstOrDefault(w => w.WeekStartDate == new DateOnly(2026, 1, 12));
+        var w2 = dwData.WeeklyAttendance.FirstOrDefault(w => w.WeekStartDate == new DateOnly(2026, 1, 12));
         Assert.NotNull(w2);
         Assert.Equal(2, w2.TotalSessions);
         Assert.Equal(0, w2.Present);
@@ -165,11 +171,24 @@ public class AnalyticsServiceTests
         Assert.Equal(0.0, w2.AttendanceRate);
 
         // Monthly breakdown
-        Assert.Single(data.MonthlyAttendance);
-        var m1 = data.MonthlyAttendance.First();
+        Assert.Single(dwData.MonthlyAttendance);
+        var m1 = dwData.MonthlyAttendance.First();
         Assert.Equal("January 2026", m1.MonthName);
         Assert.Equal(5, m1.TotalSessions);
         Assert.Equal(3, m1.ValidSessions);
         Assert.Equal(33.33, m1.AttendanceRate);
+
+        // Assert Modules breakdown
+        Assert.True(modulesResult.IsSuccess);
+        var modulesData = modulesResult.Data;
+        Assert.NotNull(modulesData);
+        Assert.Single(modulesData);
+        var mod1 = modulesData.First();
+        Assert.Equal(1, mod1.ModuleId);
+        Assert.Equal("Module 1", mod1.ModuleName);
+        Assert.Equal(3, mod1.TotalSessions); // only valid count
+        Assert.Equal(1, mod1.TotalPresent);
+        Assert.Equal(1, mod1.TotalAbsent);
+        Assert.Equal(33.33, mod1.AttendanceRate);
     }
 }

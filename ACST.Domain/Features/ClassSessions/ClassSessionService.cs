@@ -250,7 +250,9 @@ public class ClassSessionService : IClassSessionService
             return Result.Failure("Failed to generate sessions due to an unexpected error.");
         }
     }
+    #endregion
 
+    #region Sync Google Calendar Event
     public async Task SyncGoogleCalendarEventAsync(long sessionId)
     {
         var sessionData = await _context.TblSessions

@@ -97,3 +97,10 @@ public class MonthlyAttendanceDto
     public int ValidSessions { get; set; }
     public double AttendanceRate { get; set; }
 }
+
+public class DashboardDailyWeeklyDto
+{
+    public List<DailyAttendanceDto> DailyAttendance { get; set; } = new();
+    public List<WeeklyAttendanceDto> WeeklyAttendance { get; set; } = new();
+    public List<MonthlyAttendanceDto> MonthlyAttendance { get; set; } = new();
+}
