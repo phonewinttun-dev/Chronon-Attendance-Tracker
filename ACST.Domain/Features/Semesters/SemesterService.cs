@@ -1,13 +1,13 @@
+using ACST.Database.ApplicationDbContextModels.Models;
+using ACST.Domain.DTOs.Module;
+using ACST.Domain.DTOs.Semester;
+using ACST.Domain.Features.GoogleCalendar;
+using ACST.Shared;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ACST.Database.ApplicationDbContextModels.Models;
-using ACST.Domain.DTOs.Semester;
-using ACST.Shared;
-using Microsoft.EntityFrameworkCore;
-
-using ACST.Domain.Features.GoogleCalendar;
 
 namespace ACST.Domain.Features.Semesters;
 
@@ -22,25 +22,31 @@ public class SemesterService : ISemesterService
         _googleCalendarService = googleCalendarService;
     }
 
-    public async Task<PagedResult<SemesterDto>> GetAllSemestersAsync(int? pageNumber = null, int? pageSize = null)
-    {
-        try
-        {
-            var query = _context.TblSemesters
+    private IQueryable<TblSemester> ActiveSemesterQuery => _context.TblSemesters
                 .AsNoTracking()
                 .Where(s => !s.IsDeleted);
 
+    #region Get All Semesters
+    public async Task<PagedResult<SemesterDto>> GetAllSemestersAsync(PaginationRequest request)
+    {
+        if (request is null)
+        {
+            return PagedResult<SemesterDto>.Failure("Pagination request cannot be null.");
+        }
+
+        try
+        {
+            var query = ActiveSemesterQuery;
+            
             query = query.OrderByDescending(s => s.StartDate);
 
             int totalCount = await query.CountAsync();
             List<SemesterDto> items;
             Pagination pagination;
 
-            if (pageNumber.HasValue && pageSize.HasValue)
-            {
                 items = await query
-                    .Skip((pageNumber.Value - 1) * pageSize.Value)
-                    .Take(pageSize.Value)
+                    .Skip((request.PageNumber - 1) * request.PageSize)
+                    .Take(request.PageSize)
                     .Select(s => new SemesterDto
                     {
                         Id = s.Id,
@@ -52,24 +58,7 @@ public class SemesterService : ISemesterService
                     })
                     .ToListAsync();
 
-                pagination = new Pagination(pageNumber.Value, pageSize.Value, totalCount);
-            }
-            else
-            {
-                items = await query
-                    .Select(s => new SemesterDto
-                    {
-                        Id = s.Id,
-                        Name = s.Name,
-                        StartDate = s.StartDate,
-                        EndDate = s.EndDate,
-                        CreatedAt = s.CreatedAt,
-                        UpdatedAt = s.UpdatedAt
-                    })
-                    .ToListAsync();
-
-                pagination = new Pagination(1, totalCount > 0 ? totalCount : 1, totalCount);
-            }
+                pagination = new Pagination(request.PageNumber, request.PageSize, totalCount);
 
             return PagedResult<SemesterDto>.Success(items, pagination);
         }
@@ -78,18 +67,20 @@ public class SemesterService : ISemesterService
             return PagedResult<SemesterDto>.Failure($"Failed to retrieve semesters: {ex.Message}");
         }
     }
+    #endregion
 
+    #region Get Semester By Id
     public async Task<Result<SemesterDto>> GetSemesterByIdAsync(long id)
     {
         try
         {
-            var semester = await _context.TblSemesters
-                .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+            var semester = await ActiveSemesterQuery.FirstOrDefaultAsync(s => s.Id == id);
 
-            if (semester == null)
+            if (semester is null)
+            {
                 return Result<SemesterDto>.Failure("Semester not found.");
-
+            }
+                
             return Result<SemesterDto>.Success(new SemesterDto
             {
                 Id = semester.Id,
@@ -105,14 +96,18 @@ public class SemesterService : ISemesterService
             return Result<SemesterDto>.Failure($"Error retrieving semester: {ex.Message}");
         }
     }
+    #endregion
 
+    #region Create Semester 
     public async Task<Result<SemesterDto>> CreateSemesterAsync(CreateSemesterRequest request)
     {
         try
         {
             if (request.StartDate > request.EndDate)
+            {
                 return Result<SemesterDto>.Failure("Start date cannot be after end date.");
-
+            }
+                
             var semester = new TblSemester
             {
                 Name = request.Name,
@@ -132,29 +127,47 @@ public class SemesterService : ISemesterService
                 EndDate = semester.EndDate,
                 CreatedAt = semester.CreatedAt,
                 UpdatedAt = semester.UpdatedAt
-            }, "Semester created successfully.");
+            },
+            "Semester created successfully.");
         }
         catch (Exception ex)
         {
             return Result<SemesterDto>.Failure($"Failed to create semester: {ex.Message}");
         }
     }
+    #endregion
 
+    #region Update Semester
     public async Task<Result<SemesterDto>> UpdateSemesterAsync(long id, UpdateSemesterRequest request)
     {
         try
         {
             if (request.StartDate > request.EndDate)
+            {
                 return Result<SemesterDto>.Failure("Start date cannot be after end date.");
+            }
 
-            var semester = await _context.TblSemesters.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+            var semester = await ActiveSemesterQuery.FirstOrDefaultAsync(s => s.Id == id);
 
-            if (semester == null)
+            if (semester is null)
+            {
                 return Result<SemesterDto>.Failure("Semester not found.");
+            }
 
-            semester.Name = request.Name;
-            semester.StartDate = request.StartDate;
-            semester.EndDate = request.EndDate;
+            if (!string.IsNullOrEmpty(request.Name))
+            {
+                semester.Name = request.Name;
+            }
+
+            if (request.StartDate != default(DateOnly))
+            {
+                semester.StartDate = request.StartDate;
+            }
+
+            if (request.EndDate != default(DateOnly))
+            {
+                semester.EndDate = request.EndDate;
+            }
 
             await _context.SaveChangesAsync();
 
@@ -173,15 +186,19 @@ public class SemesterService : ISemesterService
             return Result<SemesterDto>.Failure($"Failed to update semester: {ex.Message}");
         }
     }
+    #endregion
 
+    #region Delete Semester
     public async Task<Result> DeleteSemesterAsync(long id)
     {
         try
         {
-            var semester = await _context.TblSemesters.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+            var semester = await ActiveSemesterQuery.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
 
             if (semester == null)
+            {
                 return Result.Failure("Semester not found.");
+            }
 
             semester.IsDeleted = true;
 
@@ -229,4 +246,5 @@ public class SemesterService : ISemesterService
             return Result.Failure($"Failed to delete semester: {ex.Message}");
         }
     }
+    #endregion
 }

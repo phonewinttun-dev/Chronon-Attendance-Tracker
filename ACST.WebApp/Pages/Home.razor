@@ -726,17 +726,14 @@ else
     private async Task SetActiveTab(Tab tab)
     {
         _activeTab = tab;
-        if (tab == Tab.Module)
+        await Task.Delay(50);
+        try
         {
-            await Task.Delay(50);
-            try
-            {
-                await JS.InvokeVoidAsync("eval", "document.getElementById('attendance-breakdown')?.scrollIntoView({ behavior: 'smooth' });");
-            }
-            catch
-            {
-                // Fallback silently if JS interop is not ready yet
-            }
+            await JS.InvokeVoidAsync("eval", "document.getElementById('attendance-breakdown')?.scrollIntoView({ behavior: 'smooth' });");
+        }
+        catch
+        {
+            // Fallback silently if JS interop is not ready yet
         }
     }
 
