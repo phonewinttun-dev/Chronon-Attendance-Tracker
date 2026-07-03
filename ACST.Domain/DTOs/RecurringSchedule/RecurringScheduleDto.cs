@@ -29,6 +29,9 @@ public class CreateRecurringScheduleRequest
 
     [Required]
     public TimeOnly EndTime { get; set; }
+
+    public bool GenerateSessions { get; set; } = true;
+    public bool SyncWithGoogleCalendar { get; set; } = false;
 }
 
 public class UpdateRecurringScheduleRequest

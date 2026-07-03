@@ -104,11 +104,15 @@ public class RecurringScheduleService : IRecurringScheduleService
             _context.TblRecurringSchedules.Add(schedule);
             await _context.SaveChangesAsync();
 
-            await _classSessionService.GenerateSessionsAsync(new GenerateSessionsRequest
+            if (request.GenerateSessions)
             {
-                SemesterId = semesterId,
-                ModuleId = moduleId
-            });
+                await _classSessionService.GenerateSessionsAsync(new GenerateSessionsRequest
+                {
+                    SemesterId = semesterId,
+                    ModuleId = moduleId,
+                    SyncWithGoogleCalendar = request.SyncWithGoogleCalendar
+                });
+            }
 
             var created = await _context.TblRecurringSchedules
                 .Include(r => r.Module)

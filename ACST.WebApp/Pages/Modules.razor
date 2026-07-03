@@ -25,7 +25,7 @@
     </div>
 </div>
 
-@if (!_showCreateForm)
+@if (!_showCreateForm && !_showEditForm && _selectedModuleId == 0)
 {
     <div class="flex flex-wrap items-center gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm">
         <!-- Search Box -->
@@ -300,9 +300,14 @@
             </div>
         }
 
-        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="CreateSchedule" disabled="@_isSubmittingSchedule">
-            @(_isSubmittingSchedule ? "Adding..." : "Add Schedules")
-        </button>
+        <div class="flex items-center gap-3">
+            <button type="button" class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="OnAddScheduleClicked" disabled="@_isSubmittingSchedule">
+                @(_isSubmittingSchedule ? "Adding..." : "Add Schedule")
+            </button>
+            <button type="button" class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="OnGenerateSessionsClickedForAssign" disabled="@_isSubmittingSchedule">
+                Generate Sessions
+            </button>
+        </div>
     </div>
 }
 
@@ -699,6 +704,51 @@
     </div>
 }
 
+@if (_showAddScheduleConfirm)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in zoom-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg">
+            <h3 class="text-lg font-bold text-foreground mb-2">Generate Sessions?</h3>
+            <p class="text-sm text-muted-foreground mb-6">Are you sure you want to add this schedule? Would you also like to generate class sessions for this schedule now?</p>
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelAddScheduleConfirm">Cancel</button>
+                <button class="px-4 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmAddScheduleNo">No (Add Only)</button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmAddScheduleYes">Yes</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showGenerateSessionsConfirmForAssign)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in zoom-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg">
+            <h3 class="text-lg font-bold text-foreground mb-2">Generate Class Sessions?</h3>
+            <p class="text-sm text-muted-foreground mb-6">Are you sure you want to generate class sessions? Or do you only want to add the schedule without generating sessions?</p>
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelGenerateSessionsConfirmForAssign">Cancel</button>
+                <button class="px-4 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmGenerateSessionsOnlyForAssign">Only Add Schedule</button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmGenerateSessionsYesForAssign">Generate Sessions</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showAddScheduleGenerateConfirm)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in zoom-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg">
+            <h3 class="text-lg font-bold text-foreground mb-2">Generate Class Sessions?</h3>
+            <p class="text-sm text-muted-foreground mb-6">Confirm the generation of class sessions for this schedule. Would you also like to sync them with Google Calendar?</p>
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelAddScheduleGenerateConfirm">Cancel</button>
+                <button class="px-4 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmAddScheduleGenerateOnly">Generate Sessions</button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmAddScheduleGenerateAndSync">Sync with Google Calendar</button>
+            </div>
+        </div>
+    </div>
+}
+
 @if (_showDeleteModuleConfirm)
 {
     <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
@@ -793,6 +843,9 @@
     private bool _isSubmittingSchedule = false;
     private bool _showCreateModuleConfirm = false;
     private bool _showGenerateSessionsConfirm = false;
+    private bool _showAddScheduleConfirm = false;
+    private bool _showAddScheduleGenerateConfirm = false;
+    private bool _showGenerateSessionsConfirmForAssign = false;
     private string _message = string.Empty;
     private bool _isError = false;
     private string _searchTerm = string.Empty;
@@ -1253,7 +1306,7 @@
         }
     }
     
-    private async Task CreateSchedule()
+    private async Task CreateSchedule(bool generateSessions, bool syncWithGoogleCalendar)
     {
         if (_selectedSemesterId == 0)
         {
@@ -1290,6 +1343,9 @@
 
             foreach (var sch in _assignSchedules)
             {
+                sch.GenerateSessions = generateSessions;
+                sch.SyncWithGoogleCalendar = syncWithGoogleCalendar;
+
                 var response = await Http.PostAsJsonAsync($"api/modules/{_selectedModuleId}/recurring-schedules/{_selectedSemesterId}", sch);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -1335,6 +1391,95 @@
         {
             _isSubmittingSchedule = false;
         }
+    }
+
+    private void OnAddScheduleClicked()
+    {
+        if (_selectedSemesterId == 0)
+        {
+            _message = "Please select a semester.";
+            _isError = true;
+            return;
+        }
+
+        if (!_assignSchedules.Any())
+        {
+            _message = "Please add at least one schedule.";
+            _isError = true;
+            return;
+        }
+
+        _showAddScheduleConfirm = true;
+    }
+
+    private void CancelAddScheduleConfirm()
+    {
+        _showAddScheduleConfirm = false;
+    }
+
+    private async Task ConfirmAddScheduleNo()
+    {
+        _showAddScheduleConfirm = false;
+        await CreateSchedule(false, false);
+    }
+
+    private void ConfirmAddScheduleYes()
+    {
+        _showAddScheduleConfirm = false;
+        _showAddScheduleGenerateConfirm = true;
+    }
+
+    private void OnGenerateSessionsClickedForAssign()
+    {
+        if (_selectedSemesterId == 0)
+        {
+            _message = "Please select a semester.";
+            _isError = true;
+            return;
+        }
+
+        if (!_assignSchedules.Any())
+        {
+            _message = "Please add at least one schedule.";
+            _isError = true;
+            return;
+        }
+
+        _showGenerateSessionsConfirmForAssign = true;
+    }
+
+    private void CancelGenerateSessionsConfirmForAssign()
+    {
+        _showGenerateSessionsConfirmForAssign = false;
+    }
+
+    private async Task ConfirmGenerateSessionsOnlyForAssign()
+    {
+        _showGenerateSessionsConfirmForAssign = false;
+        await CreateSchedule(false, false);
+    }
+
+    private void ConfirmGenerateSessionsYesForAssign()
+    {
+        _showGenerateSessionsConfirmForAssign = false;
+        _showAddScheduleGenerateConfirm = true;
+    }
+
+    private void CancelAddScheduleGenerateConfirm()
+    {
+        _showAddScheduleGenerateConfirm = false;
+    }
+
+    private async Task ConfirmAddScheduleGenerateOnly()
+    {
+        _showAddScheduleGenerateConfirm = false;
+        await CreateSchedule(true, false);
+    }
+
+    private async Task ConfirmAddScheduleGenerateAndSync()
+    {
+        _showAddScheduleGenerateConfirm = false;
+        await CreateSchedule(true, true);
     }
 
     private async Task DeleteModule(long id)
@@ -1477,7 +1622,7 @@
         _showModuleDeleteSuccess = false;
     }
 
-    private void OnCreateModuleClicked()
+    private async Task OnCreateModuleClicked()
     {
         if (_newModuleSchedules.Any())
         {
@@ -1487,7 +1632,7 @@
         {
             _newModule.GenerateSessions = false;
             _newModule.SyncWithGoogleCalendar = false;
-            _ = CreateModule();
+            await CreateModule();
         }
     }
 
