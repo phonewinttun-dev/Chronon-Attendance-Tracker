@@ -28,3 +28,15 @@ h1:focus, h2:focus, h3:focus, h4:focus, h5:focus, h6:focus {
     right: 0.75rem;
     top: 0.5rem;
 }
+
+/* Force dark color scheme for browser-native controls */
+html {
+    color-scheme: dark;
+}
+
+/* Invert and brighten native picker indicator icons */
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.5);
+    cursor: pointer;
+}

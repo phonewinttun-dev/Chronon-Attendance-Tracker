@@ -73,19 +73,32 @@
 
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="border p-4 rounded-lg mb-6 text-sm font-semibold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
-        <div class="flex items-center gap-2.5">
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in zoom-in duration-200">
             @if (_isError)
             {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </div>
+                <h3 class="text-base font-bold text-foreground mb-2">Error</h3>
             }
             else
             {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary mb-4">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h3 class="text-base font-bold text-foreground mb-2">Success</h3>
             }
-            <span>@_message</span>
+            <p class="text-xs text-muted-foreground mb-5 font-sans">@_message</p>
+            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
+                    @onclick="() => _message = string.Empty">
+                Close
+            </button>
         </div>
-        <button class="hover:opacity-80 focus:outline-none text-base font-bold px-1.5 py-0.5 rounded hover:bg-foreground/5 transition-all" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
     </div>
 }
 
@@ -774,62 +787,7 @@
     </div>
 }
 
-@if (_showScheduleDeleteSuccess)
-{
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in fade-in zoom-in duration-200">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-500 mb-4">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-            </div>
-            <h3 class="text-base font-bold text-foreground mb-2">Timetable Deleted</h3>
-            <p class="text-xs text-muted-foreground mb-5 font-sans">Timetable deleted successfully.</p>
-            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
-                    @onclick="CloseScheduleDeleteSuccess">
-                Close
-            </button>
-        </div>
-    </div>
-}
 
-@if (_showScheduleDeleteFailure)
-{
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in fade-in zoom-in duration-200">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </div>
-            <h3 class="text-base font-bold text-foreground mb-2">Deletion Failed</h3>
-            <p class="text-xs text-muted-foreground mb-5">@_message</p>
-            <button class="w-full py-2 bg-secondary text-foreground hover:bg-muted border border-border rounded-md text-xs font-semibold transition-colors focus:outline-none"
-                    @onclick="CloseScheduleDeleteFailure">
-                Close
-            </button>
-        </div>
-    </div>
-}
-
-@if (_showModuleDeleteSuccess)
-{
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in fade-in zoom-in duration-200">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-500 mb-4">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-            </div>
-            <h3 class="text-base font-bold text-foreground mb-2">Module Deleted</h3>
-            <p class="text-xs text-muted-foreground mb-5 font-sans">Module deleted successfully.</p>
-            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
-                    @onclick="CloseModuleDeleteSuccess">
-                Close
-            </button>
-        </div>
-    </div>
-}
 
 @code {
     private static string _viewMode = "table";
@@ -854,9 +812,6 @@
     private long _moduleIdToDelete = 0;
 
     private bool _isDeletingSchedule = false;
-    private bool _showScheduleDeleteSuccess = false;
-    private bool _showScheduleDeleteFailure = false;
-    private bool _showModuleDeleteSuccess = false;
     private long? _filterSemesterId = null;
     private string _selectedFilterSemesterIdStr
     {
@@ -1492,7 +1447,8 @@
             var response = await Http.DeleteAsync($"api/modules/{id}");
             if (response.IsSuccessStatusCode)
             {
-                _showModuleDeleteSuccess = true;
+                _message = "Module deleted successfully.";
+                _isError = false;
                 if (_modules != null && _modules.Count == 1 && _pageNumber > 1)
                 {
                     _pageNumber--;
@@ -1566,7 +1522,8 @@
             _isDeletingSchedule = false;
             if (response.IsSuccessStatusCode)
             {
-                _showScheduleDeleteSuccess = true;
+                _message = "Timetable deleted successfully.";
+                _isError = false;
                 await LoadData();
             }
             else
@@ -1576,26 +1533,14 @@
                     ? "This timetable has already been deleted or could not be found." 
                     : "Failed to delete timetable. Please try again.";
                 _isError = true;
-                _showScheduleDeleteFailure = true;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _isDeletingSchedule = false;
             _message = "An error occurred while deleting the timetable.";
             _isError = true;
-            _showScheduleDeleteFailure = true;
         }
-    }
-
-    private void CloseScheduleDeleteSuccess()
-    {
-        _showScheduleDeleteSuccess = false;
-    }
-
-    private void CloseScheduleDeleteFailure()
-    {
-        _showScheduleDeleteFailure = false;
     }
 
     private void RequestDeleteModule(long id)
@@ -1615,11 +1560,6 @@
         var id = _moduleIdToDelete;
         CancelDeleteModule();
         await DeleteModule(id);
-    }
-
-    private void CloseModuleDeleteSuccess()
-    {
-        _showModuleDeleteSuccess = false;
     }
 
     private async Task OnCreateModuleClicked()

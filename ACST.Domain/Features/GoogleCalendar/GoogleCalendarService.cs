@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using ACST.Shared;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
@@ -29,7 +26,6 @@ public class GoogleCalendarService : IGoogleCalendarService
     }
 
     #region Helper Methods
-
     private async Task<CalendarService> GetCalendarServiceAsync()
     {
         if (_calendarService != null)
@@ -163,7 +159,7 @@ public class GoogleCalendarService : IGoogleCalendarService
 
             var request = (GoogleAuthorizationCodeRequestUrl)flow.CreateAuthorizationCodeRequest(redirectUri);
             request.AccessType = "offline";
-            request.ApprovalPrompt = "force";
+            //request.ApprovalPrompt = "force";
             if (!string.IsNullOrEmpty(state))
             {
                 request.State = state;

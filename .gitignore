@@ -369,3 +369,4 @@ oauth.json
 .env
 seed_timetable.sql
 .sonarqube
+service_flowcharts.md

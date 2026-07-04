@@ -1,90 +1,90 @@
 ---
 name: Obsidian Attendance
 colors:
-  surface: '#11140f'
-  surface-dim: '#11140f'
-  surface-bright: '#373a34'
-  surface-container-lowest: '#0c0f0a'
-  surface-container-low: '#191c17'
-  surface-container: '#1d211b'
-  surface-container-high: '#282b25'
-  surface-container-highest: '#323630'
-  on-surface: '#e1e3db'
-  on-surface-variant: '#c1c9ba'
-  inverse-surface: '#e1e3db'
-  inverse-on-surface: '#2e312c'
-  outline: '#8b9386'
-  outline-variant: '#41493e'
-  surface-tint: '#98d68b'
-  primary: '#98d68b'
-  on-primary: '#003a04'
-  primary-container: '#4b8443'
-  on-primary-container: '#000700'
-  inverse-primary: '#326a2d'
-  secondary: '#b4cea9'
-  on-secondary: '#20361c'
-  secondary-container: '#394f32'
-  on-secondary-container: '#a6c09c'
-  tertiary: '#d6c3b2'
-  on-tertiary: '#3a2e22'
-  tertiary-container: '#837466'
-  on-tertiary-container: '#090400'
-  error: '#ffb4ab'
-  on-error: '#690005'
-  error-container: '#93000a'
-  on-error-container: '#ffdad6'
-  primary-fixed: '#b3f3a5'
-  primary-fixed-dim: '#98d68b'
-  on-primary-fixed: '#002201'
-  on-primary-fixed-variant: '#195217'
-  secondary-fixed: '#cfeac4'
-  secondary-fixed-dim: '#b4cea9'
-  on-secondary-fixed: '#0b2008'
-  on-secondary-fixed-variant: '#364c30'
-  tertiary-fixed: '#f3dfcd'
-  tertiary-fixed-dim: '#d6c3b2'
-  on-tertiary-fixed: '#231a0f'
-  on-tertiary-fixed-variant: '#514538'
-  background: '#11140f'
-  on-background: '#e1e3db'
-  surface-variant: '#323630'
+  surface: "#11140f"
+  surface-dim: "#11140f"
+  surface-bright: "#373a34"
+  surface-container-lowest: "#0c0f0a"
+  surface-container-low: "#191c17"
+  surface-container: "#1d211b"
+  surface-container-high: "#282b25"
+  surface-container-highest: "#323630"
+  on-surface: "#e1e3db"
+  on-surface-variant: "#c1c9ba"
+  inverse-surface: "#e1e3db"
+  inverse-on-surface: "#2e312c"
+  outline: "#8b9386"
+  outline-variant: "#41493e"
+  surface-tint: "#98d68b"
+  primary: "#98d68b"
+  on-primary: "#003a04"
+  primary-container: "#4b8443"
+  on-primary-container: "#000700"
+  inverse-primary: "#326a2d"
+  secondary: "#b4cea9"
+  on-secondary: "#20361c"
+  secondary-container: "#394f32"
+  on-secondary-container: "#a6c09c"
+  tertiary: "#d6c3b2"
+  on-tertiary: "#3a2e22"
+  tertiary-container: "#837466"
+  on-tertiary-container: "#090400"
+  error: "#690005"
+  on-error: "#690005"
+  error-container: "#93000a"
+  on-error-container: "#ffdad6"
+  primary-fixed: "#b3f3a5"
+  primary-fixed-dim: "#98d68b"
+  on-primary-fixed: "#002201"
+  on-primary-fixed-variant: "#195217"
+  secondary-fixed: "#cfeac4"
+  secondary-fixed-dim: "#b4cea9"
+  on-secondary-fixed: "#0b2008"
+  on-secondary-fixed-variant: "#364c30"
+  tertiary-fixed: "#f3dfcd"
+  tertiary-fixed-dim: "#d6c3b2"
+  on-tertiary-fixed: "#231a0f"
+  on-tertiary-fixed-variant: "#514538"
+  background: "#11140f"
+  on-background: "#e1e3db"
+  surface-variant: "#323630"
 typography:
   display-lg:
     fontFamily: Hanken Grotesk
     fontSize: 48px
-    fontWeight: '700'
+    fontWeight: "700"
     lineHeight: 56px
     letterSpacing: -0.02em
   headline-md:
     fontFamily: Hanken Grotesk
     fontSize: 24px
-    fontWeight: '600'
+    fontWeight: "600"
     lineHeight: 32px
   headline-sm:
     fontFamily: Hanken Grotesk
     fontSize: 18px
-    fontWeight: '600'
+    fontWeight: "600"
     lineHeight: 24px
   body-md:
     fontFamily: Hanken Grotesk
     fontSize: 16px
-    fontWeight: '400'
+    fontWeight: "400"
     lineHeight: 24px
   body-sm:
     fontFamily: Hanken Grotesk
     fontSize: 14px
-    fontWeight: '400'
+    fontWeight: "400"
     lineHeight: 20px
   label-caps:
     fontFamily: Geist
     fontSize: 12px
-    fontWeight: '600'
+    fontWeight: "600"
     lineHeight: 16px
     letterSpacing: 0.05em
   stats-num:
     fontFamily: Geist
     fontSize: 32px
-    fontWeight: '700'
+    fontWeight: "700"
     lineHeight: 40px
 rounded:
   sm: 0.25rem
@@ -106,6 +106,7 @@ spacing:
 The design system embodies an **Organic Professional** aesthetic, tailored for a personal dashboard that feels like a calm productivity hub. It leverages a high-density, dark-mode-first approach to minimize eye strain while highlighting critical data points through muted forest greens and sophisticated earth tones.
 
 The style focuses on:
+
 - **Professional Precision:** High-information density with a clean, grid-based structure.
 - **Organic Minimalism:** Deep olive-charcoal surfaces with razor-thin borders to create a sophisticated, tech-forward yet grounded environment.
 - **Actionable Visuals:** A "Refined Status" philosophy where color is used intentionally for health indicators and primary actions, ensuring the user's attention is directed toward performance without visual fatigue.
@@ -115,6 +116,7 @@ The style focuses on:
 The palette is rooted in an "Earthy Dark" foundation. The background utilizes a muted olive-toned charcoal (#121212) to provide a soft contrast for the forest green accents.
 
 **Functional Color Strategy:**
+
 - **Primary:** A deep forest green (#4b8443) serves as both the brand's primary action color and the "Healthy" status indicator.
 - **Tertiary Accent:** A warm peach-cream (#ffebd9) is used for high-contrast highlights and specialized labels.
 - **Attendance Health:**
@@ -165,26 +167,31 @@ The shape language is modern and approachable, utilizing a **Rounded** corner ra
 ## Components
 
 ### Buttons
+
 - **Primary (Action):** Forest Green background, white or peach-cream text. High contrast, no shadow.
 - **Secondary (Outline):** Transparent background, 1px border (#757871), olive-gray text.
 - **Magic Link Button:** Pill-shaped, deep forest green with a link icon. Specifically designed for the "Mark as Present" action.
 
 ### Cards (Analytics & Modules)
+
 - Background: Tonal olive-gray.
 - Border: 1px solid #3c3e3a.
 - Padding: 20px.
 - Includes a top-border accent of the "Health Color" (Green/Yellow/Red) if representing an attendance metric.
 
 ### Status Chips
+
 - Used for Session Status (Present, Absent, Cancelled, Holiday).
 - **Holiday/Cancelled:** Subdued gray text with a dashed border.
 - **Present:** Solid forest green text with a low-opacity green background.
 
 ### Progress Bars (Attendance Health)
+
 - Thick, 8px height bars.
 - Segmented appearance or smooth fill, colored based on the percentage thresholds (75/60).
 - Background track is a dark, low-opacity version of the status color.
 
 ### Input Fields
+
 - Dark backgrounds with 1px borders (#757871).
 - Focused state: Border changes to forest green with a subtle 2px outer glow.

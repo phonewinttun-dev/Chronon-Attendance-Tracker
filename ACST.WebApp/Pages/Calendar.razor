@@ -233,12 +233,12 @@
                         @foreach (var session in daySessions)
                         {
                             <button type="button" 
-                                    class="w-full flex items-center gap-1.5 py-0.5 px-1 rounded hover:bg-muted/40 text-left transition-colors focus:outline-none @(session.Status == "Cancelled" ? "opacity-40 line-through" : "")"
+                                    class="w-full flex items-center gap-1.5 py-1 px-1.5 border rounded text-left transition-all focus:outline-none @GetSessionStyleClass(session.Status)"
                                     @onclick="() => OpenSessionDetails(session)"
                                     title="@session.ModuleCode (@FormatTime(session.StartDatetime) - @FormatTime(session.EndDatetime))">
                                 <span class="w-1.5 h-1.5 rounded-full shrink-0 @GetDotColorClass(session.Status)"></span>
-                                <span class="text-[10px] font-mono text-muted-foreground shrink-0">@FormatGoogleCalendarTime(session.StartDatetime)</span>
-                                <span class="font-medium text-[11px] text-foreground truncate">@session.ModuleCode</span>
+                                <span class="text-[9px] font-mono shrink-0 opacity-80">@FormatGoogleCalendarTime(session.StartDatetime)</span>
+                                <span class="font-bold text-[10px] font-sans truncate">@session.ModuleCode</span>
                             </button>
                         }
                     </div>
@@ -373,8 +373,30 @@
     {
         await LoadGoogleCalendarStatus();
         await LoadSemesters();
+        SelectCurrentSemester();
         UpdateCalendarGrid();
         await LoadCalendarData();
+    }
+
+    private void SelectCurrentSemester()
+    {
+        if (_semesters == null || !_semesters.Any())
+        {
+            _selectedSemesterId = 0;
+            return;
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var currentSem = _semesters.FirstOrDefault(s => today >= s.StartDate && today <= s.EndDate);
+        
+        if (currentSem != null)
+        {
+            _selectedSemesterId = currentSem.Id;
+        }
+        else
+        {
+            _selectedSemesterId = 0;
+        }
     }
 
     private void UpdateCalendarGrid()
@@ -565,12 +587,12 @@
     {
         return status switch
         {
-            "Present" => "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/25",
+            "Present" => "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20",
             "Absent" => "bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive/20",
             "Late" => "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20",
-            "Cancelled" => "bg-muted/30 border-dashed border-border/50 text-muted-foreground/50 hover:bg-muted/50",
+            "Cancelled" => "bg-muted/30 border-dashed border-border/50 text-muted-foreground/50 hover:bg-muted/50 line-through opacity-60",
             "Holiday" => "bg-muted/30 border-dashed border-border/50 text-muted-foreground/50 hover:bg-muted/50",
-            _ => "bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/70"
+            _ => "bg-secondary/10 border-secondary/20 text-secondary-foreground hover:bg-secondary/25"
         };
     }
 
@@ -679,12 +701,12 @@
     {
         return status switch
         {
-            "Present" => "bg-emerald-500",
+            "Present" => "bg-primary",
             "Absent" => "bg-destructive",
             "Late" => "bg-amber-500",
             "Cancelled" => "bg-muted-foreground/45",
             "Holiday" => "bg-purple-500",
-            _ => "bg-blue-500"
+            _ => "bg-secondary-foreground"
         };
     }
 
