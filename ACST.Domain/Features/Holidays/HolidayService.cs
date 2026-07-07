@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ACST.Database.ApplicationDbContextModels.Models;
 using ACST.Domain.DTOs.Holiday;
+using ACST.Domain.Features.GoogleCalendar;
 using ACST.Shared;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,10 +15,12 @@ namespace ACST.Domain.Features.Holidays;
 public class HolidayService : IHolidayService
 {
     private readonly AppDbContext _context;
+    private readonly IGoogleCalendarService _calendarService;
 
-    public HolidayService(AppDbContext context)
+    public HolidayService(AppDbContext context, IGoogleCalendarService calendarService)
     {
         _context = context;
+        _calendarService = calendarService;
     }
 
     public async Task<PagedResult<HolidayDto>> GetAllHolidaysAsync(int? pageNumber = null, int? pageSize = null)
@@ -102,56 +105,7 @@ public class HolidayService : IHolidayService
         }
     }
 
-    public async Task<Result> SeedHolidaysAsync()
-    {
-        try
-        {
-            var filePath = Path.Combine(AppContext.BaseDirectory, "Features", "Holidays", "myanmar_holidays_2026.json");
-            
-            // Fallback for different project execution directories
-            if (!File.Exists(filePath))
-            {
-                filePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "ACST.Domain", "Features", "Holidays", "myanmar_holidays_2026.json");
-            }
 
-            if (!File.Exists(filePath))
-            {
-                return Result.Failure($"Seeding file not found at {filePath}. Cannot seed holidays.");
-            }
-
-            var jsonText = await File.ReadAllTextAsync(filePath);
-            var seedData = JsonSerializer.Deserialize<List<SeedHolidayModel>>(jsonText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-            if (seedData == null || !seedData.Any())
-                return Result.Failure("No holidays found in seed file.");
-
-            int addedCount = 0;
-            foreach (var item in seedData)
-            {
-                var exists = await _context.TblHolidays.AnyAsync(h => h.HolidayDate == item.Date && !h.IsDeleted);
-                if (!exists)
-                {
-                    _context.TblHolidays.Add(new TblHoliday
-                    {
-                        HolidayDate = item.Date,
-                        Name = item.Name,
-                        IsDeleted = false,
-                        CreatedAt = DateTime.UtcNow
-                    });
-                    addedCount++;
-                }
-            }
-
-            if (addedCount > 0)
-                await _context.SaveChangesAsync();
-
-            return Result.Success($"Successfully seeded {addedCount} new holidays.");
-        }
-        catch (Exception ex)
-        {
-            return Result.Failure($"Failed to seed holidays: {ex.Message}");
-        }
-    }
 
     public async Task<Result> DeleteHolidayAsync(long id)
     {
@@ -172,9 +126,61 @@ public class HolidayService : IHolidayService
         }
     }
 
-    private class SeedHolidayModel
+    public async Task<Result<int>> ImportGoogleCalendarHolidaysAsync(string calendarId, DateOnly startDate, DateOnly endDate)
     {
-        public DateOnly Date { get; set; }
-        public string Name { get; set; } = string.Empty;
+        try
+        {
+            var startUtc = startDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var endUtc = endDate.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+
+            var fetchResult = await _calendarService.FetchHolidaysAsync(calendarId, startUtc, endUtc);
+            if (!fetchResult.IsSuccess)
+            {
+                return Result<int>.Failure($"Failed to fetch holidays from Google Calendar: {fetchResult.Message}");
+            }
+
+            var fetchedHolidays = fetchResult.Data;
+            if (fetchedHolidays == null || !fetchedHolidays.Any())
+            {
+                return Result<int>.Success(0, "No holidays found in the specified calendar and date range.");
+            }
+
+            int addedCount = 0;
+            var existingHolidays = await _context.TblHolidays
+                .Where(h => !h.IsDeleted && h.HolidayDate >= startDate && h.HolidayDate <= endDate)
+                .Select(h => h.HolidayDate)
+                .ToListAsync();
+
+            var existingDates = new HashSet<DateOnly>(existingHolidays);
+
+            foreach (var holiday in fetchedHolidays)
+            {
+                if (!existingDates.Contains(holiday.HolidayDate))
+                {
+                    _context.TblHolidays.Add(new TblHoliday
+                    {
+                        Name = holiday.Name,
+                        HolidayDate = holiday.HolidayDate,
+                        IsDeleted = false,
+                        CreatedAt = DateTime.UtcNow
+                    });
+
+                    existingDates.Add(holiday.HolidayDate);
+                    addedCount++;
+                }
+            }
+
+            if (addedCount > 0)
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            return Result<int>.Success(addedCount, $"Successfully imported {addedCount} new holidays.");
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Failure($"Failed to import holidays: {ex.Message}");
+        }
     }
+
 }

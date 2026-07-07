@@ -483,75 +483,77 @@
             }
             else
             {
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="border-b border-border bg-muted/50">
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Teacher</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Semester</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider font-sans">Timetables</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Attendance</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-border">
-                        @foreach (var mod in _modules)
-                        {
-                            <tr class="hover:bg-accent/40 transition-colors">
-                                <td class="px-4 py-3.5 font-semibold text-foreground">
-                                    <div>@mod.Name</div>
-                                    <div class="text-[10px] text-muted-foreground font-mono mt-0.5">@mod.ModuleCode</div>
-                                </td>
-                                <td class="px-4 py-3.5 text-muted-foreground">@mod.TeacherName</td>
-                                <td class="px-4 py-3.5 text-muted-foreground">@(string.IsNullOrEmpty(mod.SemesterName) ? "None" : mod.SemesterName)</td>
-                                <td class="px-4 py-3.5 text-muted-foreground">
-                                    @if (mod.Schedules != null && mod.Schedules.Any())
-                                    {
-                                        <div class="flex flex-col gap-1">
-                                            @foreach (var schedule in mod.Schedules)
-                                            {
-                                                <div class="inline-flex items-center gap-1.5 bg-muted/40 border border-border px-1.5 py-0.5 rounded text-[11px] text-muted-foreground font-mono w-max">
-                                                    <span>@GetDayOfWeekName(schedule.DayOfWeek): @FormatTime(schedule.StartTime) - @FormatTime(schedule.EndTime)</span>
-                                                    <button class="text-destructive hover:text-destructive/80 font-bold focus:outline-none" @onclick="() => OpenDeleteScheduleConfirm(schedule.Id)" @onclick:stopPropagation>×</button>
-                                                </div>
-                                            }
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted-foreground text-xs italic">No schedule</span>
-                                    }
-                                </td>
-                                <td class="px-4 py-3.5">
-                                    @if (mod.TotalValidSessions > 0)
-                                    {
-                                        <div class="flex items-center gap-2">
-                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(mod.AttendanceRate)">
-                                                @mod.AttendanceRate%
-                                            </span>
-                                            <span class="text-muted-foreground text-[10px] font-mono">(@mod.PresentSessions/@mod.TotalValidSessions)</span>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted-foreground font-mono">-</span>
-                                    }
-                                </td>
-                                <td class="px-4 py-3.5 whitespace-nowrap">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => OpenScheduleForm(mod)">Add Schedule</button>
-                                        <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => OpenEditForm(mod)">Edit</button>
-                                        <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold disabled:opacity-50" 
-                                                @onclick="() => RequestDeleteModule(mod.Id)" 
-                                                disabled="@_deletingModuleIds.Contains(mod.Id)">
-                                            @(_deletingModuleIds.Contains(mod.Id) ? "Deleting..." : "Delete")
-                                        </button>
-                                    </div>
-                                </td>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="border-b border-border bg-muted/50">
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Teacher</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Semester</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider font-sans">Timetables</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Attendance</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-border">
+                            @foreach (var mod in _modules)
+                            {
+                                <tr class="hover:bg-accent/40 transition-colors">
+                                    <td class="px-4 py-3.5 font-semibold text-foreground">
+                                        <div class="text-[10px] text-muted-foreground font-mono mb-0.5">@mod.ModuleCode</div>
+                                        <div>@mod.Name</div>
+                                    </td>
+                                    <td class="px-4 py-3.5 text-muted-foreground">@mod.TeacherName</td>
+                                    <td class="px-4 py-3.5 text-muted-foreground">@(string.IsNullOrEmpty(mod.SemesterName) ? "None" : mod.SemesterName)</td>
+                                    <td class="px-4 py-3.5 text-muted-foreground">
+                                        @if (mod.Schedules != null && mod.Schedules.Any())
+                                        {
+                                            <div class="flex flex-col gap-1">
+                                                @foreach (var schedule in mod.Schedules)
+                                                {
+                                                    <div class="inline-flex items-center gap-1.5 bg-muted/40 border border-border px-1.5 py-0.5 rounded text-[11px] text-muted-foreground font-mono w-max">
+                                                        <span>@GetDayOfWeekName(schedule.DayOfWeek): @FormatTime(schedule.StartTime) - @FormatTime(schedule.EndTime)</span>
+                                                        <button class="text-destructive hover:text-destructive/80 font-bold focus:outline-none" @onclick="() => OpenDeleteScheduleConfirm(schedule.Id)" @onclick:stopPropagation>×</button>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted-foreground text-xs italic">No schedule</span>
+                                        }
+                                    </td>
+                                    <td class="px-4 py-3.5">
+                                        @if (mod.TotalValidSessions > 0)
+                                        {
+                                            <div class="flex items-center gap-2">
+                                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(mod.AttendanceRate)">
+                                                    @mod.AttendanceRate%
+                                                </span>
+                                                <span class="text-muted-foreground text-[10px] font-mono">(@mod.PresentSessions/@mod.TotalValidSessions)</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted-foreground font-mono">-</span>
+                                        }
+                                    </td>
+                                    <td class="px-4 py-3.5 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => OpenScheduleForm(mod)">Add Schedule</button>
+                                            <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => OpenEditForm(mod)">Edit</button>
+                                            <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold disabled:opacity-50" 
+                                                    @onclick="() => RequestDeleteModule(mod.Id)" 
+                                                    disabled="@_deletingModuleIds.Contains(mod.Id)">
+                                                @(_deletingModuleIds.Contains(mod.Id) ? "Deleting..." : "Delete")
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
                 <div class="border-t border-border bg-card">
                     <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
                 </div>
@@ -595,10 +597,10 @@
                         <div>
                             <div class="flex justify-between items-start mb-3">
                                 <div>
-                                    <div class="flex items-center gap-1.5">
+                                    <div class="mb-1">
                                         <span class="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-secondary border border-border text-foreground rounded">@mod.ModuleCode</span>
-                                        <h3 class="text-base font-bold text-foreground tracking-tight">@mod.Name</h3>
                                     </div>
+                                    <h3 class="text-base font-bold text-foreground tracking-tight">@mod.Name</h3>
                                     <div class="flex items-center gap-2 text-xs text-muted-foreground mt-1 font-mono">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                         <span>@mod.TeacherName</span>
@@ -1145,9 +1147,9 @@
                 _semesters = semResult.Data;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _message = ex.GetFriendlyErrorMessage("Error loading data");
+            _message = "Unexpected Error Ocurred. Please try again";
             _isError = true;
         }
         finally

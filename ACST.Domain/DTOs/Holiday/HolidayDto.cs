@@ -19,3 +19,15 @@ public class CreateHolidayRequest
     [MaxLength(255)]
     public string Name { get; set; } = string.Empty;
 }
+
+public class ImportGoogleHolidaysRequest
+{
+    [Required]
+    public string CalendarId { get; set; } = string.Empty;
+
+    [Required]
+    public DateOnly StartDate { get; set; }
+
+    [Required]
+    public DateOnly EndDate { get; set; }
+}

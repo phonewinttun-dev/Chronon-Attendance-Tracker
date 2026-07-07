@@ -1,6 +1,10 @@
+using System;
 using System.Threading.Tasks;
+using ACST.Domain.Features.Holidays;
 using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace ACST.Domain.Features.GoogleCalendar;
 
@@ -10,10 +14,20 @@ namespace ACST.Domain.Features.GoogleCalendar;
 public class GoogleCalendarController : ControllerBase
 {
     private readonly IGoogleCalendarService _calendarService;
+    private readonly IHolidayService _holidayService;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<GoogleCalendarController> _logger;
 
-    public GoogleCalendarController(IGoogleCalendarService calendarService)
+    public GoogleCalendarController(
+        IGoogleCalendarService calendarService,
+        IHolidayService holidayService,
+        IConfiguration configuration,
+        ILogger<GoogleCalendarController> logger)
     {
         _calendarService = calendarService;
+        _holidayService = holidayService;
+        _configuration = configuration;
+        _logger = logger;
     }
 
     #region Status Endpoint
@@ -86,6 +100,22 @@ public class GoogleCalendarController : ControllerBase
         if (!exchangeResult.IsSuccess)
         {
             return BadRequest(exchangeResult.Message);
+        }
+
+        // Auto-import default holidays for the current year
+        try
+        {
+            var holidayCalendarId = _configuration["GoogleCalendar:HolidayCalendarId"] ?? "en.mm#holiday@group.v.calendar.google.com";
+            var currentYear = DateTime.UtcNow.Year;
+            var startDate = new DateOnly(currentYear, 1, 1);
+            var endDate = new DateOnly(currentYear, 12, 31);
+            
+            _logger.LogInformation("Auto-importing holidays for {Year} from calendar {CalendarId} after successful OAuth connection.", currentYear, holidayCalendarId);
+            await _holidayService.ImportGoogleCalendarHolidaysAsync(holidayCalendarId, startDate, endDate);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to automatically import holidays on Google Calendar connection callback.");
         }
 
         if (!string.IsNullOrEmpty(state))

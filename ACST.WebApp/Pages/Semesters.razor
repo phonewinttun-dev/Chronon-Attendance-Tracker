@@ -163,32 +163,34 @@ else if (_showEditForm)
         }
         else
         {
-            <table class="w-full text-left border-collapse text-sm">
-                <thead>
-                    <tr class="border-b border-border bg-muted/50">
-                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Start Date</th>
-                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">End Date</th>
-                        <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-border">
-                    @foreach (var sem in _semesters)
-                    {
-                        <tr class="hover:bg-accent/40 transition-colors">
-                            <td class="px-4 py-3.5 text-foreground font-medium">@sem.Name</td>
-                            <td class="px-4 py-3.5 font-mono text-muted-foreground">@sem.StartDate.ToString("dd-MM-yyyy")</td>
-                            <td class="px-4 py-3.5 font-mono text-muted-foreground">@sem.EndDate.ToString("dd-MM-yyyy")</td>
-                            <td class="px-4 py-3.5">
-                                <div class="flex items-center gap-2">
-                                    <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => StartEdit(sem)">Edit</button>
-                                    <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => DeleteSemester(sem.Id)">Delete</button>
-                                </div>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-border bg-muted/50">
+                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Start Date</th>
+                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">End Date</th>
+                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-border">
+                        @foreach (var sem in _semesters)
+                        {
+                            <tr class="hover:bg-accent/40 transition-colors">
+                                <td class="px-4 py-3.5 text-foreground font-medium">@sem.Name</td>
+                                <td class="px-4 py-3.5 font-mono text-muted-foreground">@sem.StartDate.ToString("dd-MM-yyyy")</td>
+                                <td class="px-4 py-3.5 font-mono text-muted-foreground">@sem.EndDate.ToString("dd-MM-yyyy")</td>
+                                <td class="px-4 py-3.5">
+                                    <div class="flex items-center gap-2">
+                                        <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => StartEdit(sem)">Edit</button>
+                                        <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => DeleteSemester(sem.Id)">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
             <div class="border-t border-border bg-card">
                 <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
             </div>
@@ -291,6 +293,25 @@ else
     }
 }
 
+@if (_showErrorDialog)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in zoom-in duration-200">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
+            <h3 class="text-base font-bold text-foreground mb-2">Error</h3>
+            <p class="text-xs text-muted-foreground mb-5 font-sans">Unexpected Error Ocurred. Please try again</p>
+            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
+                    @onclick="() => { _showErrorDialog = false; }">
+                Close
+            </button>
+        </div>
+    </div>
+}
+
 @code {
     private static string _viewMode = "table";
     private List<SemesterDto>? _semesters;
@@ -300,6 +321,7 @@ else
     private bool _isSubmitting = false;
     private string _message = string.Empty;
     private bool _isError = false;
+    private bool _showErrorDialog = false;
     private string _searchTerm = string.Empty;
 
     private long _editingSemesterId;
@@ -397,10 +419,11 @@ else
                 _hasNext = result.Pagination.HasNextPage;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _message = ex.GetFriendlyErrorMessage("Error loading semesters");
+            _message = "Unexpected Error Ocurred. Please try again";
             _isError = true;
+            _showErrorDialog = true;
         }
         finally
         {

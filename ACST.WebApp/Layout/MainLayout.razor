@@ -1,14 +1,34 @@
 @inherits LayoutComponentBase
 
-<div class="flex min-h-screen bg-background text-foreground">
-    <!-- Sidebar -->
-    <nav class="bg-card border-r border-border flex flex-col shrink-0 transition-all duration-300 ease-in-out @(_isCollapsed ? "w-16" : "w-64")">
+<div class="flex flex-col md:flex-row min-h-screen bg-background text-foreground">
+    <!-- Mobile Header -->
+    <header class="h-16 bg-card border-b border-border flex items-center justify-between px-6 md:hidden shrink-0">
+        <div class="flex items-center gap-3">
+            <button @onclick="ToggleMobileMenu" class="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors focus:outline-none" aria-label="Toggle Menu">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                    <line x1="4" x2="20" y1="12" y2="12"/>
+                    <line x1="4" x2="20" y1="6" y2="6"/>
+                    <line x1="4" x2="20" y1="18" y2="18"/>
+                </svg>
+            </button>
+            <span class="font-bold text-lg tracking-tight font-sans">Chronon Tracker</span>
+        </div>
+    </header>
+
+    <!-- Mobile Drawer Backdrop -->
+    @if (_isMobileMenuOpen)
+    {
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden" @onclick="ToggleMobileMenu"></div>
+    }
+
+    <!-- Sidebar Navigation -->
+    <nav class="@GetSidebarClass()">
         <!-- Sidebar Header -->
-        <div class="h-16 flex items-center border-b border-border transition-all duration-300 @(_isCollapsed ? "justify-center px-0" : "justify-between px-6")">
-            <div class="font-bold text-lg tracking-tight whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+        <div class="@GetSidebarHeaderClass()">
+            <div class="@GetSidebarTitleClass()">
                 Chronon Tracker
             </div>
-            <button @onclick="ToggleSidebar" class="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors focus:outline-none" title="@(_isCollapsed ? "Expand Sidebar" : "Collapse Sidebar")">
+            <button @onclick="ToggleSidebar" class="hidden md:block p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors focus:outline-none" title="@(_isCollapsed ? "Expand Sidebar" : "Collapse Sidebar")">
                 @if (_isCollapsed)
                 {
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 15 3-3-3-3"/></svg>
@@ -22,39 +42,39 @@
 
         <!-- Navigation Links -->
         <div class="flex flex-col py-3 space-y-1">
-            <NavLink class="@GetNavLinkClass()" href="" Match="NavLinkMatch.All" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Dashboard" : "")">
+            <NavLink class="@GetNavLinkClass()" href="" Match="NavLinkMatch.All" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Dashboard" : "")" @onclick="CloseMobileMenu">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-home"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                <span class="@GetNavLinkTextClass()">
                     Dashboard
                 </span>
             </NavLink>
-            <NavLink class="@GetNavLinkClass()" href="calendar" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Calendar" : "")">
+            <NavLink class="@GetNavLinkClass()" href="calendar" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Calendar" : "")" @onclick="CloseMobileMenu">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
-                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                <span class="@GetNavLinkTextClass()">
                     Calendar
                 </span>
             </NavLink>
-            <NavLink class="@GetNavLinkClass()" href="semesters" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Semesters" : "")">
+            <NavLink class="@GetNavLinkClass()" href="semesters" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Semesters" : "")" @onclick="CloseMobileMenu">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-graduation-cap"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/><path d="M21.5 12v6"/></svg>
-                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                <span class="@GetNavLinkTextClass()">
                     Semesters
                 </span>
             </NavLink>
-            <NavLink class="@GetNavLinkClass()" href="modules" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Modules" : "")">
+            <NavLink class="@GetNavLinkClass()" href="modules" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Modules" : "")" @onclick="CloseMobileMenu">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-book-open"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                <span class="@GetNavLinkTextClass()">
                     Modules
                 </span>
             </NavLink>
-            <NavLink class="@GetNavLinkClass()" href="holidays" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Holidays" : "")">
+            <NavLink class="@GetNavLinkClass()" href="holidays" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Holidays" : "")" @onclick="CloseMobileMenu">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-bed"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>
-                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                <span class="@GetNavLinkTextClass()">
                     Holidays
                 </span>
             </NavLink>
-            <NavLink class="@GetNavLinkClass()" href="sessions" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Sessions" : "")">
+            <NavLink class="@GetNavLinkClass()" href="sessions" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Sessions" : "")" @onclick="CloseMobileMenu">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span class="whitespace-nowrap transition-all duration-300 overflow-hidden @(_isCollapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100")">
+                <span class="@GetNavLinkTextClass()">
                     Sessions
                 </span>
             </NavLink>
@@ -62,7 +82,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-1 p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
         @Body
     </main>
 </div>
@@ -75,15 +95,51 @@
 
 @code {
     private bool _isCollapsed = false;
+    private bool _isMobileMenuOpen = false;
 
     private void ToggleSidebar()
     {
         _isCollapsed = !_isCollapsed;
     }
 
+    private void ToggleMobileMenu()
+    {
+        _isMobileMenuOpen = !_isMobileMenuOpen;
+    }
+
+    private void CloseMobileMenu()
+    {
+        _isMobileMenuOpen = false;
+    }
+
+    private string GetSidebarClass()
+    {
+        return "bg-card border-r border-border flex flex-col shrink-0 transition-all duration-300 ease-in-out fixed inset-y-0 left-0 z-40 w-64 md:z-auto md:static md:translate-x-0 " + 
+               (_isMobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0") + " " +
+               (_isCollapsed ? "md:w-16" : "md:w-64");
+    }
+
+    private string GetSidebarHeaderClass()
+    {
+        return "h-16 flex items-center border-b border-border transition-all duration-300 justify-between px-6 " +
+               (_isCollapsed ? "md:justify-center md:px-0" : "md:justify-between md:px-6");
+    }
+
+    private string GetSidebarTitleClass()
+    {
+        return "font-bold text-lg tracking-tight whitespace-nowrap transition-all duration-300 overflow-hidden " +
+               (_isCollapsed ? "md:max-w-0 md:opacity-0 max-w-48 opacity-100" : "max-w-48 opacity-100");
+    }
+
     private string GetNavLinkClass()
     {
-        return "py-2 rounded-md text-sm font-medium transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center " +
-               (_isCollapsed ? "px-0 justify-center mx-2" : "px-4 justify-start mx-3 gap-2");
+        return "py-2 rounded-md text-sm font-medium transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center px-4 justify-start mx-3 gap-2 md:" +
+               (_isCollapsed ? "md:px-0 md:justify-center md:mx-2 md:gap-0" : "md:px-4 md:justify-start md:mx-3 md:gap-2");
+    }
+
+    private string GetNavLinkTextClass()
+    {
+        return "whitespace-nowrap transition-all duration-300 overflow-hidden " +
+               (_isCollapsed ? "md:max-w-0 md:opacity-0 max-w-48 opacity-100" : "max-w-48 opacity-100");
     }
 }

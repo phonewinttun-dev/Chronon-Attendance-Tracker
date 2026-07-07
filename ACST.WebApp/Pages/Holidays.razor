@@ -9,10 +9,44 @@
         <h1 class="text-2xl font-bold tracking-tight text-foreground">Holidays</h1>
         <p class="text-muted-foreground text-sm mt-1">Manage public holidays which are excluded from attendance tracking.</p>
     </div>
-    <button class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium px-4 py-2 rounded-md text-sm transition-colors disabled:opacity-50" @onclick="SeedHolidays" disabled="@_isSeeding">
-        @(_isSeeding ? "Seeding..." : "Seed from JSON")
-    </button>
+    <div class="flex items-center gap-3">
+        <button class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium px-4 py-2 rounded-md text-sm transition-colors" @onclick="ToggleFetchPanel">
+            Fetch from Google Calendar
+        </button>
+    </div>
 </div>
+
+@if (_showFetchPanel)
+{
+    <div class="bg-card border border-border p-6 rounded-lg shadow-sm mb-8">
+        <h2 class="text-base font-bold mb-4 text-foreground tracking-tight">Fetch Holidays from Google Calendar</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Google Calendar ID</label>
+                <input type="text" class="w-full p-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring text-sm h-9" @bind="_calendarId" placeholder="e.g. en.mm#holiday@group.v.calendar.google.com" />
+                <p class="text-[11px] text-muted-foreground mt-1">Use <code>en.mm#holiday@group.v.calendar.google.com</code> for Myanmar, <code>en.usa#holiday@group.v.calendar.google.com</code> for US.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Start Date</label>
+                <DatePicker @bind-Value="_startDate" />
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">End Date</label>
+                <DatePicker @bind-Value="_endDate" />
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="FetchGoogleHolidays" disabled="@_isFetching">
+                @(_isFetching ? "Fetching..." : "Fetch & Save")
+            </button>
+            <button class="bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-input px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="ToggleFetchPanel" disabled="@_isFetching">
+                Cancel
+            </button>
+        </div>
+    </div>
+}
 
 @if (!string.IsNullOrEmpty(_message))
 {
@@ -98,12 +132,31 @@
     }
 </div>
 
+@if (_showErrorDialog)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in zoom-in duration-200">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
+            <h3 class="text-base font-bold text-foreground mb-2">Error</h3>
+            <p class="text-xs text-muted-foreground mb-5 font-sans">Unexpected Error Ocurred. Please try again</p>
+            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
+                    @onclick="() => { _showErrorDialog = false; }">
+                Close
+            </button>
+        </div>
+    </div>
+}
+
 @code {
     private List<HolidayDto>? _holidays;
     private bool _isLoading = true;
-    private bool _isSeeding = false;
     private string _message = string.Empty;
     private bool _isError = false;
+    private bool _showErrorDialog = false;
 
     private int _pageNumber = 1;
     private int _pageSize = 10;
@@ -111,6 +164,12 @@
     private int _totalCount = 0;
     private bool _hasPrevious = false;
     private bool _hasNext = false;
+
+    private bool _showFetchPanel = false;
+    private string _calendarId = "en.mm#holiday@group.v.calendar.google.com";
+    private DateOnly _startDate = new DateOnly(DateTime.Today.Year, 1, 1);
+    private DateOnly _endDate = new DateOnly(DateTime.Today.Year, 12, 31);
+    private bool _isFetching = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -140,10 +199,11 @@
                 _hasNext = result.Pagination.HasNextPage;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _message = ex.GetFriendlyErrorMessage("Error loading holidays");
+            _message = "Unexpected Error Ocurred. Please try again";
             _isError = true;
+            _showErrorDialog = true;
         }
         finally
         {
@@ -151,46 +211,7 @@
         }
     }
 
-    private async Task SeedHolidays()
-    {
-        _isSeeding = true;
-        _message = string.Empty;
 
-        try
-        {
-            var response = await Http.PostAsync("api/holidays/seed", null);
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<ApiResult>();
-                if (result != null && result.IsSuccess)
-                {
-                    _message = result.Message;
-                    _isError = false;
-                    _pageNumber = 1;
-                    await LoadHolidays();
-                }
-                else
-                {
-                    _message = result?.Message ?? "Unknown error seeding holidays.";
-                    _isError = true;
-                }
-            }
-            else
-            {
-                _message = await response.GetFriendlyErrorMessageAsync("Error seeding holidays");
-                _isError = true;
-            }
-        }
-        catch (Exception ex)
-        {
-            _message = ex.GetFriendlyErrorMessage("Error seeding holidays");
-            _isError = true;
-        }
-        finally
-        {
-            _isSeeding = false;
-        }
-    }
 
     private async Task DeleteHoliday(long id)
     {
@@ -218,6 +239,75 @@
         {
             _message = ex.GetFriendlyErrorMessage("Error deleting holiday");
             _isError = true;
+        }
+    }
+
+    private void ToggleFetchPanel()
+    {
+        _showFetchPanel = !_showFetchPanel;
+        _message = string.Empty;
+    }
+
+    private async Task FetchGoogleHolidays()
+    {
+        if (string.IsNullOrWhiteSpace(_calendarId))
+        {
+            _message = "Google Calendar ID is required.";
+            _isError = true;
+            return;
+        }
+
+        if (_startDate > _endDate)
+        {
+            _message = "Start date must be before or equal to end date.";
+            _isError = true;
+            return;
+        }
+
+        _isFetching = true;
+        _message = string.Empty;
+
+        try
+        {
+            var request = new ImportGoogleHolidaysRequest
+            {
+                CalendarId = _calendarId,
+                StartDate = _startDate,
+                EndDate = _endDate
+            };
+
+            var response = await Http.PostAsJsonAsync("api/holidays/import-google", request);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResult<int>>();
+                if (result != null && result.IsSuccess)
+                {
+                    _message = result.Message;
+                    _isError = false;
+                    _showFetchPanel = false;
+                    _pageNumber = 1;
+                    await LoadHolidays();
+                }
+                else
+                {
+                    _message = result?.Message ?? "Unknown error fetching holidays.";
+                    _isError = true;
+                }
+            }
+            else
+            {
+                _message = await response.GetFriendlyErrorMessageAsync("Error fetching holidays");
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.GetFriendlyErrorMessage("Error fetching holidays");
+            _isError = true;
+        }
+        finally
+        {
+            _isFetching = false;
         }
     }
 }

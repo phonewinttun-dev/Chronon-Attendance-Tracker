@@ -215,46 +215,48 @@
             }
             else
             {
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="border-b border-border bg-muted/50">
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-border">
-                        @foreach (var session in _sessions)
-                        {
-                            <tr class="hover:bg-accent/40 transition-colors">
-                                <td class="px-4 py-3.5 font-mono text-foreground">@session.SessionDate.ToString("dd-MM-yyyy")</td>
-                                <td class="px-4 py-3.5 text-foreground">@session.ModuleName</td>
-                                <td class="px-4 py-3.5">
-                                    <span class="@GetBadgeClass(session.Status)">@session.Status</span>
-                                </td>
-                                <td class="px-4 py-3.5">
-                                    <div class="flex flex-wrap gap-2">
-                                        @if (DateTime.UtcNow <= session.StartDatetime.AddHours(24))
-                                        {
-                                            @if (session.Status == "Not Marked" || session.Status == "Late")
-                                            {
-                                                <button class="w-20 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => UpdateStatus(session.Id, "Present")'>Present</button>
-                                                <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => UpdateStatus(session.Id, "Absent")'>Absent</button>
-                                            }
-                                            <button class="w-20 bg-secondary hover:bg-secondary/80 text-foreground border border-border py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => OpenEditModal(session)">Edit</button>
-                                            <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => DeleteSession(session.Id)">Delete</button>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted-foreground text-xs italic">Locked</span>
-                                        }
-                                    </div>
-                                </td>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="border-b border-border bg-muted/50">
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-border">
+                            @foreach (var session in _sessions)
+                            {
+                                <tr class="hover:bg-accent/40 transition-colors">
+                                    <td class="px-4 py-3.5 font-mono text-foreground">@session.SessionDate.ToString("dd-MM-yyyy")</td>
+                                    <td class="px-4 py-3.5 text-foreground">@session.ModuleName</td>
+                                    <td class="px-4 py-3.5">
+                                        <span class="@GetBadgeClass(session.Status)">@session.Status</span>
+                                    </td>
+                                    <td class="px-4 py-3.5">
+                                        <div class="flex flex-wrap gap-2">
+                                            @if (DateTime.UtcNow <= session.StartDatetime.AddHours(24))
+                                            {
+                                                @if (session.Status == "Not Marked" || session.Status == "Late")
+                                                {
+                                                    <button class="w-20 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => UpdateStatus(session.Id, "Present")'>Present</button>
+                                                    <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => UpdateStatus(session.Id, "Absent")'>Absent</button>
+                                                }
+                                                <button class="w-20 bg-secondary hover:bg-secondary/80 text-foreground border border-border py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => OpenEditModal(session)">Edit</button>
+                                                <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => DeleteSession(session.Id)">Delete</button>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted-foreground text-xs italic">Locked</span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
                 <div class="border-t border-border bg-card">
                     <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
                 </div>
@@ -548,6 +550,25 @@ else
     </div>
 }
 
+@if (_showErrorDialog)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in zoom-in duration-200">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
+            <h3 class="text-base font-bold text-foreground mb-2">Error</h3>
+            <p class="text-xs text-muted-foreground mb-5 font-sans">Unexpected Error Ocurred. Please try again</p>
+            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
+                    @onclick="() => { _showErrorDialog = false; }">
+                Close
+            </button>
+        </div>
+    </div>
+}
+
 @code {
     private static string _viewMode = "table";
     private List<ClassSessionDto>? _sessions;
@@ -558,6 +579,7 @@ else
     private bool _isGenerating = false;
     private string _message = string.Empty;
     private bool _isError = false;
+    private bool _showErrorDialog = false;
 
     private int _pageNumber = 1;
     private int _pageSize = 10;
@@ -754,10 +776,11 @@ else
                 _hasNext = result.Pagination.HasNextPage;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _message = ex.GetFriendlyErrorMessage("Error loading sessions");
+            _message = "Unexpected Error Ocurred. Please try again";
             _isError = true;
+            _showErrorDialog = true;
         }
         finally
         {
@@ -862,10 +885,11 @@ else
                 _modules = result.Data;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _message = ex.GetFriendlyErrorMessage("Error loading modules");
+            _message = "Unexpected Error Ocurred. Please try again";
             _isError = true;
+            _showErrorDialog = true;
         }
         finally
         {
@@ -883,10 +907,11 @@ else
                 _semesters = result.Data;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _message = ex.GetFriendlyErrorMessage("Error loading semesters");
+            _message = "Unexpected Error Ocurred. Please try again";
             _isError = true;
+            _showErrorDialog = true;
         }
     }
 

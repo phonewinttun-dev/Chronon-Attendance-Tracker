@@ -270,3 +270,10 @@ public class DashboardDailyWeeklyDto
     public List<MonthlyAttendanceDto> MonthlyAttendance { get; set; } = new();
 }
 
+public class ImportGoogleHolidaysRequest
+{
+    public string CalendarId { get; set; } = string.Empty;
+    public DateOnly StartDate { get; set; }
+    public DateOnly EndDate { get; set; }
+}
+

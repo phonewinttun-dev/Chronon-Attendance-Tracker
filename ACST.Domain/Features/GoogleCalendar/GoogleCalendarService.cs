@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using ACST.Domain.DTOs.Holiday;
 using ACST.Shared;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
@@ -194,8 +197,7 @@ public class GoogleCalendarService : IGoogleCalendarService
             });
 
             await flow.ExchangeCodeForTokenAsync("user", code, redirectUri, CancellationToken.None);
-            
-            // Force re-initialization of calendar service with the new token
+
             _calendarService = null;
 
             return Result.Success("Token exchanged and stored successfully.");
@@ -275,6 +277,59 @@ public class GoogleCalendarService : IGoogleCalendarService
         {
             _logger.LogError(ex, "Failed to create Google Calendar event for: {Title}", title);
             return Result<string>.Failure($"Failed to create Google Calendar event: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<List<HolidayDto>>> FetchHolidaysAsync(string holidayCalendarId, DateTime startUtc, DateTime endUtc)
+    {
+        try
+        {
+            var service = await GetCalendarServiceAsync();
+            var request = service.Events.List(holidayCalendarId);
+            request.TimeMin = startUtc;
+            request.TimeMax = endUtc;
+            request.SingleEvents = true;
+            request.MaxResults = 250;
+
+            var events = await request.ExecuteAsync();
+            var holidays = new List<HolidayDto>();
+
+            if (events.Items != null)
+            {
+                foreach (var ev in events.Items)
+                {
+                    DateOnly? holidayDate = null;
+
+                    if (!string.IsNullOrEmpty(ev.Start?.Date))
+                    {
+                        if (DateOnly.TryParse(ev.Start.Date, out var date))
+                        {
+                            holidayDate = date;
+                        }
+                    }
+                    else if (ev.Start?.DateTimeDateTimeOffset.HasValue == true)
+                    {
+                        var offset = ev.Start.DateTimeDateTimeOffset.Value;
+                        holidayDate = DateOnly.FromDateTime(offset.Date);
+                    }
+
+                    if (holidayDate.HasValue)
+                    {
+                        holidays.Add(new HolidayDto
+                        {
+                            Name = ev.Summary ?? "Public Holiday",
+                            HolidayDate = holidayDate.Value
+                        });
+                    }
+                }
+            }
+
+            return Result<List<HolidayDto>>.Success(holidays, "Fetched holidays successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch holidays from Google Calendar using calendar ID {CalendarId}", holidayCalendarId);
+            return Result<List<HolidayDto>>.Failure($"Failed to fetch holidays: {ex.Message}");
         }
     }
 

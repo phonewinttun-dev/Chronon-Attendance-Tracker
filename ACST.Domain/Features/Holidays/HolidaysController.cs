@@ -33,10 +33,15 @@ public class HolidaysController : ControllerBase
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
-    [HttpPost("seed")]
-    public async Task<IActionResult> Seed()
+
+
+    [HttpPost("import-google")]
+    public async Task<IActionResult> ImportGoogleHolidays([FromBody] ImportGoogleHolidaysRequest request)
     {
-        var result = await _holidayService.SeedHolidaysAsync();
+        if (!ModelState.IsValid)
+            return BadRequest(Result.Failure("Invalid request parameters."));
+
+        var result = await _holidayService.ImportGoogleCalendarHolidaysAsync(request.CalendarId, request.StartDate, request.EndDate);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 

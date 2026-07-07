@@ -13,6 +13,7 @@ using ACST.Domain.Features.ClassSessions;
 using ACST.Domain.DTOs.RecurringSchedule;
 using ACST.Domain.DTOs.Module;
 using ACST.Domain.DTOs.ClassSession;
+using ACST.Domain.DTOs.Holiday;
 using ACST.Shared;
 
 namespace ACST.Domain.Tests.Features.Modules;
@@ -689,6 +690,8 @@ public class ModuleServiceTests
         public Task<Result<string>> GetAuthorizationUrlAsync(string redirectUri, string? state) => Task.FromResult(Result<string>.Success("https://mockauth", "Auth URL"));
         public Task<Result> ExchangeCodeAndStoreTokenAsync(string code, string redirectUri) => Task.FromResult(Result.Success("Stored."));
         public Task<Result> DisconnectAsync() => Task.FromResult(Result.Success("Disconnected."));
+        public Task<Result<List<HolidayDto>>> FetchHolidaysAsync(string holidayCalendarId, DateTime startUtc, DateTime endUtc) =>
+            Task.FromResult(Result<List<HolidayDto>>.Success(new List<HolidayDto>(), "Fetched."));
     }
 
     private class FakeClassSessionService : IClassSessionService

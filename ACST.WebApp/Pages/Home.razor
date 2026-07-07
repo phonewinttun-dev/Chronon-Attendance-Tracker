@@ -25,25 +25,48 @@
 }
 else if (_isError)
 {
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+            </div>
+        </div>
     </div>
-    <div class="bg-surface-container border border-error/40 p-6 rounded-xl text-error">
-        <h3 class="font-bold text-lg mb-2">Error Connecting to API</h3>
-        <p class="text-on-surface-variant font-medium">@_message</p>
-        <button class="mt-4 bg-error text-on-error hover:bg-error/95 px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="LoadInitialData">
-            Retry Connection
-        </button>
+    @RenderDashboardSkeletons
+
+    <div class="fixed inset-0 bg-background/30 backdrop-blur-md flex items-center justify-center z-50">
+        <div class="bg-card border border-border rounded-xl p-8 max-w-sm w-full shadow-2xl text-center animate-in zoom-in duration-200">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-foreground mb-2">Unexpected Error Occurred</h3>
+            <p class="text-xs text-muted-foreground mb-6 leading-relaxed">Failed to connect to the server or load required data. Please check your connection and try again.</p>
+            <button class="w-full py-2 bg-error text-error-foreground hover:bg-error/90 rounded-md text-xs font-semibold transition-all shadow-md focus:outline-none"
+                    @onclick="LoadInitialData">
+                Refresh
+            </button>
+        </div>
     </div>
 }
 else if (_semesters == null || !_semesters.Any())
 {
     <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold">Dashboard</h1>
+        <h1 class="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
     </div>
-    <div class="bg-surface-container border border-error/40 p-6 rounded-xl text-error">
-        <h3 class="font-bold text-lg mb-2">No Semesters Found</h3>
-        <p class="text-on-surface-variant">Please create a semester in the <a href="/semesters" class="text-primary hover:underline font-semibold">Semesters</a> page to view dashboard analytics.</p>
+    <div class="bg-surface-container border border-border/40 p-8 rounded-xl text-center max-w-md mx-auto my-12 bg-card">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary mb-4">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-foreground">No Semesters Found</h3>
+        <p class="text-muted-foreground text-sm mb-6">Please create a semester first to view dashboard analytics.</p>
+        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-md focus:outline-none"
+                @onclick='() => Navigation.NavigateTo("/semesters")'>
+            Create A Semester
+        </button>
     </div>
 }
 else
