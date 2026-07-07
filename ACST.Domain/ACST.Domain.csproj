@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -7,12 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Features\" />
+    <ProjectReference Include="..\ACST.Database\ACST.Database.csproj" />
+    <ProjectReference Include="..\ACST.Shared\ACST.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ACST.Database\ACST.Database.csproj" />
-    <ProjectReference Include="..\ACST.Shared\ACST.Shared.csproj" />
+    <PackageReference Include="Google.Apis.Calendar.v3" Version="1.74.0.4154" />
+    <PackageReference Include="Hangfire.Core" Version="1.8.23" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>

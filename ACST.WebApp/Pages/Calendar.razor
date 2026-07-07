@@ -1,0 +1,739 @@
+@page "/calendar"
+@using ACST.WebApp.Models
+@using System.Globalization
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+
+<PageTitle>Calendar</PageTitle>
+
+<!-- Header Row -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div>
+        <h1 class="text-2xl font-bold tracking-tight text-foreground">Schedule Calendar</h1>
+        <p class="text-muted-foreground text-sm mt-1">View monthly schedules, class sessions, and holidays.</p>
+    </div>
+    
+    <div class="flex items-center gap-3 relative">
+        <!-- Google Calendar Sync Notice Badge -->
+        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-[1.02] focus:outline-none 
+                       @(!_googleCalendarEnabled ? "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20" : 
+                         (!_googleCalendarConnected ? "bg-blue-500/10 border-blue-500/20 text-blue-500 hover:bg-blue-500/20" : 
+                           "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20"))"
+                @onclick="ToggleSettings">
+            <span class="w-1.5 h-1.5 rounded-full animate-pulse @(!_googleCalendarEnabled ? "bg-amber-500" : (!_googleCalendarConnected ? "bg-blue-500" : "bg-emerald-500"))"></span>
+            @(!_googleCalendarEnabled ? "Google Calendar Disabled (Local Mode)" : (!_googleCalendarConnected ? "Google Calendar Setup Required" : "Google Calendar Connected"))
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 ml-0.5"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+
+        @if (_showCalendarSettings)
+        {
+            <div class="absolute right-0 top-10 z-50 w-80 bg-card border border-border rounded-lg shadow-lg p-4 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="text-sm font-bold text-foreground">Google Calendar Status</h4>
+                    <button class="text-muted-foreground hover:text-foreground text-xs" @onclick="ToggleSettings">✕</button>
+                </div>
+                
+                @if (_googleCalendarEnabled)
+                {
+                    @if (_googleCalendarConnected)
+                    {
+                        <div class="space-y-3">
+                            <div class="bg-emerald-500/10 border border-emerald-500/20 rounded p-2.5 text-xs text-emerald-500">
+                                <strong>Integration Connected!</strong> Class sessions will be automatically created, updated, and deleted on your Google Calendar.
+                            </div>
+                            <div class="space-y-1.5 border-t border-border pt-2 pb-1">
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-muted-foreground">Target Calendar:</span>
+                                    <span class="font-mono text-foreground font-semibold">Primary</span>
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-muted-foreground">Features:</span>
+                                    <span class="text-foreground text-right font-medium">Auto-sync, Magic Links</span>
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-muted-foreground">Local Auth Cache:</span>
+                                    <span class="text-foreground text-right font-mono">ChrononGoogleAuthStore</span>
+                                </div>
+                            </div>
+                            <div class="border-t border-border pt-3">
+                                <button class="w-full text-center text-xs py-2 px-3 border border-destructive/20 bg-destructive/10 text-destructive rounded hover:bg-destructive/20 font-semibold transition-colors focus:outline-none"
+                                        disabled="@_isDisconnecting"
+                                        @onclick="DisconnectGoogleCalendar">
+                                    @(_isDisconnecting ? "Disconnecting..." : "Disconnect Google Calendar")
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="space-y-3">
+                            <div class="bg-amber-500/10 border border-amber-500/20 rounded p-2.5 text-xs text-amber-500">
+                                OAuth Authorization Required. You are not connected to your Google account.
+                            </div>
+                            <p class="text-xs text-muted-foreground leading-relaxed">
+                                Click below to authorize Chronon to synchronize classes with your Google Calendar.
+                            </p>
+                            <div class="pt-1">
+                                <button class="w-full text-center text-xs py-2 px-3 bg-primary text-primary-foreground rounded hover:bg-primary/95 font-semibold transition-colors focus:outline-none flex items-center justify-center gap-1.5 shadow"
+                                        @onclick="ConnectGoogleCalendar">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.478 0-6.3-2.822-6.3-6.3s2.822-6.3 6.3-6.3c1.706 0 3.199.687 4.3 1.78l3.18-3.18C19.123 2.548 15.93 1 12.24 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 11.753-5.005 11.753-11.24 0-.763-.08-1.505-.229-2.215H12.24z"/></svg>
+                                    Connect Google Calendar
+                                </button>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="space-y-3">
+                        <div class="bg-amber-500/10 border border-amber-500/20 rounded p-2.5 text-xs text-amber-500">
+                            <strong>Local Mode Active</strong> Google Calendar sync is currently offline. Class sessions are only stored in the local database.
+                        </div>
+                        <div class="text-xs text-muted-foreground leading-relaxed border-t border-border pt-2">
+                            To enable real-time calendar synchronization and one-click attendance links:
+                            <ol class="list-decimal pl-4 mt-1.5 space-y-1">
+                                <li>Configure <code>ClientId</code> and <code>ClientSecret</code> under the <code>GoogleCalendar</code> section in <code>appsettings.json</code>.</li>
+                                <li>Restart the API server.</li>
+                            </ol>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Controls Panel -->
+<div class="bg-card border border-border p-4 rounded-lg shadow-sm mb-6 flex flex-wrap justify-between items-center gap-4">
+    <!-- Month Navigation -->
+    <div class="flex items-center gap-3">
+        <button class="bg-secondary hover:bg-secondary/80 text-foreground p-2 border border-border rounded-md transition-colors" @onclick="PrevMonth">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <span class="text-lg font-bold font-mono text-foreground min-w-[160px] text-center">@_viewDate.ToString("MMMM yyyy")</span>
+        <button class="bg-secondary hover:bg-secondary/80 text-foreground p-2 border border-border rounded-md transition-colors" @onclick="NextMonth">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        
+        <button class="bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2 border border-border rounded-md transition-colors text-sm font-semibold" @onclick="GoToToday">
+            Today
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex items-center gap-3">
+        <select class="p-2 bg-card border border-border rounded-md text-foreground font-sans text-sm focus:outline-none focus:ring-1 focus:ring-ring min-w-[200px]" @bind:get="_selectedSemesterId" @bind:set="OnSemesterChanged">
+            <option value="0">All Semesters</option>
+            @if (_semesters != null)
+            {
+                @foreach (var sem in _semesters)
+                {
+                    <option value="@sem.Id">@sem.Name</option>
+                }
+            }
+        </select>
+    </div>
+</div>
+
+<!-- Message Notification -->
+@if (!string.IsNullOrEmpty(_message))
+{
+    <div class="border p-4 rounded-lg mb-6 text-sm font-semibold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
+        <div class="flex items-center gap-2.5">
+            @if (_isError)
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            }
+            else
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
+            }
+            <span>@_message</span>
+        </div>
+        <button class="hover:opacity-80 focus:outline-none text-base font-bold px-1.5 py-0.5 rounded hover:bg-foreground/5 transition-all" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
+    </div>
+}
+
+<!-- Calendar Container -->
+<div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden flex flex-col">
+    <!-- Days of Week Header -->
+    <div class="grid grid-cols-7 border-b border-border bg-muted/40 text-center font-bold text-[10px] text-muted-foreground uppercase tracking-wider">
+        <div class="py-2.5 border-r border-border">Sun</div>
+        <div class="py-2.5 border-r border-border">Mon</div>
+        <div class="py-2.5 border-r border-border">Tue</div>
+        <div class="py-2.5 border-r border-border">Wed</div>
+        <div class="py-2.5 border-r border-border">Thu</div>
+        <div class="py-2.5 border-r border-border">Fri</div>
+        <div class="py-2.5">Sat</div>
+    </div>
+
+    <!-- Calendar Grid -->
+    @if (_isLoading)
+    {
+        <div class="grid grid-cols-7 auto-rows-fr divide-y divide-x divide-border border-b border-border animate-pulse bg-card">
+            @for (int i = 0; i < 42; i++)
+            {
+                <div class="h-[140px] p-2 flex flex-col bg-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="h-3 bg-muted rounded w-3"></div>
+                        <div class="h-5 bg-muted rounded-full w-5"></div>
+                    </div>
+                    <div class="flex-1 flex flex-col gap-1.5 mt-1">
+                        @if (i % 3 == 0)
+                        {
+                            <div class="h-8 bg-muted rounded w-full"></div>
+                        }
+                        else if (i % 5 == 0)
+                        {
+                            <div class="h-8 bg-muted rounded w-full"></div>
+                            <div class="h-8 bg-muted rounded w-full"></div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-7 auto-rows-fr divide-y divide-x divide-border border-b border-border">
+            @foreach (var day in _calendarDays)
+            {
+                var isCurrentMonth = day.Month == _viewDate.Month;
+                var isToday = day == DateOnly.FromDateTime(DateTime.Today);
+                var daySessions = GetSessionsForDay(day);
+                var dayHolidays = GetHolidaysForDay(day);
+
+                <div class="h-[140px] p-2 flex flex-col bg-card hover:bg-muted/30 transition-colors
+                            @(isCurrentMonth ? "" : "bg-background/40 opacity-40")">
+                    <!-- Day Indicator Header -->
+                    <div class="flex justify-between items-center mb-1">
+                        <div>
+                            @if (dayHolidays.Any())
+                            {
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500" title="Holiday today"></span>
+                            }
+                        </div>
+                        <span class="font-mono text-sm font-semibold rounded-full w-6 h-6 inline-flex items-center justify-center
+                                     @(isToday ? "bg-primary text-primary-foreground font-bold shadow-sm" : "text-muted-foreground")">
+                            @day.Day
+                        </span>
+                    </div>
+
+                    <!-- Holidays Box -->
+                    @foreach (var hol in dayHolidays)
+                    {
+                        <div class="mt-1 px-2 py-1 text-[10px] font-semibold text-amber-500 bg-amber-500/10 border border-dashed border-amber-500/20 rounded truncate" title="Holiday: @hol.Name">
+                            🎉 @hol.Name
+                        </div>
+                    }
+                    
+                    <!-- Sessions List -->
+                    <div class="flex-1 flex flex-col gap-0.5 mt-1 pr-1 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
+                        @foreach (var session in daySessions)
+                        {
+                            <button type="button" 
+                                    class="w-full flex items-center gap-1.5 py-1 px-1.5 border rounded text-left transition-all focus:outline-none @GetSessionStyleClass(session.Status)"
+                                    @onclick="() => OpenSessionDetails(session)"
+                                    title="@session.ModuleCode (@FormatTime(session.StartDatetime) - @FormatTime(session.EndDatetime))">
+                                <span class="w-1.5 h-1.5 rounded-full shrink-0 @GetDotColorClass(session.Status)"></span>
+                                <span class="text-[9px] font-mono shrink-0 opacity-80">@FormatGoogleCalendarTime(session.StartDatetime)</span>
+                                <span class="font-bold text-[10px] font-sans truncate">@session.ModuleCode</span>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Attendance/Status Update Modal -->
+@if (_showDetailsModal && _selectedSession != null)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50" @onclick="CloseDetailsModal">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg" @onclick:stopPropagation>
+            <!-- Modal Header -->
+            <div class="flex justify-between items-start border-b border-border pb-3 mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-foreground">Update Session</h3>
+                    <p class="text-xs text-muted-foreground mt-0.5">Date: @_selectedSession.SessionDate.ToString("dd-MM-yyyy")</p>
+                </div>
+                <button type="button" class="text-muted-foreground hover:text-foreground font-semibold text-lg" @onclick="CloseDetailsModal">×</button>
+            </div>
+
+            <!-- Session Info -->
+            <div class="mb-5 bg-muted/40 border border-border p-4 rounded-lg">
+                <div class="text-xs font-semibold text-muted-foreground">Module</div>
+                <div class="text-sm font-bold text-foreground mb-3">@_selectedSession.ModuleName (@_selectedSession.ModuleCode)</div>
+                
+                <div class="text-xs font-semibold text-muted-foreground">Scheduled Time</div>
+                <div class="text-xs font-mono text-foreground">
+                    @FormatTime(_selectedSession.StartDatetime) - @FormatTime(_selectedSession.EndDatetime)
+                </div>
+                
+                <div class="mt-3 flex items-center gap-2">
+                    <span class="text-xs font-semibold text-muted-foreground">Current Status:</span>
+                    <span class="@GetBadgeClass(_selectedSession.Status)">@_selectedSession.Status</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-2">
+                @if (DateTime.UtcNow <= _selectedSession.StartDatetime.AddHours(24))
+                {
+                    <button class="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-primary-foreground border border-emerald-500/20 px-4 py-2 rounded-md font-semibold text-sm transition-all" 
+                            @onclick='() => UpdateSessionStatus("Present")' disabled="@_isUpdating">
+                        Mark Present
+                    </button>
+                    <button class="bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground border border-destructive/20 px-4 py-2 rounded-md font-semibold text-sm transition-all" 
+                            @onclick='() => UpdateSessionStatus("Absent")' disabled="@_isUpdating">
+                        Mark Absent
+                    </button>
+                    <button class="bg-secondary hover:bg-secondary/80 text-foreground border border-border px-4 py-2 rounded-md font-semibold text-sm transition-all" 
+                            @onclick='() => UpdateSessionStatus("Cancelled")' disabled="@_isUpdating">
+                        Mark Cancelled
+                    </button>
+                    <button class="border border-dashed border-border hover:bg-muted px-4 py-2 rounded-md font-medium text-xs transition-all text-muted-foreground" 
+                            @onclick='() => UpdateSessionStatus("Not Marked")' disabled="@_isUpdating">
+                        Reset to Not Marked
+                    </button>
+                }
+                else
+                {
+                    <div class="text-destructive text-sm font-semibold text-center py-2 bg-destructive/10 border border-destructive/20 rounded-md">
+                        Locked (cannot change after 24 hours)
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showConnectConfirmation)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50" @onclick="CloseConnectConfirmation">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg" @onclick:stopPropagation>
+            <!-- Modal Header -->
+            <div class="flex justify-between items-start border-b border-border pb-3 mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-foreground">Connect Google Calendar</h3>
+                    <p class="text-xs text-muted-foreground mt-0.5">Confirmation Required</p>
+                </div>
+                <button type="button" class="text-muted-foreground hover:text-foreground font-semibold text-lg" @onclick="CloseConnectConfirmation">×</button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="text-xs text-muted-foreground mb-6 leading-relaxed">
+                You will be redirected to Google to authorize Chronon to synchronize classes with your Google Calendar. Do you want to proceed?
+            </div>
+
+            <!-- Modal Actions -->
+            <div class="flex justify-end gap-3 border-t border-border pt-4">
+                <button class="px-4 py-2 border border-border rounded-md text-xs font-semibold hover:bg-muted text-foreground transition-all focus:outline-none"
+                        @onclick="CloseConnectConfirmation">
+                    Cancel
+                </button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-xs font-semibold text-center transition-all shadow-sm focus:outline-none"
+                        @onclick="ConfirmConnectGoogleCalendar">
+                    Proceed
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showErrorDialog)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in zoom-in duration-200">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
+            <h3 class="text-base font-bold text-foreground mb-2">Error</h3>
+            <p class="text-xs text-muted-foreground mb-5 font-sans">Unexpected Error Ocurred. Please try again</p>
+            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
+                    @onclick="() => { _showErrorDialog = false; }">
+                Close
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _isLoading = true;
+    private bool _isUpdating = false;
+    private string _message = string.Empty;
+    private bool _isError = false;
+    private bool _showErrorDialog = false;
+
+    private bool _googleCalendarEnabled = false;
+    private bool _googleCalendarConnected = false;
+    private bool _showCalendarSettings = false;
+    private bool _isDisconnecting = false;
+
+    private DateOnly _viewDate = DateOnly.FromDateTime(DateTime.Today);
+    private List<DateOnly> _calendarDays = new();
+    
+    private List<SemesterDto>? _semesters;
+    private long _selectedSemesterId = 0;
+
+    private List<ClassSessionDto> _sessions = new();
+    private List<HolidayDto> _holidays = new();
+
+    // Modal state
+    private bool _showDetailsModal = false;
+    private ClassSessionDto? _selectedSession;
+
+    private static readonly TimeSpan MyanmarOffset = TimeSpan.FromHours(6.5);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGoogleCalendarStatus();
+        await LoadSemesters();
+        SelectCurrentSemester();
+        UpdateCalendarGrid();
+        await LoadCalendarData();
+    }
+
+    private void SelectCurrentSemester()
+    {
+        if (_semesters == null || !_semesters.Any())
+        {
+            _selectedSemesterId = 0;
+            return;
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var currentSem = _semesters.FirstOrDefault(s => today >= s.StartDate && today <= s.EndDate);
+        
+        if (currentSem != null)
+        {
+            _selectedSemesterId = currentSem.Id;
+        }
+        else
+        {
+            _selectedSemesterId = 0;
+        }
+    }
+
+    private void UpdateCalendarGrid()
+    {
+        _calendarDays.Clear();
+        var firstDayOfMonth = new DateOnly(_viewDate.Year, _viewDate.Month, 1);
+        
+        // Find Sunday of the starting week.
+        int offset = (int)firstDayOfMonth.DayOfWeek;
+        var startDate = firstDayOfMonth.AddDays(-offset);
+
+        for (int i = 0; i < 42; i++)
+        {
+            _calendarDays.Add(startDate.AddDays(i));
+        }
+    }
+
+    private async Task LoadSemesters()
+    {
+        try
+        {
+            var result = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>("api/semesters");
+            if (result != null && result.IsSuccess)
+            {
+                _semesters = result.Data;
+            }
+        }
+        catch
+        {
+            // Fail silently or fallback
+        }
+    }
+
+    private async Task LoadCalendarData()
+    {
+        _isLoading = true;
+        _message = string.Empty;
+        try
+        {
+            // Load holidays
+            var holResult = await Http.GetFromJsonAsync<PagedResult<HolidayDto>>("api/holidays");
+            if (holResult != null && holResult.IsSuccess)
+            {
+                _holidays = holResult.Data ?? new();
+            }
+
+            // Load sessions only for the current month
+            var startOfMonth = new DateOnly(_viewDate.Year, _viewDate.Month, 1);
+            var endOfMonth = new DateOnly(_viewDate.Year, _viewDate.Month, DateTime.DaysInMonth(_viewDate.Year, _viewDate.Month));
+            var startStr = startOfMonth.ToString("yyyy-MM-dd");
+            var endStr = endOfMonth.ToString("yyyy-MM-dd");
+            
+            string url = $"api/classsessions?startDate={startStr}&endDate={endStr}&pageSize=1000";
+            if (_selectedSemesterId > 0)
+            {
+                url += $"&semesterId={_selectedSemesterId}";
+            }
+
+            var sessResult = await Http.GetFromJsonAsync<PagedResult<ClassSessionDto>>(url);
+            if (sessResult != null && sessResult.IsSuccess)
+            {
+                _sessions = sessResult.Data ?? new();
+            }
+        }
+        catch (Exception)
+        {
+            _message = "Unexpected Error Ocurred. Please try again";
+            _isError = true;
+            _showErrorDialog = true;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OnSemesterChanged(long semesterId)
+    {
+        _selectedSemesterId = semesterId;
+        
+        // If they selected a specific semester, auto-navigate calendar to start date of semester
+        if (semesterId > 0 && _semesters != null)
+        {
+            var selectedSem = _semesters.FirstOrDefault(s => s.Id == semesterId);
+            if (selectedSem != null)
+            {
+                _viewDate = new DateOnly(selectedSem.StartDate.Year, selectedSem.StartDate.Month, 1);
+                UpdateCalendarGrid();
+            }
+        }
+
+        await LoadCalendarData();
+    }
+
+    private async Task PrevMonth()
+    {
+        _viewDate = _viewDate.AddMonths(-1);
+        UpdateCalendarGrid();
+        await LoadCalendarData();
+    }
+
+    private async Task NextMonth()
+    {
+        _viewDate = _viewDate.AddMonths(1);
+        UpdateCalendarGrid();
+        await LoadCalendarData();
+    }
+
+    private async Task GoToToday()
+    {
+        _viewDate = DateOnly.FromDateTime(DateTime.Today);
+        UpdateCalendarGrid();
+        await LoadCalendarData();
+    }
+
+    private List<ClassSessionDto> GetSessionsForDay(DateOnly date)
+    {
+        return _sessions.Where(s => s.SessionDate == date).ToList();
+    }
+
+    private List<HolidayDto> GetHolidaysForDay(DateOnly date)
+    {
+        return _holidays.Where(h => h.HolidayDate == date).ToList();
+    }
+
+    private string FormatTime(DateTime utcTime)
+    {
+        // Convert UTC datetime to local Myanmar offset
+        var localTime = utcTime + MyanmarOffset;
+        return localTime.ToString("hh:mm tt");
+    }
+
+    private void OpenSessionDetails(ClassSessionDto session)
+    {
+        _selectedSession = session;
+        _showDetailsModal = true;
+    }
+
+    private void CloseDetailsModal()
+    {
+        _showDetailsModal = false;
+        _selectedSession = null;
+    }
+
+    private async Task UpdateSessionStatus(string status)
+    {
+        if (_selectedSession == null) return;
+        
+        _isUpdating = true;
+        try
+        {
+            var response = await Http.PatchAsJsonAsync($"api/classsessions/{_selectedSession.Id}/status", new { Status = status });
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+                if (result != null && result.IsSuccess)
+                {
+                    _selectedSession.Status = status;
+                    _showDetailsModal = false;
+                    _selectedSession = null;
+                    _message = "Status updated successfully.";
+                    _isError = false;
+                    await LoadCalendarData();
+                }
+                else
+                {
+                    _message = result?.Message ?? "Failed to update session status.";
+                    _isError = true;
+                }
+            }
+            else
+            {
+                _message = await response.GetFriendlyErrorMessageAsync("Error updating session status");
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.GetFriendlyErrorMessage("Error updating status");
+            _isError = true;
+        }
+        finally
+        {
+            _isUpdating = false;
+        }
+    }
+
+    private string GetSessionStyleClass(string status)
+    {
+        return status switch
+        {
+            "Present" => "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20",
+            "Absent" => "bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive/20",
+            "Late" => "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20",
+            "Cancelled" => "bg-muted/30 border-dashed border-border/50 text-muted-foreground/50 hover:bg-muted/50 line-through opacity-60",
+            "Holiday" => "bg-muted/30 border-dashed border-border/50 text-muted-foreground/50 hover:bg-muted/50",
+            _ => "bg-secondary/10 border-secondary/20 text-secondary-foreground hover:bg-secondary/25"
+        };
+    }
+
+    private string GetBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Present" => "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded text-xs font-semibold",
+            "Absent" => "bg-destructive/10 text-destructive border border-destructive/20 px-2 py-0.5 rounded text-xs font-semibold",
+            "Late" => "bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded text-xs font-semibold",
+            _ => "bg-muted text-muted-foreground border border-border px-2 py-0.5 rounded text-xs font-semibold"
+        };
+    }
+
+    private async Task LoadGoogleCalendarStatus()
+    {
+        try
+        {
+            var status = await Http.GetFromJsonAsync<GoogleCalendarStatusResponse>("api/google-auth/status");
+            if (status != null)
+            {
+                _googleCalendarEnabled = status.IsEnabled;
+                _googleCalendarConnected = status.IsConnected;
+            }
+        }
+        catch
+        {
+            _googleCalendarEnabled = false;
+            _googleCalendarConnected = false;
+        }
+    }
+
+    private bool _showConnectConfirmation = false;
+
+    private void ConnectGoogleCalendar()
+    {
+        _showConnectConfirmation = true;
+    }
+
+    private void CloseConnectConfirmation()
+    {
+        _showConnectConfirmation = false;
+    }
+
+    private void ConfirmConnectGoogleCalendar()
+    {
+        _showConnectConfirmation = false;
+        try
+        {
+            var redirectUrl = $"{Navigation.BaseUri}calendar";
+            var connectUrl = new Uri(Http.BaseAddress!, $"api/google-auth/connect?redirectUrl={Uri.EscapeDataString(redirectUrl)}").ToString();
+            Navigation.NavigateTo(connectUrl, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            _message = $"Failed to initiate connection: {ex.Message}";
+            _isError = true;
+        }
+    }
+
+    private async Task DisconnectGoogleCalendar()
+    {
+        _isDisconnecting = true;
+        try
+        {
+            var response = await Http.PostAsync("api/google-auth/disconnect", null);
+            if (response.IsSuccessStatusCode)
+            {
+                _message = "Disconnected from Google Calendar successfully.";
+                _isError = false;
+                await LoadGoogleCalendarStatus();
+            }
+            else
+            {
+                _message = "Failed to disconnect from Google Calendar.";
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = $"Error disconnecting: {ex.Message}";
+            _isError = true;
+        }
+        finally
+        {
+            _isDisconnecting = false;
+        }
+    }
+
+    private void ToggleSettings()
+    {
+        _showCalendarSettings = !_showCalendarSettings;
+    }
+
+    private string FormatGoogleCalendarTime(DateTime utcTime)
+    {
+        var localTime = utcTime + MyanmarOffset;
+        if (localTime.Minute == 0)
+        {
+            return localTime.ToString("htt").ToLower();
+        }
+        return localTime.ToString("h:mmtt").ToLower();
+    }
+
+    private string GetDotColorClass(string status)
+    {
+        return status switch
+        {
+            "Present" => "bg-primary",
+            "Absent" => "bg-destructive",
+            "Late" => "bg-amber-500",
+            "Cancelled" => "bg-muted-foreground/45",
+            "Holiday" => "bg-purple-500",
+            _ => "bg-secondary-foreground"
+        };
+    }
+
+    private class GoogleCalendarStatusResponse
+    {
+        public bool IsEnabled { get; set; }
+        public bool IsConnected { get; set; }
+    }
+}

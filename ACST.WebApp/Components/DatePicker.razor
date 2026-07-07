@@ -1,0 +1,208 @@
+@using System.Globalization
+@implements IDisposable
+
+<div class="relative w-full" @onfocusout="HandleFocusOut">
+    <div class="flex items-center bg-card border border-input rounded-md focus-within:ring-1 focus-within:ring-ring overflow-hidden transition-all h-9 shadow-sm">
+        <input type="text" 
+               class="w-full px-3 py-1.5 bg-transparent text-foreground focus:outline-none placeholder:text-muted-foreground font-mono text-sm"
+               placeholder="dd-MM-yyyy"
+               value="@_textValue"
+               @oninput="OnInputChanged"
+               @onfocus="OnFocus"
+               @onblur="OnBlur" />
+        <button type="button" 
+                class="px-3 text-foreground hover:text-foreground/80 transition-colors focus:outline-none"
+                @onclick="ToggleCalendar"
+                @onclick:stopPropagation
+                @onmousedown:preventDefault="true"
+                tabindex="-1">
+            <!-- Calendar SVG Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+        </button>
+    </div>
+
+    @if (_showCalendar)
+    {
+        <div class="absolute left-0 right-0 md:right-auto md:w-72 z-50 mt-1 bg-card border border-border rounded-md shadow-lg p-3" 
+             @onclick:stopPropagation
+             @onmousedown:preventDefault="true"
+             tabindex="-1">
+            <!-- Header: Prev, Month/Year, Next -->
+            <div class="flex justify-between items-center mb-3">
+                <button type="button" class="p-1 hover:bg-muted rounded text-foreground transition-colors focus:outline-none" @onclick="PrevMonth" tabindex="-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <div class="font-semibold text-foreground text-sm">@_viewDate.ToString("MMMM yyyy")</div>
+                <button type="button" class="p-1 hover:bg-muted rounded text-foreground transition-colors focus:outline-none" @onclick="NextMonth" tabindex="-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+
+            <!-- Days of Week Header -->
+            <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-muted-foreground mb-2">
+                <div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div><div>Su</div>
+            </div>
+
+            <!-- Calendar Days Grid -->
+            <div class="grid grid-cols-7 gap-1 text-center">
+                @foreach (var day in GetCalendarDays())
+                {
+                    var isCurrentMonth = day.Month == _viewDate.Month;
+                    var isSelected = day == Value;
+                    var isToday = day == DateOnly.FromDateTime(DateTime.Today);
+                    
+                    <button type="button" 
+                            class="p-1.5 text-xs rounded transition-colors focus:outline-none
+                                   @(isCurrentMonth ? "text-foreground hover:bg-muted" : "text-muted-foreground/30 hover:bg-muted")
+                                   @(isSelected ? "bg-primary text-primary-foreground font-bold hover:bg-primary/90" : "")
+                                   @(isToday && !isSelected ? "border border-primary text-primary" : "")"
+                            @onclick="() => SelectDate(day)"
+                            tabindex="-1">
+                        @day.Day
+                    </button>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public DateOnly Value { get; set; }
+
+    [Parameter]
+    public EventCallback<DateOnly> ValueChanged { get; set; }
+
+    private string _textValue = string.Empty;
+    private bool _showCalendar = false;
+    private DateOnly _viewDate;
+    private bool _isFocused = false;
+
+    private static event Action<DatePicker>? OnCalendarOpened;
+
+    protected override void OnInitialized()
+    {
+        OnCalendarOpened += HandleOtherCalendarOpened;
+    }
+
+    private void HandleOtherCalendarOpened(DatePicker openedDatePicker)
+    {
+        if (openedDatePicker != this && _showCalendar)
+        {
+            _showCalendar = false;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        OnCalendarOpened -= HandleOtherCalendarOpened;
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!_isFocused)
+        {
+            _textValue = Value != default ? Value.ToString("dd-MM-yyyy") : string.Empty;
+        }
+        
+        if (_viewDate == default)
+        {
+            _viewDate = Value != default ? Value : DateOnly.FromDateTime(DateTime.Today);
+        }
+    }
+
+    private void OnFocus()
+    {
+        _isFocused = true;
+    }
+
+    private void ToggleCalendar()
+    {
+        _showCalendar = !_showCalendar;
+        if (_showCalendar)
+        {
+            _viewDate = Value != default ? Value : DateOnly.FromDateTime(DateTime.Today);
+            OnCalendarOpened?.Invoke(this);
+        }
+    }
+
+    private async Task SelectDate(DateOnly date)
+    {
+        Value = date;
+        _textValue = date.ToString("dd-MM-yyyy");
+        _showCalendar = false;
+        await ValueChanged.InvokeAsync(date);
+    }
+
+    private void PrevMonth()
+    {
+        _viewDate = _viewDate.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        _viewDate = _viewDate.AddMonths(1);
+    }
+
+    private void OnInputChanged(ChangeEventArgs e)
+    {
+        _textValue = e.Value?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(_textValue))
+        {
+            Value = default;
+            ValueChanged.InvokeAsync(default);
+        }
+        else if (DateOnly.TryParseExact(_textValue, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        {
+            Value = date;
+            ValueChanged.InvokeAsync(date);
+        }
+    }
+
+    private void OnBlur()
+    {
+        _isFocused = false;
+        if (string.IsNullOrWhiteSpace(_textValue))
+        {
+            Value = default;
+            _textValue = string.Empty;
+            ValueChanged.InvokeAsync(default);
+        }
+        else if (DateOnly.TryParseExact(_textValue, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        {
+            Value = date;
+            _textValue = date.ToString("dd-MM-yyyy");
+            ValueChanged.InvokeAsync(date);
+        }
+        else
+        {
+            _textValue = Value != default ? Value.ToString("dd-MM-yyyy") : string.Empty;
+        }
+    }
+
+    private async Task HandleFocusOut(FocusEventArgs e)
+    {
+        // Simple delay to allow clicking calendar elements without closing the popup immediately
+        await Task.Delay(200);
+        _showCalendar = false;
+    }
+
+    private List<DateOnly> GetCalendarDays()
+    {
+        var days = new List<DateOnly>();
+        var firstDayOfMonth = new DateOnly(_viewDate.Year, _viewDate.Month, 1);
+        
+        // Find the start date for the calendar grid starting on Monday.
+        int offset = ((int)firstDayOfMonth.DayOfWeek - 1 + 7) % 7;
+        var startDate = firstDayOfMonth.AddDays(-offset);
+
+        // 6-week grid
+        for (int i = 0; i < 42; i++)
+        {
+            days.Add(startDate.AddDays(i));
+        }
+
+        return days;
+    }
+}

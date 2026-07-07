@@ -1,0 +1,1645 @@
+@page "/modules"
+@using ACST.WebApp.Models
+@inject HttpClient Http
+
+<PageTitle>Modules</PageTitle>
+
+<div class="flex justify-between items-center mb-8">
+    <h1 class="text-2xl font-bold tracking-tight text-foreground">Modules</h1>
+    <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1 bg-muted border border-border p-1 rounded-md">
+            <button class="p-1.5 rounded transition-all @(_viewMode == "table" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                    @onclick='() => _viewMode = "table"' 
+                    title="Table View">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+            </button>
+            <button class="p-1.5 rounded transition-all @(_viewMode == "card" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                    @onclick='() => _viewMode = "card"' 
+                    title="Card View">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+            </button>
+        </div>
+        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="ToggleCreateForm">
+            @(_showCreateForm ? "Cancel" : "New Module")
+        </button>
+    </div>
+</div>
+
+@if (!_showCreateForm && !_showEditForm && _selectedModuleId == 0)
+{
+    <div class="flex flex-wrap items-center gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm">
+        <!-- Search Box -->
+        <div class="flex-1 min-w-[240px] flex flex-col gap-1">
+            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-sans">Search Modules</label>
+            <div class="relative flex items-center">
+                <input type="text" 
+                       class="w-full pl-9 pr-24 py-2.5 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring transition-all placeholder:text-muted-foreground" 
+                       placeholder="Search by module name or code" 
+                       @bind="_searchTerm" 
+                       @onkeyup="OnSearchKeyUp" />
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </div>
+                @if (!string.IsNullOrEmpty(_searchTerm))
+                {
+                    <button class="absolute right-[76px] text-muted-foreground hover:text-foreground text-xs focus:outline-none" @onclick="ClearSearch" title="Clear search">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                }
+                <button class="absolute right-0 top-0 bottom-0 px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-r-md text-xs font-semibold transition-all focus:outline-none" @onclick="TriggerSearch">
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <!-- Semester Filter -->
+        <div class="flex flex-col gap-1 min-w-[200px]">
+            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-sans">Semester</label>
+            <select class="p-2.5 bg-background border border-border rounded-md text-foreground font-sans text-xs focus:outline-none focus:ring-1 focus:ring-ring w-full"
+                    value="@_selectedFilterSemesterIdStr" @onchange="OnSemesterFilterChanged">
+                <option value="">All Semesters</option>
+                @if (_semesters != null)
+                {
+                    @foreach (var sem in _semesters)
+                    {
+                        <option value="@sem.Id">@sem.Name</option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
+}
+
+
+@if (!string.IsNullOrEmpty(_message))
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in zoom-in duration-200">
+            @if (_isError)
+            {
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </div>
+                <h3 class="text-base font-bold text-foreground mb-2">Error</h3>
+            }
+            else
+            {
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary mb-4">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h3 class="text-base font-bold text-foreground mb-2">Success</h3>
+            }
+            <p class="text-xs text-muted-foreground mb-5 font-sans">@_message</p>
+            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
+                    @onclick="() => _message = string.Empty">
+                Close
+            </button>
+        </div>
+    </div>
+}
+
+@if (_showCreateForm)
+{
+    <div class="bg-card border border-border p-6 rounded-lg shadow-sm mb-8">
+        <h2 class="text-base font-bold mb-4 text-foreground tracking-tight">Create New Module</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Module Name</label>
+                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_newModule.Name" placeholder="e.g. Introduction to CS" />
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Module Code</label>
+                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_newModule.ModuleCode" placeholder="e.g. CS-101" />
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Teacher Name</label>
+                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_newModule.TeacherName" placeholder="e.g. John Doe" />
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Semester</label>
+                <select class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_newModuleSemesterIdStr">
+                    <option value="">Select Semester (Optional)...</option>
+                    @if (_semesters != null)
+                    {
+                        @foreach(var sem in _semesters)
+                        {
+                            <option value="@sem.Id">@sem.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="mt-6 border-t border-border pt-4 mb-6">
+            <h3 class="text-sm font-bold text-foreground mb-4">Schedules</h3>
+            
+            @if (!_newModuleSchedules.Any())
+            {
+                <p class="text-xs text-muted-foreground italic mb-4">No schedules added yet. Click the button below to add a schedule.</p>
+            }
+            else
+            {
+                <div class="space-y-3 mb-4">
+                    @for (int i = 0; i < _newModuleSchedules.Count; i++)
+                    {
+                        var index = i;
+                        var sch = _newModuleSchedules[i];
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-muted/20 p-3 rounded-lg border border-border">
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Day of Week</label>
+                                <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring" 
+                                        @bind="sch.DayOfWeek">
+                                    <option value="1">Monday</option>
+                                    <option value="2">Tuesday</option>
+                                    <option value="3">Wednesday</option>
+                                    <option value="4">Thursday</option>
+                                    <option value="5">Friday</option>
+                                    <option value="6">Saturday</option>
+                                    <option value="0">Sunday</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Start Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.StartTime" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">End Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.EndTime" />
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" class="bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground text-destructive px-3 py-2 rounded-md text-xs font-semibold transition-all w-full md:w-auto" 
+                                        @onclick="() => RemoveNewModuleSchedule(index)">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            
+            <button type="button" class="bg-secondary text-foreground hover:bg-secondary/80 border border-border px-3 py-2 rounded-md text-xs font-semibold transition-all shadow-sm" 
+                    @onclick="AddNewModuleSchedule">
+                + Add Schedule
+            </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="OnCreateModuleClicked" disabled="@_isSubmitting">
+                @(_isSubmitting ? "Creating..." : "Create Module")
+            </button>
+            @if (_newModuleSchedules.Any())
+            {
+                <button type="button" class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="OnGenerateSessionsClicked" disabled="@_isSubmitting">
+                    Generate Sessions
+                </button>
+            }
+        </div>
+    </div>
+}
+
+<!-- Assign Schedule Form -->
+@if (_selectedModuleId > 0)
+{
+    <div class="bg-card border border-primary p-6 rounded-lg shadow-sm mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-base font-bold text-foreground tracking-tight">Add Schedule to @_selectedModuleName</h2>
+            <button class="text-muted-foreground hover:text-foreground text-sm font-semibold" @onclick="CancelScheduleForm">Cancel</button>
+        </div>
+
+        <!-- Existing Schedules -->
+        @if (_selectedModule != null && _selectedModule.Schedules != null && _selectedModule.Schedules.Any())
+        {
+            <div class="mb-6 p-4 bg-muted/20 border border-border rounded-md">
+                <h3 class="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 font-sans">Existing Timetables</h3>
+                <div class="flex flex-wrap gap-2">
+                    @foreach (var schedule in _selectedModule.Schedules)
+                    {
+                        <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-card border border-border text-foreground rounded font-mono text-[10px]">
+                            Semester: @schedule.SemesterName • @GetDayOfWeekName(schedule.DayOfWeek) @FormatTime(schedule.StartTime)-@FormatTime(schedule.EndTime)
+                            <button class="text-destructive hover:text-destructive/80 font-bold focus:outline-none ml-1 text-sm leading-none" @onclick="() => OpenDeleteScheduleConfirm(schedule.Id)" @onclick:stopPropagation>×</button>
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+        
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-muted-foreground mb-1">Semester</label>
+            <select class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_selectedSemesterId">
+                <option value="0">Select Semester...</option>
+                @if (_semesters != null)
+                {
+                    @foreach(var sem in _semesters)
+                    {
+                        <option value="@sem.Id">@sem.Name</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-muted-foreground mb-3">Schedules to Add</label>
+            
+            @if (!_assignSchedules.Any())
+            {
+                <p class="text-xs text-muted-foreground italic mb-4">No schedules added yet. Click the button below to add a schedule.</p>
+            }
+            else
+            {
+                <div class="space-y-3 mb-4">
+                    @for (int i = 0; i < _assignSchedules.Count; i++)
+                    {
+                        var index = i;
+                        var sch = _assignSchedules[i];
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-muted/20 p-3 rounded-lg border border-border">
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Day of Week</label>
+                                <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring" 
+                                        @bind="sch.DayOfWeek">
+                                    <option value="1">Monday</option>
+                                    <option value="2">Tuesday</option>
+                                    <option value="3">Wednesday</option>
+                                    <option value="4">Thursday</option>
+                                    <option value="5">Friday</option>
+                                    <option value="6">Saturday</option>
+                                    <option value="0">Sunday</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Start Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.StartTime" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">End Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.EndTime" />
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" class="bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground text-destructive px-3 py-2 rounded-md text-xs font-semibold transition-all w-full md:w-auto" 
+                                        @onclick="() => RemoveAssignSchedule(index)">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            
+            <button type="button" class="bg-secondary text-foreground hover:bg-secondary/80 border border-border px-3 py-2 rounded-md text-xs font-semibold transition-all shadow-sm" 
+                    @onclick="AddAssignSchedule">
+                + Add Schedule
+            </button>
+        </div>
+
+        @if (_selectedSemester != null)
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-muted/40 border border-border rounded-md">
+                <div>
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 font-sans">Semester Start Date</label>
+                    <DatePicker Value="@_selectedSemester.StartDate" ValueChanged="((val) => {})" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 font-sans">Semester End Date</label>
+                    <DatePicker Value="@_selectedSemester.EndDate" ValueChanged="((val) => {})" />
+                </div>
+            </div>
+        }
+
+        <div class="flex items-center gap-3">
+            <button type="button" class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="OnAddScheduleClicked" disabled="@_isSubmittingSchedule">
+                @(_isSubmittingSchedule ? "Adding..." : "Add Schedule")
+            </button>
+            <button type="button" class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="OnGenerateSessionsClickedForAssign" disabled="@_isSubmittingSchedule">
+                Generate Sessions
+            </button>
+        </div>
+    </div>
+}
+
+@if (_showEditForm && _editingModuleId > 0)
+{
+    <div class="bg-card border border-primary p-6 rounded-lg shadow-sm mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <button class="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all focus:outline-none" 
+                        @onclick="CancelEditForm" title="Back to Modules">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                </button>
+                <h2 class="text-base font-bold text-foreground tracking-tight">Edit Module</h2>
+            </div>
+            <button class="text-muted-foreground hover:text-foreground text-sm font-semibold" @onclick="CancelEditForm">Cancel</button>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Module Name</label>
+                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editModule.Name" placeholder="e.g. Introduction to CS" />
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Module Code</label>
+                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editModule.ModuleCode" placeholder="e.g. CS-101" />
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Teacher Name</label>
+                <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editModule.TeacherName" placeholder="e.g. John Doe" />
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-muted-foreground mb-1">Semester</label>
+                <select class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editModuleSemesterIdStr">
+                    <option value="">Select Semester (Optional)...</option>
+                    @if (_semesters != null)
+                    {
+                        @foreach(var sem in _semesters)
+                        {
+                            <option value="@sem.Id">@sem.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="mt-6 border-t border-border pt-4 mb-6">
+            <h3 class="text-sm font-bold text-foreground mb-4">Schedules</h3>
+            
+            @if (!_editModuleSchedules.Any())
+            {
+                <p class="text-xs text-muted-foreground italic mb-4">No schedules added yet. Click the button below to add a schedule.</p>
+            }
+            else
+            {
+                <div class="space-y-3 mb-4">
+                    @for (int i = 0; i < _editModuleSchedules.Count; i++)
+                    {
+                        var index = i;
+                        var sch = _editModuleSchedules[i];
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-muted/20 p-3 rounded-lg border border-border">
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Day of Week</label>
+                                <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring" 
+                                        @bind="sch.DayOfWeek">
+                                    <option value="1">Monday</option>
+                                    <option value="2">Tuesday</option>
+                                    <option value="3">Wednesday</option>
+                                    <option value="4">Thursday</option>
+                                    <option value="5">Friday</option>
+                                    <option value="6">Saturday</option>
+                                    <option value="0">Sunday</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">Start Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.StartTime" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-muted-foreground mb-1">End Time</label>
+                                <input type="time" class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring" 
+                                       @bind="sch.EndTime" />
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" class="bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground text-destructive px-3 py-2 rounded-md text-xs font-semibold transition-all w-full md:w-auto" 
+                                        @onclick="() => RemoveEditModuleSchedule(index)">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            
+            <button type="button" class="bg-secondary text-foreground hover:bg-secondary/80 border border-border px-3 py-2 rounded-md text-xs font-semibold transition-all" 
+                    @onclick="AddEditModuleSchedule">
+                + Add Schedule
+            </button>
+        </div>
+
+        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50 shadow-sm" @onclick="UpdateModule" disabled="@_isSubmittingEdit">
+            @(_isSubmittingEdit ? "Saving..." : "Save Changes")
+        </button>
+    </div>
+}
+
+@if (!_showCreateForm && !_showEditForm && _selectedModuleId == 0)
+{
+    @if (_viewMode == "table")
+    {
+        <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+            @if (_isLoading)
+            {
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm animate-pulse">
+                        <thead>
+                            <tr class="border-b border-border bg-muted/50">
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Teacher</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Semester</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider font-sans">Timetables</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Attendance</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border">
+                            @for (int i = 0; i < 6; i++)
+                            {
+                                <tr>
+                                    <td class="px-4 py-4">
+                                        <div class="h-3 bg-muted rounded w-20"></div>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <div class="h-3 bg-muted rounded w-28"></div>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <div class="h-3 bg-muted rounded w-24"></div>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <div class="h-3 bg-muted rounded w-24"></div>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <div class="h-4 bg-muted rounded w-16"></div>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <div class="flex gap-2">
+                                            <div class="h-7 bg-muted rounded w-24"></div>
+                                            <div class="h-7 bg-muted rounded w-16"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else if (_modules == null || !_modules.Any())
+            {
+                <div class="p-6 text-muted-foreground text-sm">No modules found. Create one to get started.</div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="border-b border-border bg-muted/50">
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Teacher</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Semester</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider font-sans">Timetables</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Attendance</th>
+                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border">
+                            @foreach (var mod in _modules)
+                            {
+                                <tr class="hover:bg-accent/40 transition-colors">
+                                    <td class="px-4 py-3.5 font-semibold text-foreground">
+                                        <div class="text-[10px] text-muted-foreground font-mono mb-0.5">@mod.ModuleCode</div>
+                                        <div>@mod.Name</div>
+                                    </td>
+                                    <td class="px-4 py-3.5 text-muted-foreground">@mod.TeacherName</td>
+                                    <td class="px-4 py-3.5 text-muted-foreground">@(string.IsNullOrEmpty(mod.SemesterName) ? "None" : mod.SemesterName)</td>
+                                    <td class="px-4 py-3.5 text-muted-foreground">
+                                        @if (mod.Schedules != null && mod.Schedules.Any())
+                                        {
+                                            <div class="flex flex-col gap-1">
+                                                @foreach (var schedule in mod.Schedules)
+                                                {
+                                                    <div class="inline-flex items-center gap-1.5 bg-muted/40 border border-border px-1.5 py-0.5 rounded text-[11px] text-muted-foreground font-mono w-max">
+                                                        <span>@GetDayOfWeekName(schedule.DayOfWeek): @FormatTime(schedule.StartTime) - @FormatTime(schedule.EndTime)</span>
+                                                        <button class="text-destructive hover:text-destructive/80 font-bold focus:outline-none" @onclick="() => OpenDeleteScheduleConfirm(schedule.Id)" @onclick:stopPropagation>×</button>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted-foreground text-xs italic">No schedule</span>
+                                        }
+                                    </td>
+                                    <td class="px-4 py-3.5">
+                                        @if (mod.TotalValidSessions > 0)
+                                        {
+                                            <div class="flex items-center gap-2">
+                                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(mod.AttendanceRate)">
+                                                    @mod.AttendanceRate%
+                                                </span>
+                                                <span class="text-muted-foreground text-[10px] font-mono">(@mod.PresentSessions/@mod.TotalValidSessions)</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted-foreground font-mono">-</span>
+                                        }
+                                    </td>
+                                    <td class="px-4 py-3.5 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => OpenScheduleForm(mod)">Add Schedule</button>
+                                            <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => OpenEditForm(mod)">Edit</button>
+                                            <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold disabled:opacity-50" 
+                                                    @onclick="() => RequestDeleteModule(mod.Id)" 
+                                                    disabled="@_deletingModuleIds.Contains(mod.Id)">
+                                                @(_deletingModuleIds.Contains(mod.Id) ? "Deleting..." : "Delete")
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="border-t border-border bg-card">
+                    <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        @if (_isLoading)
+        {
+            <div class="flex flex-wrap justify-center gap-4 animate-pulse">
+                @for (int i = 0; i < 6; i++)
+                {
+                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-sm w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.75rem)] flex-grow max-w-[400px]">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="h-4 bg-muted rounded w-24"></div>
+                                <div class="h-4 bg-muted rounded w-20"></div>
+                            </div>
+                            <div class="h-3 bg-muted rounded w-28 mb-4"></div>
+                        </div>
+                        <div class="flex gap-2 border-t border-border pt-4 mt-2">
+                            <div class="h-7 bg-muted rounded flex-1"></div>
+                            <div class="h-7 bg-muted rounded w-12"></div>
+                            <div class="h-7 bg-muted rounded w-16"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else if (_modules == null || !_modules.Any())
+        {
+            <div class="bg-card border border-border rounded-lg shadow-sm p-6 text-muted-foreground text-sm">No modules found. Create one to get started.</div>
+        }
+        else
+        {
+            <div class="flex flex-wrap justify-center gap-4">
+                @foreach (var mod in _modules)
+                {
+                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-sm w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.75rem)] flex-grow max-w-[400px]">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <div class="mb-1">
+                                        <span class="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-secondary border border-border text-foreground rounded">@mod.ModuleCode</span>
+                                    </div>
+                                    <h3 class="text-base font-bold text-foreground tracking-tight">@mod.Name</h3>
+                                    <div class="flex items-center gap-2 text-xs text-muted-foreground mt-1 font-mono">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <span>@mod.TeacherName</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end gap-1.5 shrink-0">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full @(string.IsNullOrEmpty(mod.SemesterName) ? "bg-muted text-muted-foreground border border-border" : "bg-primary/10 text-primary border border-primary/20")">
+                                        @(string.IsNullOrEmpty(mod.SemesterName) ? "No Semester" : mod.SemesterName)
+                                    </span>
+                                    @if (mod.TotalValidSessions > 0)
+                                    {
+                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(mod.AttendanceRate)">
+                                            @mod.AttendanceRate%
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                            
+                            <!-- Attendance Metrics -->
+                            @if (mod.TotalValidSessions > 0)
+                            {
+                                <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t border-border/30 pt-3 mb-4">
+                                    <div>Total Valid: <span class="text-foreground font-semibold">@mod.TotalValidSessions</span></div>
+                                    <div>Present: <span class="text-primary font-bold">@mod.PresentSessions</span></div>
+                                    <div>Absent: <span class="text-error font-semibold">@(mod.TotalValidSessions - mod.PresentSessions)</span></div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mb-4 text-xs text-muted-foreground italic border-t border-border/30 pt-3">
+                                    No sessions scheduled.
+                                </div>
+                            }
+
+                            <!-- Timetables / Schedules -->
+                            <div class="border-t border-border/30 pt-3 mb-4">
+                                <label class="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Timetables</label>
+                                @if (mod.Schedules != null && mod.Schedules.Any())
+                                {
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @foreach (var schedule in mod.Schedules)
+                                        {
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-muted text-muted-foreground border border-border rounded font-mono text-xs">
+                                                @GetDayOfWeekName(schedule.DayOfWeek) @FormatTime(schedule.StartTime)-@FormatTime(schedule.EndTime)
+                                                <button class="text-destructive hover:text-destructive/80 font-bold focus:outline-none" @onclick="() => OpenDeleteScheduleConfirm(schedule.Id)" @onclick:stopPropagation>×</button>
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted-foreground text-xs italic">No schedule assigned</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="flex gap-2 border-t border-border pt-4 mt-2">
+                            <button class="flex-1 text-center bg-secondary hover:bg-secondary/80 text-foreground border border-border py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => OpenScheduleForm(mod)">Add Schedule</button>
+                            <button class="text-center hover:bg-accent/40 text-foreground border border-border px-3 py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => OpenEditForm(mod)">Edit</button>
+                            <button class="text-center bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/20 px-3 py-1.5 rounded text-xs font-semibold transition-all disabled:opacity-50" 
+                                    @onclick="() => RequestDeleteModule(mod.Id)" 
+                                    disabled="@_deletingModuleIds.Contains(mod.Id)">
+                                @(_deletingModuleIds.Contains(mod.Id) ? "Deleting..." : "Delete")
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="border border-border rounded-lg bg-card mt-6">
+                <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
+            </div>
+        }
+    }
+}
+
+@if (_showDeleteScheduleConfirm)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg">
+            <h3 class="text-lg font-bold text-foreground mb-2">Delete Timetable?</h3>
+            <p class="text-sm text-muted-foreground mb-6">Are you sure you want to delete this timetable? This action cannot be undone.</p>
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelDeleteSchedule">Cancel</button>
+                <button class="px-4 py-2 bg-destructive text-destructive-foreground rounded-md text-sm font-medium hover:bg-destructive/90 transition-colors focus:outline-none" @onclick="ConfirmDeleteSchedule">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showCreateModuleConfirm)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg">
+            <h3 class="text-lg font-bold text-foreground mb-2">Generate Sessions?</h3>
+            <p class="text-sm text-muted-foreground mb-6">Do you want to generate class sessions for this module now?</p>
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelCreateModuleConfirm">Cancel</button>
+                <button class="px-4 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmCreateModuleNo">No</button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmCreateModuleYes">Yes</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showGenerateSessionsConfirm)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg">
+            <h3 class="text-lg font-bold text-foreground mb-2">Generate Class Sessions?</h3>
+            <p class="text-sm text-muted-foreground mb-6">Confirm the generation of class sessions for this module. Would you also like to sync them with Google Calendar?</p>
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelGenerateSessionsConfirm">Cancel</button>
+                <button class="px-4 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmGenerateSessionsOnly">Generate Sessions</button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmGenerateSessionsAndSync">Sync with Google Calendar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showAddScheduleConfirm)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in zoom-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg">
+            <h3 class="text-lg font-bold text-foreground mb-2">Generate Sessions?</h3>
+            <p class="text-sm text-muted-foreground mb-6">Are you sure you want to add this schedule? Would you also like to generate class sessions for this schedule now?</p>
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelAddScheduleConfirm">Cancel</button>
+                <button class="px-4 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmAddScheduleNo">No (Add Only)</button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmAddScheduleYes">Yes</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showGenerateSessionsConfirmForAssign)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in zoom-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg">
+            <h3 class="text-lg font-bold text-foreground mb-2">Generate Class Sessions?</h3>
+            <p class="text-sm text-muted-foreground mb-6">Are you sure you want to generate class sessions? Or do you only want to add the schedule without generating sessions?</p>
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelGenerateSessionsConfirmForAssign">Cancel</button>
+                <button class="px-4 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmGenerateSessionsOnlyForAssign">Only Add Schedule</button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmGenerateSessionsYesForAssign">Generate Sessions</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showAddScheduleGenerateConfirm)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in zoom-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg">
+            <h3 class="text-lg font-bold text-foreground mb-2">Generate Class Sessions?</h3>
+            <p class="text-sm text-muted-foreground mb-6">Confirm the generation of class sessions for this schedule. Would you also like to sync them with Google Calendar?</p>
+            <div class="flex justify-end gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelAddScheduleGenerateConfirm">Cancel</button>
+                <button class="px-4 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmAddScheduleGenerateOnly">Generate Sessions</button>
+                <button class="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors focus:outline-none" @onclick="ConfirmAddScheduleGenerateAndSync">Sync with Google Calendar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showDeleteModuleConfirm)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in fade-in zoom-in duration-200">
+            <h3 class="text-lg font-bold text-foreground mb-2 text-center">Delete Module?</h3>
+            <p class="text-sm text-muted-foreground mb-6 text-center">Are you sure you want to delete this module? This action will also delete all associated class sessions and timetables, and cannot be undone.</p>
+            <div class="flex justify-center gap-3">
+                <button class="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted transition-colors focus:outline-none" @onclick="CancelDeleteModule">Cancel</button>
+                <button class="px-4 py-2 bg-destructive text-destructive-foreground rounded-md text-sm font-medium hover:bg-destructive/90 transition-colors focus:outline-none" @onclick="ConfirmConfirmDeleteModule">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_isDeletingSchedule)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg flex flex-col items-center justify-center text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+            <h3 class="text-sm font-bold text-foreground">Deleting Timetable...</h3>
+            <p class="text-xs text-muted-foreground mt-1 text-center">Please wait while the timetable and associated sessions are deleted.</p>
+        </div>
+    </div>
+}
+
+
+
+@code {
+    private static string _viewMode = "table";
+    private List<ModuleDto>? _modules;
+    private List<SemesterDto>? _semesters;
+    private HashSet<long> _deletingModuleIds = new();
+    
+    private bool _isLoading = true;
+    private bool _showCreateForm = false;
+    private bool _isSubmitting = false;
+    private bool _isSubmittingSchedule = false;
+    private bool _showCreateModuleConfirm = false;
+    private bool _showGenerateSessionsConfirm = false;
+    private bool _showAddScheduleConfirm = false;
+    private bool _showAddScheduleGenerateConfirm = false;
+    private bool _showGenerateSessionsConfirmForAssign = false;
+    private string _message = string.Empty;
+    private bool _isError = false;
+    private string _searchTerm = string.Empty;
+
+    private bool _showDeleteModuleConfirm = false;
+    private long _moduleIdToDelete = 0;
+
+    private bool _isDeletingSchedule = false;
+    private long? _filterSemesterId = null;
+    private string _selectedFilterSemesterIdStr
+    {
+        get => _filterSemesterId?.ToString() ?? "";
+        set
+        {
+            if (long.TryParse(value, out var id))
+                _filterSemesterId = id;
+            else
+                _filterSemesterId = null;
+        }
+    }
+
+    private int _pageNumber = 1;
+    private int _pageSize = 10;
+    private int _totalPages = 1;
+    private int _totalCount = 0;
+    private bool _hasPrevious = false;
+    private bool _hasNext = false;
+
+    private CreateModuleRequest _newModule = new();
+    private List<CreateRecurringScheduleRequest> _newModuleSchedules = new();
+
+    private string _newModuleSemesterIdStr
+    {
+        get => _newModule.SemesterId?.ToString() ?? "";
+        set
+        {
+            if (long.TryParse(value, out var id))
+            {
+                _newModule.SemesterId = id;
+            }
+            else
+            {
+                _newModule.SemesterId = null;
+                _newModuleSchedules.Clear();
+            }
+        }
+    }
+
+    private UpdateModuleRequest _editModule = new();
+    private List<UpdateRecurringScheduleRequest> _editModuleSchedules = new();
+    private long _editingModuleId = 0;
+    private bool _showEditForm = false;
+    private bool _isSubmittingEdit = false;
+
+    private string _editModuleSemesterIdStr
+    {
+        get => _editModule.SemesterId?.ToString() ?? "";
+        set
+        {
+            if (long.TryParse(value, out var id))
+            {
+                _editModule.SemesterId = id;
+            }
+            else
+            {
+                _editModule.SemesterId = null;
+                _editModuleSchedules.Clear();
+            }
+        }
+    }
+    
+    private long _selectedModuleId = 0;
+    private string _selectedModuleName = string.Empty;
+    private long _selectedSemesterId
+    {
+        get => _selectedSemesterIdVal;
+        set
+        {
+            _selectedSemesterIdVal = value;
+            _selectedSemester = _semesters?.FirstOrDefault(s => s.Id == value);
+            if (value == 0)
+            {
+                _assignSchedules.Clear();
+            }
+            else if (!_assignSchedules.Any())
+            {
+                _assignSchedules.Add(new CreateRecurringScheduleRequest 
+                { 
+                    StartTime = new TimeOnly(9, 0), 
+                    EndTime = new TimeOnly(11, 0), 
+                    DayOfWeek = 1 
+                });
+            }
+        }
+    }
+    private long _selectedSemesterIdVal = 0;
+    private SemesterDto? _selectedSemester = null;
+    private ModuleDto? _selectedModule = null;
+    private List<CreateRecurringScheduleRequest> _assignSchedules = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private void ToggleCreateForm()
+    {
+        _showCreateForm = !_showCreateForm;
+        _message = string.Empty;
+        if (_showCreateForm)
+        {
+            _selectedModuleId = 0;
+            _selectedModuleName = string.Empty;
+            _showEditForm = false;
+            _editingModuleId = 0;
+            _newModuleSchedules.Clear();
+        }
+    }
+    
+    private void OpenScheduleForm(ModuleDto mod)
+    {
+        _selectedModuleId = mod.Id;
+        _selectedModuleName = mod.Name;
+        _selectedModule = mod;
+        _selectedSemesterId = 0;
+        _showCreateForm = false;
+        _showEditForm = false;
+        _editingModuleId = 0;
+        _message = string.Empty;
+        _assignSchedules = new();
+    }
+    
+    private void CancelScheduleForm()
+    {
+        _selectedModuleId = 0;
+        _selectedModuleName = string.Empty;
+        _selectedModule = null;
+        _selectedSemesterId = 0;
+        _assignSchedules = new();
+    }
+
+    private void OpenEditForm(ModuleDto mod)
+    {
+        _editingModuleId = mod.Id;
+        _editModule = new UpdateModuleRequest
+        {
+            Name = mod.Name,
+            ModuleCode = mod.ModuleCode,
+            TeacherName = mod.TeacherName,
+            SemesterId = mod.SemesterId
+        };
+        _editModuleSchedules = mod.Schedules.Select(s => new UpdateRecurringScheduleRequest
+        {
+            Id = s.Id,
+            DayOfWeek = s.DayOfWeek,
+            StartTime = s.StartTime,
+            EndTime = s.EndTime
+        }).ToList();
+        _showEditForm = true;
+        _showCreateForm = false;
+        _selectedModuleId = 0;
+        _selectedModuleName = string.Empty;
+        _message = string.Empty;
+    }
+
+    private void CancelEditForm()
+    {
+        _showEditForm = false;
+        _editingModuleId = 0;
+        _editModule = new UpdateModuleRequest();
+        _editModuleSchedules.Clear();
+    }
+
+    private void AddNewModuleSchedule()
+    {
+        if (!_newModule.SemesterId.HasValue)
+        {
+            _message = "Please select a semester first before adding schedules.";
+            _isError = true;
+            return;
+        }
+
+        _newModuleSchedules.Add(new CreateRecurringScheduleRequest
+        {
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            DayOfWeek = 1
+        });
+    }
+
+    private void RemoveNewModuleSchedule(int index)
+    {
+        if (index >= 0 && index < _newModuleSchedules.Count)
+        {
+            _newModuleSchedules.RemoveAt(index);
+        }
+    }
+
+    private void AddEditModuleSchedule()
+    {
+        if (!_editModule.SemesterId.HasValue)
+        {
+            _message = "Please select a semester first before adding schedules.";
+            _isError = true;
+            return;
+        }
+
+        _editModuleSchedules.Add(new UpdateRecurringScheduleRequest
+        {
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            DayOfWeek = 1
+        });
+    }
+
+    private void RemoveEditModuleSchedule(int index)
+    {
+        if (index >= 0 && index < _editModuleSchedules.Count)
+        {
+            _editModuleSchedules.RemoveAt(index);
+        }
+    }
+
+    private void AddAssignSchedule()
+    {
+        if (_selectedSemesterId == 0)
+        {
+            _message = "Please select a semester first before adding schedules.";
+            _isError = true;
+            return;
+        }
+
+        _assignSchedules.Add(new CreateRecurringScheduleRequest
+        {
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            DayOfWeek = 1
+        });
+    }
+
+    private void RemoveAssignSchedule(int index)
+    {
+        if (index >= 0 && index < _assignSchedules.Count)
+        {
+            _assignSchedules.RemoveAt(index);
+        }
+    }
+
+    private async Task OnSearchKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await TriggerSearch();
+        }
+    }
+
+    private async Task TriggerSearch()
+    {
+        _pageNumber = 1;
+        await LoadData();
+    }
+
+    private async Task ClearSearch()
+    {
+        _searchTerm = string.Empty;
+        _pageNumber = 1;
+        await LoadData();
+    }
+
+    private async Task OnSemesterFilterChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        _selectedFilterSemesterIdStr = val ?? "";
+        _pageNumber = 1;
+        await LoadData();
+    }
+
+    private async Task OnPageChanged(int newPage)
+    {
+        _pageNumber = newPage;
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _isLoading = true;
+        try
+        {
+            var semFilter = _filterSemesterId.HasValue ? $"&semesterId={_filterSemesterId.Value}" : "";
+            if (!string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                var searchResult = await Http.GetFromJsonAsync<PagedResult<SearchModuleDto>>($"api/search/modules?name={Uri.EscapeDataString(_searchTerm)}&pageNumber={_pageNumber}&pageSize={_pageSize}{semFilter}");
+                if (searchResult != null && searchResult.IsSuccess)
+                {
+                    _modules = searchResult.Data.Select(m => new ModuleDto
+                    {
+                        Id = m.Id,
+                        Name = m.Name,
+                        ModuleCode = m.ModuleCode,
+                        TeacherName = m.TeacherName,
+                        SemesterId = m.SemesterId,
+                        SemesterName = m.SemesterName,
+                        Schedules = new(),
+                        TotalValidSessions = 0,
+                        PresentSessions = 0,
+                        AttendanceRate = 0
+                    }).ToList();
+                    _pageNumber = searchResult.Pagination.PageNumber;
+                    _pageSize = searchResult.Pagination.PageSize;
+                    _totalPages = searchResult.Pagination.TotalPages;
+                    _totalCount = searchResult.Pagination.TotalCount;
+                    _hasPrevious = searchResult.Pagination.HasPreviousPage;
+                    _hasNext = searchResult.Pagination.HasNextPage;
+                }
+            }
+            else
+            {
+                var modResult = await Http.GetFromJsonAsync<PagedResult<ModuleDto>>($"api/modules?pageNumber={_pageNumber}&pageSize={_pageSize}{semFilter}");
+                if (modResult != null && modResult.IsSuccess)
+                {
+                    _modules = modResult.Data;
+                    _pageNumber = modResult.Pagination.PageNumber;
+                    _pageSize = modResult.Pagination.PageSize;
+                    _totalPages = modResult.Pagination.TotalPages;
+                    _totalCount = modResult.Pagination.TotalCount;
+                    _hasPrevious = modResult.Pagination.HasPreviousPage;
+                    _hasNext = modResult.Pagination.HasNextPage;
+                }
+            }
+
+            if (_selectedModuleId > 0 && _modules != null)
+            {
+                _selectedModule = _modules.FirstOrDefault(m => m.Id == _selectedModuleId);
+            }
+            
+            var semResult = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>("api/semesters");
+            if (semResult != null && semResult.IsSuccess)
+            {
+                _semesters = semResult.Data;
+            }
+        }
+        catch (Exception)
+        {
+            _message = "Unexpected Error Ocurred. Please try again";
+            _isError = true;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task CreateModule()
+    {
+        _isSubmitting = true;
+        _message = string.Empty;
+
+        _newModule.Schedules = _newModuleSchedules;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/modules", _newModule);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResult<ModuleDto>>();
+                if (result != null && result.IsSuccess)
+                {
+                    _message = "Module created successfully.";
+                    _isError = false;
+                    _showCreateForm = false;
+                    _newModule = new CreateModuleRequest();
+                    _newModuleSchedules.Clear();
+                    _pageNumber = 1;
+                    await LoadData();
+                }
+                else
+                {
+                    _message = result?.Message ?? "Unknown error creating module.";
+                    _isError = true;
+                }
+            }
+            else
+            {
+                _message = await response.GetFriendlyErrorMessageAsync("Error creating module");
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.GetFriendlyErrorMessage("Error creating module");
+            _isError = true;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private async Task UpdateModule()
+    {
+        if (string.IsNullOrWhiteSpace(_editModule.Name))
+        {
+            _message = "Module name is required.";
+            _isError = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_editModule.ModuleCode))
+        {
+            _message = "Module code is required.";
+            _isError = true;
+            return;
+        }
+
+        _isSubmittingEdit = true;
+        _message = string.Empty;
+
+        _editModule.Schedules = _editModuleSchedules;
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/modules/{_editingModuleId}", _editModule);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResult<ModuleDto>>();
+                if (result != null && result.IsSuccess)
+                {
+                    _message = "Module updated successfully.";
+                    _isError = false;
+                    _showEditForm = false;
+                    _editingModuleId = 0;
+                    _editModuleSchedules.Clear();
+                    await LoadData();
+                }
+                else
+                {
+                    _message = result?.Message ?? "Unknown error updating module.";
+                    _isError = true;
+                }
+            }
+            else
+            {
+                _message = await response.GetFriendlyErrorMessageAsync("Error updating module");
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.GetFriendlyErrorMessage("Error updating module");
+            _isError = true;
+        }
+        finally
+        {
+            _isSubmittingEdit = false;
+        }
+    }
+    
+    private async Task CreateSchedule(bool generateSessions, bool syncWithGoogleCalendar)
+    {
+        if (_selectedSemesterId == 0)
+        {
+            _message = "Please select a semester.";
+            _isError = true;
+            return;
+        }
+
+        if (!_assignSchedules.Any())
+        {
+            _message = "Please add at least one schedule.";
+            _isError = true;
+            return;
+        }
+        
+        _isSubmittingSchedule = true;
+        _message = string.Empty;
+
+        try
+        {
+            bool allSuccess = true;
+            string errorDetails = "";
+
+            foreach (var sch in _assignSchedules)
+            {
+                if (sch.StartTime >= sch.EndTime)
+                {
+                    _message = "Start time must be before end time for all schedules.";
+                    _isError = true;
+                    _isSubmittingSchedule = false;
+                    return;
+                }
+            }
+
+            foreach (var sch in _assignSchedules)
+            {
+                sch.GenerateSessions = generateSessions;
+                sch.SyncWithGoogleCalendar = syncWithGoogleCalendar;
+
+                var response = await Http.PostAsJsonAsync($"api/modules/{_selectedModuleId}/recurring-schedules/{_selectedSemesterId}", sch);
+                if (!response.IsSuccessStatusCode)
+                {
+                    allSuccess = false;
+                    errorDetails = await response.GetFriendlyErrorMessageAsync("Error adding schedule");
+                    break;
+                }
+                else
+                {
+                    var result = await response.Content.ReadFromJsonAsync<ApiResult<RecurringScheduleDto>>();
+                    if (result == null || !result.IsSuccess)
+                    {
+                        allSuccess = false;
+                        errorDetails = result?.Message ?? "Unknown error adding schedule.";
+                        break;
+                    }
+                }
+            }
+
+            if (allSuccess)
+            {
+                _message = "Schedules added successfully.";
+                _isError = false;
+                _selectedModuleId = 0;
+                _selectedModuleName = string.Empty;
+                _selectedModule = null;
+                _selectedSemesterId = 0;
+                _assignSchedules = new();
+                await LoadData();
+            }
+            else
+            {
+                _message = errorDetails;
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.GetFriendlyErrorMessage("Error adding schedules");
+            _isError = true;
+        }
+        finally
+        {
+            _isSubmittingSchedule = false;
+        }
+    }
+
+    private void OnAddScheduleClicked()
+    {
+        if (_selectedSemesterId == 0)
+        {
+            _message = "Please select a semester.";
+            _isError = true;
+            return;
+        }
+
+        if (!_assignSchedules.Any())
+        {
+            _message = "Please add at least one schedule.";
+            _isError = true;
+            return;
+        }
+
+        _showAddScheduleConfirm = true;
+    }
+
+    private void CancelAddScheduleConfirm()
+    {
+        _showAddScheduleConfirm = false;
+    }
+
+    private async Task ConfirmAddScheduleNo()
+    {
+        _showAddScheduleConfirm = false;
+        await CreateSchedule(false, false);
+    }
+
+    private void ConfirmAddScheduleYes()
+    {
+        _showAddScheduleConfirm = false;
+        _showAddScheduleGenerateConfirm = true;
+    }
+
+    private void OnGenerateSessionsClickedForAssign()
+    {
+        if (_selectedSemesterId == 0)
+        {
+            _message = "Please select a semester.";
+            _isError = true;
+            return;
+        }
+
+        if (!_assignSchedules.Any())
+        {
+            _message = "Please add at least one schedule.";
+            _isError = true;
+            return;
+        }
+
+        _showGenerateSessionsConfirmForAssign = true;
+    }
+
+    private void CancelGenerateSessionsConfirmForAssign()
+    {
+        _showGenerateSessionsConfirmForAssign = false;
+    }
+
+    private async Task ConfirmGenerateSessionsOnlyForAssign()
+    {
+        _showGenerateSessionsConfirmForAssign = false;
+        await CreateSchedule(false, false);
+    }
+
+    private void ConfirmGenerateSessionsYesForAssign()
+    {
+        _showGenerateSessionsConfirmForAssign = false;
+        _showAddScheduleGenerateConfirm = true;
+    }
+
+    private void CancelAddScheduleGenerateConfirm()
+    {
+        _showAddScheduleGenerateConfirm = false;
+    }
+
+    private async Task ConfirmAddScheduleGenerateOnly()
+    {
+        _showAddScheduleGenerateConfirm = false;
+        await CreateSchedule(true, false);
+    }
+
+    private async Task ConfirmAddScheduleGenerateAndSync()
+    {
+        _showAddScheduleGenerateConfirm = false;
+        await CreateSchedule(true, true);
+    }
+
+    private async Task DeleteModule(long id)
+    {
+        if (_deletingModuleIds.Contains(id)) return;
+        _deletingModuleIds.Add(id);
+        _message = string.Empty;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/modules/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                _message = "Module deleted successfully.";
+                _isError = false;
+                if (_modules != null && _modules.Count == 1 && _pageNumber > 1)
+                {
+                    _pageNumber--;
+                }
+                await LoadData();
+            }
+            else
+            {
+                _message = await response.GetFriendlyErrorMessageAsync("Error deleting module");
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.GetFriendlyErrorMessage("Error deleting module");
+            _isError = true;
+        }
+        finally
+        {
+            _deletingModuleIds.Remove(id);
+        }
+    }
+
+    private string GetHealthColorClass(double rate)
+    {
+        if (rate >= 75) return "text-emerald-500";
+        if (rate >= 60) return "text-amber-500";
+        return "text-destructive";
+    }
+
+    private string GetHealthBgClass(double rate)
+    {
+        if (rate >= 75) return "bg-emerald-500";
+        if (rate >= 60) return "bg-amber-500";
+        return "bg-destructive";
+    }
+
+    private string GetBadgeBorderAndBg(double rate)
+    {
+        if (rate >= 75) return "border-emerald-500/20 text-emerald-500 bg-emerald-500/10";
+        if (rate >= 60) return "border-amber-500/20 text-amber-500 bg-amber-500/10";
+        return "border-destructive/20 text-destructive bg-destructive/10";
+    }
+
+    private bool _showDeleteScheduleConfirm = false;
+    private long _scheduleIdToDelete = 0;
+
+    private void OpenDeleteScheduleConfirm(long id)
+    {
+        _scheduleIdToDelete = id;
+        _showDeleteScheduleConfirm = true;
+    }
+
+    private void CancelDeleteSchedule()
+    {
+        _scheduleIdToDelete = 0;
+        _showDeleteScheduleConfirm = false;
+    }
+
+    private async Task ConfirmDeleteSchedule()
+    {
+        var id = _scheduleIdToDelete;
+        CancelDeleteSchedule();
+        
+        _message = string.Empty;
+        _isDeletingSchedule = true;
+        StateHasChanged();
+        try
+        {
+            var response = await Http.DeleteAsync($"api/recurring-schedules/{id}");
+            _isDeletingSchedule = false;
+            if (response.IsSuccessStatusCode)
+            {
+                _message = "Timetable deleted successfully.";
+                _isError = false;
+                await LoadData();
+            }
+            else
+            {
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                _message = errorMsg.Contains("Recurring schedule not found") 
+                    ? "This timetable has already been deleted or could not be found." 
+                    : "Failed to delete timetable. Please try again.";
+                _isError = true;
+            }
+        }
+        catch (Exception)
+        {
+            _isDeletingSchedule = false;
+            _message = "An error occurred while deleting the timetable.";
+            _isError = true;
+        }
+    }
+
+    private void RequestDeleteModule(long id)
+    {
+        _moduleIdToDelete = id;
+        _showDeleteModuleConfirm = true;
+    }
+
+    private void CancelDeleteModule()
+    {
+        _moduleIdToDelete = 0;
+        _showDeleteModuleConfirm = false;
+    }
+
+    private async Task ConfirmConfirmDeleteModule()
+    {
+        var id = _moduleIdToDelete;
+        CancelDeleteModule();
+        await DeleteModule(id);
+    }
+
+    private async Task OnCreateModuleClicked()
+    {
+        if (_newModuleSchedules.Any())
+        {
+            _showCreateModuleConfirm = true;
+        }
+        else
+        {
+            _newModule.GenerateSessions = false;
+            _newModule.SyncWithGoogleCalendar = false;
+            await CreateModule();
+        }
+    }
+
+    private void CancelCreateModuleConfirm()
+    {
+        _showCreateModuleConfirm = false;
+    }
+
+    private void ConfirmCreateModuleYes()
+    {
+        _showCreateModuleConfirm = false;
+        _showGenerateSessionsConfirm = true;
+    }
+
+    private async Task ConfirmCreateModuleNo()
+    {
+        _showCreateModuleConfirm = false;
+        _newModule.GenerateSessions = false;
+        _newModule.SyncWithGoogleCalendar = false;
+        await CreateModule();
+    }
+
+    private void OnGenerateSessionsClicked()
+    {
+        _showGenerateSessionsConfirm = true;
+    }
+
+    private void CancelGenerateSessionsConfirm()
+    {
+        _showGenerateSessionsConfirm = false;
+    }
+
+    private async Task ConfirmGenerateSessionsOnly()
+    {
+        _showGenerateSessionsConfirm = false;
+        _newModule.GenerateSessions = true;
+        _newModule.SyncWithGoogleCalendar = false;
+        await CreateModule();
+    }
+
+    private async Task ConfirmGenerateSessionsAndSync()
+    {
+        _showGenerateSessionsConfirm = false;
+        _newModule.GenerateSessions = true;
+        _newModule.SyncWithGoogleCalendar = true;
+        await CreateModule();
+    }
+
+    private string GetDayOfWeekName(short dayOfWeek)
+    {
+        return dayOfWeek switch
+        {
+            0 => "Sunday",
+            1 => "Monday",
+            2 => "Tuesday",
+            3 => "Wednesday",
+            4 => "Thursday",
+            5 => "Friday",
+            6 => "Saturday",
+            _ => "Unknown"
+        };
+    }
+
+    private string FormatTime(TimeOnly time)
+    {
+        return time.ToString("hh:mm tt");
+    }
+}

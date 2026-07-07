@@ -361,3 +361,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+code_style.md
+seed_test_data.sql
+system_loading_screen.json
+insert_mock_data.sql
+oauth.json
+.env
+seed_timetable.sql
+.sonarqube
+service_flowcharts.md
