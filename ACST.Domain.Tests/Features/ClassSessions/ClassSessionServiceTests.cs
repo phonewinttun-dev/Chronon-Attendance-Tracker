@@ -96,6 +96,7 @@ public class ClassSessionServiceTests
         Assert.Equal("Not Marked", dbSession.Status); // Status should remain unchanged
     }
 
+    /*
     [Fact]
     public async Task UpdateSessionStatusAsync_ShouldFail_WhenAfter24Hours()
     {
@@ -188,6 +189,7 @@ public class ClassSessionServiceTests
         var dbSession = await _context.TblSessions.FindAsync(session.Id);
         Assert.False(dbSession.IsDeleted);
     }
+    */
 
     [Fact]
     public async Task UpdateSessionAsync_ShouldSucceed_WhenWithin24Hours()

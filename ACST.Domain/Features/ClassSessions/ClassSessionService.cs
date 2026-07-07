@@ -303,10 +303,10 @@ public class ClassSessionService : IClassSessionService
             var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
             if (session == null) return Result.Failure("Session not found.");
 
-            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
-            {
-                return Result.Failure("Attendance status cannot be changed after 24 hours.");
-            }
+            // if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            // {
+            //     return Result.Failure("Attendance status cannot be changed after 24 hours.");
+            // }
 
             session.Status = request.Status;
             await _context.SaveChangesAsync();
@@ -354,10 +354,10 @@ public class ClassSessionService : IClassSessionService
                 return Result<string>.Failure("Outside of attendance window.");
             }
 
-            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
-            {
-                return Result<string>.Failure("Attendance status cannot be changed after 24 hours.");
-            }
+            // if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            // {
+            //     return Result<string>.Failure("Attendance status cannot be changed after 24 hours.");
+            // }
 
             if (session.Status == "Present")
             {
@@ -386,10 +386,10 @@ public class ClassSessionService : IClassSessionService
             var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
             if (session == null) return Result.Failure("Session not found.");
 
-            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
-            {
-                return Result.Failure("Attendance status cannot be changed after 24 hours.");
-            }
+            // if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            // {
+            //     return Result.Failure("Attendance status cannot be changed after 24 hours.");
+            // }
 
             var moduleExists = await _context.TblModules.AnyAsync(m => m.Id == request.ModuleId && !m.IsDeleted);
             if (!moduleExists) return Result.Failure("Module not found.");
@@ -448,10 +448,10 @@ public class ClassSessionService : IClassSessionService
             var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
             if (session == null) return Result.Failure("Session not found.");
 
-            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
-            {
-                return Result.Failure("Attendance status cannot be changed after 24 hours.");
-            }
+            // if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            // {
+            //     return Result.Failure("Attendance status cannot be changed after 24 hours.");
+            // }
 
             session.IsDeleted = true;
             await _context.SaveChangesAsync();

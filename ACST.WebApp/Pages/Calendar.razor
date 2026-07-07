@@ -280,30 +280,24 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-col gap-2">
-                @if (DateTime.UtcNow <= _selectedSession.StartDatetime.AddHours(24))
+                @if (true /* DateTime.UtcNow <= _selectedSession.StartDatetime.AddHours(24) */)
                 {
                     <button class="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-primary-foreground border border-emerald-500/20 px-4 py-2 rounded-md font-semibold text-sm transition-all" 
-                            @onclick='() => UpdateSessionStatus("Present")' disabled="@_isUpdating">
+                            @onclick='() => RequestUpdateSessionStatus("Present")' disabled="@_isUpdating">
                         Mark Present
                     </button>
                     <button class="bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground border border-destructive/20 px-4 py-2 rounded-md font-semibold text-sm transition-all" 
-                            @onclick='() => UpdateSessionStatus("Absent")' disabled="@_isUpdating">
+                            @onclick='() => RequestUpdateSessionStatus("Absent")' disabled="@_isUpdating">
                         Mark Absent
                     </button>
                     <button class="bg-secondary hover:bg-secondary/80 text-foreground border border-border px-4 py-2 rounded-md font-semibold text-sm transition-all" 
-                            @onclick='() => UpdateSessionStatus("Cancelled")' disabled="@_isUpdating">
+                            @onclick='() => RequestUpdateSessionStatus("Cancelled")' disabled="@_isUpdating">
                         Mark Cancelled
                     </button>
                     <button class="border border-dashed border-border hover:bg-muted px-4 py-2 rounded-md font-medium text-xs transition-all text-muted-foreground" 
-                            @onclick='() => UpdateSessionStatus("Not Marked")' disabled="@_isUpdating">
+                            @onclick='() => RequestUpdateSessionStatus("Not Marked")' disabled="@_isUpdating">
                         Reset to Not Marked
                     </button>
-                }
-                else
-                {
-                    <div class="text-destructive text-sm font-semibold text-center py-2 bg-destructive/10 border border-destructive/20 rounded-md">
-                        Locked (cannot change after 24 hours)
-                    </div>
                 }
             </div>
         </div>
@@ -362,12 +356,38 @@
     </div>
 }
 
+@if (_showStatusConfirmModal)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[150] animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg animate-in zoom-in duration-200">
+            <h3 class="text-base font-bold text-foreground mb-2">Confirm Status Change</h3>
+            <p class="text-xs text-muted-foreground mb-6">
+                Are you sure you want to change the status of this class session to <span class="font-bold text-foreground">@_confirmStatus</span>?
+            </p>
+            <div class="flex justify-end gap-3">
+                <button type="button" 
+                        class="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold transition-all focus:outline-none" 
+                        @onclick="CancelStatusChange">
+                    Cancel
+                </button>
+                <button type="button" 
+                        class="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md text-xs font-semibold transition-all focus:outline-none" 
+                        @onclick="ConfirmStatusChange">
+                    Yes, Change
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private bool _isLoading = true;
     private bool _isUpdating = false;
     private string _message = string.Empty;
     private bool _isError = false;
     private bool _showErrorDialog = false;
+    private bool _showStatusConfirmModal = false;
+    private string _confirmStatus = string.Empty;
 
     private bool _googleCalendarEnabled = false;
     private bool _googleCalendarConnected = false;
@@ -456,11 +476,14 @@
         _message = string.Empty;
         try
         {
-            // Load holidays
-            var holResult = await Http.GetFromJsonAsync<PagedResult<HolidayDto>>("api/holidays");
-            if (holResult != null && holResult.IsSuccess)
+            // Load holidays if not loaded yet
+            if (_holidays == null || !_holidays.Any())
             {
-                _holidays = holResult.Data ?? new();
+                var holResult = await Http.GetFromJsonAsync<PagedResult<HolidayDto>>("api/holidays");
+                if (holResult != null && holResult.IsSuccess)
+                {
+                    _holidays = holResult.Data ?? new();
+                }
             }
 
             // Load sessions only for the current month
@@ -561,6 +584,23 @@
         _selectedSession = null;
     }
 
+    private void RequestUpdateSessionStatus(string status)
+    {
+        _confirmStatus = status;
+        _showStatusConfirmModal = true;
+    }
+
+    private async Task ConfirmStatusChange()
+    {
+        _showStatusConfirmModal = false;
+        await UpdateSessionStatus(_confirmStatus);
+    }
+
+    private void CancelStatusChange()
+    {
+        _showStatusConfirmModal = false;
+    }
+
     private async Task UpdateSessionStatus(string status)
     {
         if (_selectedSession == null) return;
@@ -579,7 +619,6 @@
                     _selectedSession = null;
                     _message = "Status updated successfully.";
                     _isError = false;
-                    await LoadCalendarData();
                 }
                 else
                 {
