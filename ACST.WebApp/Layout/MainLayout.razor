@@ -54,6 +54,12 @@
                     Calendar
                 </span>
             </NavLink>
+            <NavLink class="@GetNavLinkClass()" href="attendance" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Attendance" : "")" @onclick="CloseMobileMenu">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-check-square"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 11 3 3 5-5"/></svg>
+                <span class="@GetNavLinkTextClass()">
+                    Attendance
+                </span>
+            </NavLink>
             <NavLink class="@GetNavLinkClass()" href="semesters" ActiveClass="bg-accent text-accent-foreground font-semibold shadow-sm" title="@(_isCollapsed ? "Semesters" : "")" @onclick="CloseMobileMenu">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 shrink-0 lucide lucide-graduation-cap"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/><path d="M21.5 12v6"/></svg>
                 <span class="@GetNavLinkTextClass()">
