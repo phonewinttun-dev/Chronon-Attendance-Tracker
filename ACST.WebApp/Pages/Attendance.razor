@@ -7,47 +7,16 @@
 <PageTitle>Attendance</PageTitle>
 
 <!-- Header -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1 class="text-2xl font-bold tracking-tight text-foreground">Attendance</h1>
-        <p class="text-muted-foreground text-sm mt-1">Mark and manage attendance status for your class sessions.</p>
-    </div>
-    @if (_selectedIds.Any())
-    {
-        <div class="flex items-center gap-3 animate-in slide-in-from-right duration-200">
-            <span class="text-xs font-mono text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border">
-                @_selectedIds.Count selected
-            </span>
-            <div class="flex items-center gap-1.5">
-                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/25"
-                        @onclick='() => RequestBulkStatusChange("Present")'>
-                    Present
-                </button>
-                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/25"
-                        @onclick='() => RequestBulkStatusChange("Absent")'>
-                    Absent
-                </button>
-                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500/25"
-                        @onclick='() => RequestBulkStatusChange("Cancelled")'>
-                    Cancelled
-                </button>
-                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-muted text-muted-foreground border border-border hover:bg-accent"
-                        @onclick='() => RequestBulkStatusChange("Not Marked")'>
-                    Not Marked
-                </button>
-            </div>
-            <button class="text-xs text-muted-foreground hover:text-foreground transition-colors underline" @onclick="ClearSelection">
-                Clear
-            </button>
-        </div>
-    }
+<div class="mb-6">
+    <h1 class="text-2xl font-bold tracking-tight text-foreground">Attendance</h1>
+    <p class="text-muted-foreground text-sm mt-1">Mark and manage attendance status for your class sessions.</p>
 </div>
 
 <!-- Filters -->
-<div class="flex flex-wrap items-end gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm">
-    <div class="flex flex-col gap-1">
+<div class="flex flex-wrap items-end gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm w-full">
+    <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
         <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Semester</label>
-        <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[160px]"
+        <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
                 value="@_selectedSemesterId" @onchange="OnSemesterChanged">
             @if (_semesters != null)
             {
@@ -59,9 +28,9 @@
         </select>
     </div>
 
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-1 flex-1 min-w-[180px]">
         <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Module</label>
-        <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[180px]"
+        <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
                 value="@_selectedModuleId" @onchange="OnModuleChanged">
             <option value="">All Modules</option>
             @if (_modules != null)
@@ -74,9 +43,9 @@
         </select>
     </div>
 
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-1 flex-1 min-w-[130px]">
         <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Status</label>
-        <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[130px]"
+        <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
                 value="@_filterStatus" @onchange="OnStatusFilterChanged">
             <option value="">All Statuses</option>
             <option value="Not Marked">Not Marked</option>
@@ -87,12 +56,12 @@
         </select>
     </div>
 
-    <div class="flex flex-col gap-1 w-44">
+    <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
         <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">From</label>
         <DatePicker Value="_filterStartDate" ValueChanged="OnStartDateChanged" />
     </div>
 
-    <div class="flex flex-col gap-1 w-44">
+    <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
         <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">To</label>
         <DatePicker Value="_filterEndDate" ValueChanged="OnEndDateChanged" AlignRight="true" />
     </div>
@@ -127,6 +96,38 @@ else if (_sessions == null || !_sessions.Any())
 }
 else
 {
+    @if (_selectedIds.Any())
+    {
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 mb-4 bg-card border border-border rounded-lg shadow-sm animate-in slide-in-from-top duration-200 gap-3">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                <span class="text-xs font-bold text-foreground">@_selectedIds.Count session(s) selected</span>
+            </div>
+            <div class="flex items-center flex-wrap gap-2">
+                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/25"
+                        @onclick='() => RequestBulkStatusChange("Present")'>
+                    Present
+                </button>
+                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/25"
+                        @onclick='() => RequestBulkStatusChange("Absent")'>
+                    Absent
+                </button>
+                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500/25"
+                        @onclick='() => RequestBulkStatusChange("Cancelled")'>
+                    Cancelled
+                </button>
+                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-muted text-muted-foreground border border-border hover:bg-accent"
+                        @onclick='() => RequestBulkStatusChange("Not Marked")'>
+                    Not Marked
+                </button>
+                <span class="h-4 w-px bg-border mx-1 hidden sm:inline"></span>
+                <button class="text-xs text-muted-foreground hover:text-foreground transition-colors underline" @onclick="ClearSelection">
+                    Clear
+                </button>
+            </div>
+        </div>
+    }
+
     <!-- Sessions Table -->
     <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
@@ -172,19 +173,19 @@ else
                                 <div class="flex items-center justify-center gap-1">
                                     <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Present" ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/30" : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/25 border border-emerald-500/20")"
                                             title="Present" @onclick='() => RequestSingleStatusChange(session.Id, "Present")'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                                     </button>
                                     <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Absent" ? "bg-destructive text-white shadow-sm shadow-destructive/30" : "bg-destructive/10 text-destructive hover:bg-destructive/25 border border-destructive/20")"
                                             title="Absent" @onclick='() => RequestSingleStatusChange(session.Id, "Absent")'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                                     </button>
                                     <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Cancelled" ? "bg-amber-500 text-white shadow-sm shadow-amber-500/30" : "bg-amber-500/10 text-amber-500 hover:bg-amber-500/25 border border-amber-500/20")"
                                             title="Cancelled" @onclick='() => RequestSingleStatusChange(session.Id, "Cancelled")'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
                                     </button>
                                     <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Not Marked" ? "bg-muted-foreground text-white shadow-sm" : "bg-muted text-muted-foreground hover:bg-accent border border-border")"
                                             title="Not Marked" @onclick='() => RequestSingleStatusChange(session.Id, "Not Marked")'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                                     </button>
                                 </div>
                             </td>
@@ -571,57 +572,55 @@ else
         _updateTotal = _selectedIds.Count;
         _updateProgress = 0;
 
-        int successCount = 0;
-        int failCount = 0;
-
-        foreach (var sessionId in _selectedIds.ToList())
+        try
         {
-            try
+            var request = new BulkUpdateSessionStatusRequest
             {
-                var response = await Http.PatchAsJsonAsync($"api/classsessions/{sessionId}/status", new { Status = _pendingStatus });
-                if (response.IsSuccessStatusCode)
+                SessionIds = _selectedIds.ToList(),
+                Status = _pendingStatus
+            };
+
+            var response = await Http.PatchAsJsonAsync("api/classsessions/bulk-status", request);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+                if (result != null && result.IsSuccess)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<ApiResult>();
-                    if (result != null && result.IsSuccess)
+                    if (_sessions != null)
                     {
-                        var session = _sessions?.FirstOrDefault(s => s.Id == sessionId);
-                        if (session != null)
+                        foreach (var session in _sessions)
                         {
-                            session.Status = _pendingStatus;
+                            if (_selectedIds.Contains(session.Id))
+                            {
+                                session.Status = _pendingStatus;
+                            }
                         }
-                        successCount++;
                     }
-                    else
-                    {
-                        failCount++;
-                    }
+                    _message = $"Successfully updated {_selectedIds.Count} session(s) to {_pendingStatus}.";
+                    _isError = false;
                 }
                 else
                 {
-                    failCount++;
+                    _message = result?.Message ?? "Failed to update status.";
+                    _isError = true;
                 }
             }
-            catch
+            else
             {
-                failCount++;
+                _message = await response.GetFriendlyErrorMessageAsync("Error updating status");
+                _isError = true;
             }
-            _updateProgress++;
-            StateHasChanged();
         }
-
-        _selectedIds.Clear();
-        _isAllSelected = false;
-        _isUpdating = false;
-
-        if (failCount == 0)
+        catch (Exception ex)
         {
-            _message = $"Successfully updated {successCount} session(s) to {_pendingStatus}.";
-            _isError = false;
-        }
-        else
-        {
-            _message = $"Updated {successCount} session(s). {failCount} failed.";
+            _message = ex.GetFriendlyErrorMessage("Error updating status");
             _isError = true;
+        }
+        finally
+        {
+            _selectedIds.Clear();
+            _isAllSelected = false;
+            _isUpdating = false;
         }
     }
 

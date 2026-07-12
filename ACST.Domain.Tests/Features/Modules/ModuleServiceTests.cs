@@ -721,6 +721,11 @@ public class ModuleServiceTests
             return Task.FromResult(Result.Success("Fake status updated."));
         }
 
+        public Task<Result> BulkUpdateSessionStatusAsync(BulkUpdateSessionStatusRequest request)
+        {
+            return Task.FromResult(Result.Success("Fake bulk status updated."));
+        }
+
         public Task<Result<string>> MarkAttendanceWithMagicLinkAsync(Guid token)
         {
             return Task.FromResult(Result<string>.Failure("Fake service error."));

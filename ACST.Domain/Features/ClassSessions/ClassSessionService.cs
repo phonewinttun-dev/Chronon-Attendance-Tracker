@@ -342,6 +342,48 @@ public class ClassSessionService : IClassSessionService
     }
     #endregion
 
+    #region Bulk Update Session Status
+    public async Task<Result> BulkUpdateSessionStatusAsync(BulkUpdateSessionStatusRequest request)
+    {
+        try
+        {
+            if (request.SessionIds == null || !request.SessionIds.Any())
+            {
+                return Result.Failure("No session IDs provided.");
+            }
+
+            var sessions = await _context.TblSessions
+                .Where(s => request.SessionIds.Contains(s.Id) && !s.IsDeleted)
+                .ToListAsync();
+
+            if (!sessions.Any())
+            {
+                return Result.Failure("No matching sessions found.");
+            }
+
+            foreach (var session in sessions)
+            {
+                session.Status = request.Status;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Trigger dashboard update for each distinct semester
+            var semesterIds = sessions.Select(s => s.SemesterId).Distinct().ToList();
+            foreach (var semId in semesterIds)
+            {
+                await TriggerDashboardSummaryUpdateAsync(semId);
+            }
+
+            return Result.Success($"Successfully updated {sessions.Count} session(s).");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to bulk update session status: {ex.Message}");
+        }
+    }
+    #endregion
+
     #region Mark Attendance with Magic Link
     public async Task<Result<string>> MarkAttendanceWithMagicLinkAsync(Guid token)
     {
