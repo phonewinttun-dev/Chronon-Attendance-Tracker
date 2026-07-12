@@ -65,3 +65,12 @@ public class UpdateClassSessionRequest
     public string Status { get; set; } = string.Empty;
 }
 
+public class BulkUpdateSessionStatusRequest
+{
+    [Required]
+    public List<long> SessionIds { get; set; } = new();
+
+    [Required]
+    public string Status { get; set; } = string.Empty;
+}
+

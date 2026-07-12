@@ -49,6 +49,15 @@ public class ClassSessionsController : ControllerBase
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
+    [HttpPatch("bulk-status")]
+    public async Task<IActionResult> BulkUpdateStatus([FromBody] BulkUpdateSessionStatusRequest request)
+    {
+        if (!ModelState.IsValid) return BadRequest(Result.Failure("Invalid request parameters."));
+
+        var result = await _sessionService.BulkUpdateSessionStatusAsync(request);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] UpdateClassSessionRequest request)
     {

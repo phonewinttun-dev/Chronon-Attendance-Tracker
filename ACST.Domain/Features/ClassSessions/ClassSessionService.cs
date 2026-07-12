@@ -233,6 +233,7 @@ public class ClassSessionService : IClassSessionService
 
                 await TriggerDashboardSummaryUpdateAsync(request.SemesterId);
 
+                /*
                 if (request.SyncWithGoogleCalendar)
                 {
                     foreach (var session in newSessions)
@@ -248,6 +249,7 @@ public class ClassSessionService : IClassSessionService
                         }
                     }
                 }
+                */
             }
 
             return Result.Success($"Successfully generated {createdCount} new class sessions.");
@@ -262,6 +264,8 @@ public class ClassSessionService : IClassSessionService
     #region Sync Google Calendar Event
     public async Task SyncGoogleCalendarEventAsync(long sessionId)
     {
+        await Task.CompletedTask;
+        /*
         var sessionData = await _context.TblSessions
             .AsNoTracking()
             .Where(s => s.Id == sessionId && !s.IsDeleted)
@@ -292,6 +296,7 @@ public class ClassSessionService : IClassSessionService
                 .Where(s => s.Id == sessionId)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(s => s.GoogleEventId, googleResult.Data));
         }
+        */
     }
     #endregion
 
@@ -303,16 +308,17 @@ public class ClassSessionService : IClassSessionService
             var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
             if (session == null) return Result.Failure("Session not found.");
 
-            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
-            {
-                return Result.Failure("Attendance status cannot be changed after 24 hours.");
-            }
+            // if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            // {
+            //     return Result.Failure("Attendance status cannot be changed after 24 hours.");
+            // }
 
             session.Status = request.Status;
             await _context.SaveChangesAsync();
 
             await TriggerDashboardSummaryUpdateAsync(session.SemesterId);
 
+            /*
             if (request.Status == "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
             {
                 if (_backgroundJobClient is not null)
@@ -325,12 +331,55 @@ public class ClassSessionService : IClassSessionService
                     await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Cancelled");
                 }
             }
+            */
 
             return Result.Success("Session status updated successfully.");
         }
         catch (Exception ex)
         {
             return Result.Failure($"Failed to update session status: {ex.Message}");
+        }
+    }
+    #endregion
+
+    #region Bulk Update Session Status
+    public async Task<Result> BulkUpdateSessionStatusAsync(BulkUpdateSessionStatusRequest request)
+    {
+        try
+        {
+            if (request.SessionIds == null || !request.SessionIds.Any())
+            {
+                return Result.Failure("No session IDs provided.");
+            }
+
+            var sessions = await _context.TblSessions
+                .Where(s => request.SessionIds.Contains(s.Id) && !s.IsDeleted)
+                .ToListAsync();
+
+            if (!sessions.Any())
+            {
+                return Result.Failure("No matching sessions found.");
+            }
+
+            foreach (var session in sessions)
+            {
+                session.Status = request.Status;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Trigger dashboard update for each distinct semester
+            var semesterIds = sessions.Select(s => s.SemesterId).Distinct().ToList();
+            foreach (var semId in semesterIds)
+            {
+                await TriggerDashboardSummaryUpdateAsync(semId);
+            }
+
+            return Result.Success($"Successfully updated {sessions.Count} session(s).");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to bulk update session status: {ex.Message}");
         }
     }
     #endregion
@@ -354,10 +403,10 @@ public class ClassSessionService : IClassSessionService
                 return Result<string>.Failure("Outside of attendance window.");
             }
 
-            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
-            {
-                return Result<string>.Failure("Attendance status cannot be changed after 24 hours.");
-            }
+            // if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            // {
+            //     return Result<string>.Failure("Attendance status cannot be changed after 24 hours.");
+            // }
 
             if (session.Status == "Present")
             {
@@ -386,10 +435,10 @@ public class ClassSessionService : IClassSessionService
             var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
             if (session == null) return Result.Failure("Session not found.");
 
-            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
-            {
-                return Result.Failure("Attendance status cannot be changed after 24 hours.");
-            }
+            // if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            // {
+            //     return Result.Failure("Attendance status cannot be changed after 24 hours.");
+            // }
 
             var moduleExists = await _context.TblModules.AnyAsync(m => m.Id == request.ModuleId && !m.IsDeleted);
             if (!moduleExists) return Result.Failure("Module not found.");
@@ -406,6 +455,7 @@ public class ClassSessionService : IClassSessionService
 
             await TriggerDashboardSummaryUpdateAsync(session.SemesterId);
 
+            /*
             if (request.Status == "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
             {
                 if (_backgroundJobClient is not null)
@@ -430,6 +480,7 @@ public class ClassSessionService : IClassSessionService
                     await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Confirmed");
                 }
             }
+            */
 
             return Result.Success("Session updated successfully.");
         }
@@ -448,16 +499,17 @@ public class ClassSessionService : IClassSessionService
             var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
             if (session == null) return Result.Failure("Session not found.");
 
-            if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
-            {
-                return Result.Failure("Attendance status cannot be changed after 24 hours.");
-            }
+            // if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
+            // {
+            //     return Result.Failure("Attendance status cannot be changed after 24 hours.");
+            // }
 
             session.IsDeleted = true;
             await _context.SaveChangesAsync();
 
             await TriggerDashboardSummaryUpdateAsync(session.SemesterId);
 
+            /*
             if (!string.IsNullOrEmpty(session.GoogleEventId))
             {
                 if (_backgroundJobClient is not null)
@@ -470,6 +522,7 @@ public class ClassSessionService : IClassSessionService
                     await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
                 }
             }
+            */
 
             return Result.Success("Session deleted successfully.");
         }

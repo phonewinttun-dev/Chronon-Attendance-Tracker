@@ -237,6 +237,7 @@ public class SemesterService : ISemesterService
             {
                 session.IsDeleted = true;
 
+                /*
                 if (!string.IsNullOrEmpty(session.GoogleEventId))
                 {
                     if (_backgroundJobClient is not null)
@@ -249,6 +250,7 @@ public class SemesterService : ISemesterService
                         await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
                     }
                 }
+                */
             }
 
             await _context.SaveChangesAsync();

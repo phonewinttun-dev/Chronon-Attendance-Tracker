@@ -392,10 +392,12 @@ public class ModuleService : IModuleService
                     foreach (var session in associatedSessions)
                     {
                         session.IsDeleted = true;
+                        /*
                         if (!string.IsNullOrEmpty(session.GoogleEventId))
                         {
                             googleEventsToDelete.Add(session.GoogleEventId);
                         }
+                        */
                     }
                 }
                 // Add or update schedules
@@ -470,6 +472,7 @@ public class ModuleService : IModuleService
             await transaction.CommitAsync();
             // Asynchronous Out-of-Transaction Cleanup for External Services
             // Prevents holding DB locks during slow Google Calendar API calls
+            /*
             foreach (var eventId in googleEventsToDelete)
             {
                 if (_backgroundJobClient is not null)
@@ -489,6 +492,7 @@ public class ModuleService : IModuleService
                     }
                 }
             }
+            */
             return Result<ModuleDto>.Success(new ModuleDto
             {
                 Id = module.Id,
@@ -546,6 +550,7 @@ public class ModuleService : IModuleService
             {
                 session.IsDeleted = true;
 
+                /*
                 if (!string.IsNullOrEmpty(session.GoogleEventId))
                 {
                     if (_backgroundJobClient is not null)
@@ -558,6 +563,7 @@ public class ModuleService : IModuleService
                         await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
                     }
                 }
+                */
             }
 
             await _context.SaveChangesAsync();

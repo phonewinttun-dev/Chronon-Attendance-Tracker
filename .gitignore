@@ -370,3 +370,4 @@ oauth.json
 seed_timetable.sql
 .sonarqube
 service_flowcharts.md
+set_attendance_status.sql

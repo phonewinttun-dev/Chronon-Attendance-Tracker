@@ -511,9 +511,8 @@ public class ModuleServiceTests
         Assert.NotNull(dbPastSessionB);
         Assert.False(dbPastSessionB.IsDeleted);
 
-        // Event of deleted future session B should be cleaned up
-        Assert.Contains("google-event-B", _calendarSpy.DeletedEventIds);
-        Assert.DoesNotContain("google-event-A", _calendarSpy.DeletedEventIds);
+        // Event of deleted future session B should NOT be cleaned up because calendar sync is disabled/commented out
+        Assert.Empty(_calendarSpy.DeletedEventIds);
     }
 
     [Fact]
@@ -720,6 +719,11 @@ public class ModuleServiceTests
         public Task<Result> UpdateSessionStatusAsync(long id, UpdateSessionStatusRequest request)
         {
             return Task.FromResult(Result.Success("Fake status updated."));
+        }
+
+        public Task<Result> BulkUpdateSessionStatusAsync(BulkUpdateSessionStatusRequest request)
+        {
+            return Task.FromResult(Result.Success("Fake bulk status updated."));
         }
 
         public Task<Result<string>> MarkAttendanceWithMagicLinkAsync(Guid token)

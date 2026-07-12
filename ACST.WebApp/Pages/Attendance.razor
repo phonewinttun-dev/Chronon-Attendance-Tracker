@@ -1,0 +1,665 @@
+@page "/attendance"
+@using ACST.WebApp.Models
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+
+<PageTitle>Attendance</PageTitle>
+
+<!-- Header -->
+<div class="mb-6">
+    <h1 class="text-2xl font-bold tracking-tight text-foreground">Attendance</h1>
+    <p class="text-muted-foreground text-sm mt-1">Mark and manage attendance status for your class sessions.</p>
+</div>
+
+<!-- Filters -->
+<div class="flex flex-wrap items-end gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm w-full">
+    <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Semester</label>
+        <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                value="@_selectedSemesterId" @onchange="OnSemesterChanged">
+            @if (_semesters != null)
+            {
+                @foreach (var sem in _semesters)
+                {
+                    <option value="@sem.Id">@sem.Name</option>
+                }
+            }
+        </select>
+    </div>
+
+    <div class="flex flex-col gap-1 flex-1 min-w-[180px]">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Module</label>
+        <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                value="@_selectedModuleId" @onchange="OnModuleChanged">
+            <option value="">All Modules</option>
+            @if (_modules != null)
+            {
+                @foreach (var mod in _modules)
+                {
+                    <option value="@mod.Id">@mod.ModuleCode - @mod.Name</option>
+                }
+            }
+        </select>
+    </div>
+
+    <div class="flex flex-col gap-1 flex-1 min-w-[130px]">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Status</label>
+        <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                value="@_filterStatus" @onchange="OnStatusFilterChanged">
+            <option value="">All Statuses</option>
+            <option value="Not Marked">Not Marked</option>
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+            <option value="Cancelled">Cancelled</option>
+            <option value="Holiday">Holiday</option>
+        </select>
+    </div>
+
+    <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">From</label>
+        <DatePicker Value="_filterStartDate" ValueChanged="OnStartDateChanged" />
+    </div>
+
+    <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
+        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">To</label>
+        <DatePicker Value="_filterEndDate" ValueChanged="OnEndDateChanged" AlignRight="true" />
+    </div>
+</div>
+
+<!-- Toast Message -->
+@if (!string.IsNullOrEmpty(_message))
+{
+    <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium animate-in fade-in slide-in-from-top duration-300 @(_isError ? "bg-destructive/10 text-destructive border border-destructive/30" : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/30")">
+        @_message
+        <button class="float-right text-current opacity-60 hover:opacity-100 transition-opacity ml-3 font-bold" @onclick='() => _message = ""'>×</button>
+    </div>
+}
+
+<!-- Loading State -->
+@if (_isLoading)
+{
+    <div class="flex items-center justify-center py-20">
+        <div class="flex flex-col items-center gap-4">
+            <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-sm text-muted-foreground">Loading sessions...</p>
+        </div>
+    </div>
+}
+else if (_sessions == null || !_sessions.Any())
+{
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-muted-foreground/40 mb-4"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 11 3 3 5-5"/></svg>
+        <h3 class="text-sm font-semibold text-foreground mb-1">No sessions found</h3>
+        <p class="text-xs text-muted-foreground">Try adjusting your filters or generate sessions first.</p>
+    </div>
+}
+else
+{
+    @if (_selectedIds.Any())
+    {
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 mb-4 bg-card border border-border rounded-lg shadow-sm animate-in slide-in-from-top duration-200 gap-3">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                <span class="text-xs font-bold text-foreground">@_selectedIds.Count session(s) selected</span>
+            </div>
+            <div class="flex items-center flex-wrap gap-2">
+                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/25"
+                        @onclick='() => RequestBulkStatusChange("Present")'>
+                    Present
+                </button>
+                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/25"
+                        @onclick='() => RequestBulkStatusChange("Absent")'>
+                    Absent
+                </button>
+                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500/25"
+                        @onclick='() => RequestBulkStatusChange("Cancelled")'>
+                    Cancelled
+                </button>
+                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-muted text-muted-foreground border border-border hover:bg-accent"
+                        @onclick='() => RequestBulkStatusChange("Not Marked")'>
+                    Not Marked
+                </button>
+                <span class="h-4 w-px bg-border mx-1 hidden sm:inline"></span>
+                <button class="text-xs text-muted-foreground hover:text-foreground transition-colors underline" @onclick="ClearSelection">
+                    Clear
+                </button>
+            </div>
+        </div>
+    }
+
+    <!-- Sessions Table -->
+    <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                    <tr class="border-b border-border bg-accent/30">
+                        <th class="px-4 py-3 w-10">
+                            <input type="checkbox" class="rounded border-border accent-primary cursor-pointer"
+                                   checked="@_isAllSelected" @onchange="ToggleSelectAll" />
+                        </th>
+                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Date</th>
+                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Module</th>
+                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Time</th>
+                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Current Status</th>
+                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Quick Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                    @foreach (var session in _sessions)
+                    {
+                        var isSelected = _selectedIds.Contains(session.Id);
+                        <tr class="transition-colors @(isSelected ? "bg-primary/5 border-l-2 border-l-primary" : "hover:bg-accent/30")">
+                            <td class="px-4 py-3">
+                                <input type="checkbox" class="rounded border-border accent-primary cursor-pointer"
+                                       checked="@isSelected" @onchange="() => ToggleSelection(session.Id)" />
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="font-semibold text-foreground text-sm font-mono">@session.SessionDate.ToString("dd-MM-yy")</span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="font-semibold text-foreground text-sm">@session.ModuleName</div>
+                                <div class="text-[10px] text-muted-foreground font-mono mt-0.5">@session.ModuleCode</div>
+                            </td>
+                            <td class="px-4 py-3 font-mono text-sm text-muted-foreground">
+                                @((session.StartDatetime + MyanmarOffset).ToString("hh:mm tt")) – @((session.EndDatetime + MyanmarOffset).ToString("hh:mm tt"))
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-bold border @GetBadgeClass(session.Status)">
+                                    @session.Status
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center justify-center gap-1">
+                                    <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Present" ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/30" : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/25 border border-emerald-500/20")"
+                                            title="Present" @onclick='() => RequestSingleStatusChange(session.Id, "Present")'>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </button>
+                                    <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Absent" ? "bg-destructive text-white shadow-sm shadow-destructive/30" : "bg-destructive/10 text-destructive hover:bg-destructive/25 border border-destructive/20")"
+                                            title="Absent" @onclick='() => RequestSingleStatusChange(session.Id, "Absent")'>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                    </button>
+                                    <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Cancelled" ? "bg-amber-500 text-white shadow-sm shadow-amber-500/30" : "bg-amber-500/10 text-amber-500 hover:bg-amber-500/25 border border-amber-500/20")"
+                                            title="Cancelled" @onclick='() => RequestSingleStatusChange(session.Id, "Cancelled")'>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                    </button>
+                                    <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Not Marked" ? "bg-muted-foreground text-white shadow-sm" : "bg-muted text-muted-foreground hover:bg-accent border border-border")"
+                                            title="Not Marked" @onclick='() => RequestSingleStatusChange(session.Id, "Not Marked")'>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (_totalPages > 1)
+        {
+            <div class="flex items-center justify-between border-t border-border px-4 py-3 bg-accent/10">
+                <span class="text-xs text-muted-foreground font-mono">
+                    Page @_pageNumber of @_totalPages (@_totalCount sessions)
+                </span>
+                <div class="flex items-center gap-1.5">
+                    <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all border border-border bg-card text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+                            disabled="@(!_hasPrevious)" @onclick="GoToPreviousPage">
+                        ← Prev
+                    </button>
+                    <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all border border-border bg-card text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+                            disabled="@(!_hasNext)" @onclick="GoToNextPage">
+                        Next →
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Single Status Confirm Modal -->
+@if (_showSingleConfirmModal)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[150] animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg animate-in zoom-in duration-200">
+            <h3 class="text-base font-bold text-foreground mb-2">Confirm Status Change</h3>
+            <p class="text-xs text-muted-foreground mb-6">
+                Are you sure you want to change this session to <span class="font-bold text-foreground">@_pendingStatus</span>?
+            </p>
+            <div class="flex justify-end gap-3">
+                <button type="button"
+                        class="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold transition-all focus:outline-none"
+                        @onclick="CancelConfirm">
+                    Cancel
+                </button>
+                <button type="button"
+                        class="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md text-xs font-semibold transition-all focus:outline-none"
+                        @onclick="ConfirmSingleStatusChange">
+                    Yes, Change
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Bulk Status Confirm Modal -->
+@if (_showBulkConfirmModal)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[150] animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg animate-in zoom-in duration-200">
+            <h3 class="text-base font-bold text-foreground mb-2">Bulk Status Update</h3>
+            <p class="text-xs text-muted-foreground mb-4">
+                You are about to change the status of <span class="font-bold text-foreground">@_selectedIds.Count session(s)</span> to:
+            </p>
+            <div class="flex items-center gap-2 mb-6 p-3 bg-accent/30 border border-border rounded-md">
+                <span class="px-3 py-1 rounded-full text-xs font-bold border @GetBadgeClass(_pendingStatus)">@_pendingStatus</span>
+                <span class="text-xs text-muted-foreground">→ Applied to all selected sessions</span>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button"
+                        class="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold transition-all focus:outline-none"
+                        @onclick="CancelConfirm">
+                    Cancel
+                </button>
+                <button type="button"
+                        class="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md text-xs font-semibold transition-all focus:outline-none"
+                        @onclick="ConfirmBulkStatusChange">
+                    Yes, Update All
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Updating Overlay -->
+@if (_isUpdating)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-[200] animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 flex flex-col items-center gap-4 shadow-xl max-w-xs text-center animate-in zoom-in duration-200">
+            <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div>
+                <h4 class="text-sm font-bold text-foreground">Updating Attendance</h4>
+                <p class="text-xs text-muted-foreground mt-1">
+                    @if (_selectedIds.Count > 1)
+                    {
+                        <span>Updating @_updateProgress of @_updateTotal sessions...</span>
+                    }
+                    else
+                    {
+                        <span>Please wait while we update the session status...</span>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private static readonly TimeSpan MyanmarOffset = TimeSpan.FromHours(6.5);
+
+    // State
+    private List<ClassSessionDto>? _sessions;
+    private List<SemesterDto>? _semesters;
+    private List<ModuleDto>? _modules;
+    private bool _isLoading = true;
+    private bool _isUpdating = false;
+    private string _message = string.Empty;
+    private bool _isError = false;
+
+    // Selection
+    private HashSet<long> _selectedIds = new();
+    private bool _isAllSelected = false;
+
+    // Filters
+    private long? _selectedSemesterId;
+    private long? _selectedModuleId;
+    private string _filterStatus = "Not Marked";
+
+    private DateOnly _filterStartDate;
+    private DateOnly _filterEndDate;
+
+    // Pagination
+    private int _pageNumber = 1;
+    private int _pageSize = 20;
+    private int _totalPages = 1;
+    private int _totalCount = 0;
+    private bool _hasPrevious = false;
+    private bool _hasNext = false;
+
+    // Confirm modals
+    private bool _showSingleConfirmModal = false;
+    private bool _showBulkConfirmModal = false;
+    private long _pendingSessionId;
+    private string _pendingStatus = string.Empty;
+
+    // Progress tracking
+    private int _updateProgress = 0;
+    private int _updateTotal = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadSemesters(), LoadModules());
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(6.5));
+        _filterStartDate = today;
+        _filterEndDate = today;
+
+        // Auto-select current semester
+        if (_semesters != null && _semesters.Any())
+        {
+            var current = _semesters.FirstOrDefault(s => s.StartDate <= today && today <= s.EndDate)
+                          ?? _semesters.OrderByDescending(s => s.StartDate).First();
+            _selectedSemesterId = current.Id;
+        }
+
+        await LoadSessions();
+    }
+
+    // --- Data Loading ---
+
+    private async Task LoadSemesters()
+    {
+        try
+        {
+            var result = await Http.GetFromJsonAsync<ApiResult<List<SemesterDto>>>("api/semesters");
+            if (result?.IsSuccess == true && result.Data != null)
+            {
+                _semesters = result.Data;
+            }
+        }
+        catch { }
+    }
+
+    private async Task LoadModules()
+    {
+        try
+        {
+            var result = await Http.GetFromJsonAsync<ApiResult<List<ModuleDto>>>("api/modules");
+            if (result?.IsSuccess == true && result.Data != null)
+            {
+                _modules = result.Data;
+            }
+        }
+        catch { }
+    }
+
+    private async Task LoadSessions()
+    {
+        _isLoading = true;
+        _selectedIds.Clear();
+        _isAllSelected = false;
+        try
+        {
+            var query = new List<string>();
+            if (_selectedSemesterId.HasValue) query.Add($"semesterId={_selectedSemesterId}");
+            if (_selectedModuleId.HasValue) query.Add($"moduleId={_selectedModuleId}");
+            if (!string.IsNullOrEmpty(_filterStatus)) query.Add($"status={Uri.EscapeDataString(_filterStatus)}");
+
+            if (_filterStartDate != default) query.Add($"startDate={_filterStartDate:yyyy-MM-dd}");
+            if (_filterEndDate != default) query.Add($"endDate={_filterEndDate:yyyy-MM-dd}");
+            query.Add($"pageNumber={_pageNumber}");
+            query.Add($"pageSize={_pageSize}");
+
+            var queryString = query.Any() ? "?" + string.Join("&", query) : "";
+            var result = await Http.GetFromJsonAsync<PagedResult<ClassSessionDto>>($"api/classsessions{queryString}");
+            if (result != null && result.IsSuccess)
+            {
+                _sessions = result.Data;
+                if (result.Pagination != null)
+                {
+                    _totalPages = result.Pagination.TotalPages;
+                    _totalCount = result.Pagination.TotalCount;
+                    _hasPrevious = result.Pagination.HasPreviousPage;
+                    _hasNext = result.Pagination.HasNextPage;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.GetFriendlyErrorMessage("Error loading sessions");
+            _isError = true;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    // --- Filter Handlers ---
+
+    private async Task OnSemesterChanged(ChangeEventArgs e)
+    {
+        if (long.TryParse(e.Value?.ToString(), out var id))
+        {
+            _selectedSemesterId = id;
+        }
+        _pageNumber = 1;
+        await LoadSessions();
+    }
+
+    private async Task OnModuleChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        _selectedModuleId = long.TryParse(val, out var id) ? id : null;
+        _pageNumber = 1;
+        await LoadSessions();
+    }
+
+    private async Task OnStatusFilterChanged(ChangeEventArgs e)
+    {
+        _filterStatus = e.Value?.ToString() ?? "";
+        _pageNumber = 1;
+        await LoadSessions();
+    }
+
+
+
+    private async Task OnStartDateChanged(DateOnly date)
+    {
+        _filterStartDate = date;
+        _pageNumber = 1;
+        await LoadSessions();
+    }
+
+    private async Task OnEndDateChanged(DateOnly date)
+    {
+        _filterEndDate = date;
+        _pageNumber = 1;
+        await LoadSessions();
+    }
+
+    // --- Selection ---
+
+    private void ToggleSelection(long id)
+    {
+        if (_selectedIds.Contains(id))
+            _selectedIds.Remove(id);
+        else
+            _selectedIds.Add(id);
+
+        _isAllSelected = _sessions != null && _sessions.All(s => _selectedIds.Contains(s.Id));
+    }
+
+    private void ToggleSelectAll()
+    {
+        if (_sessions == null) return;
+
+        if (_isAllSelected)
+        {
+            foreach (var s in _sessions)
+                _selectedIds.Remove(s.Id);
+            _isAllSelected = false;
+        }
+        else
+        {
+            foreach (var s in _sessions)
+                _selectedIds.Add(s.Id);
+            _isAllSelected = true;
+        }
+    }
+
+    private void ClearSelection()
+    {
+        _selectedIds.Clear();
+        _isAllSelected = false;
+    }
+
+    // --- Single Status Change ---
+
+    private void RequestSingleStatusChange(long sessionId, string status)
+    {
+        _pendingSessionId = sessionId;
+        _pendingStatus = status;
+        _showSingleConfirmModal = true;
+    }
+
+    private async Task ConfirmSingleStatusChange()
+    {
+        _showSingleConfirmModal = false;
+        _isUpdating = true;
+        try
+        {
+            var response = await Http.PatchAsJsonAsync($"api/classsessions/{_pendingSessionId}/status", new { Status = _pendingStatus });
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+                if (result != null && result.IsSuccess)
+                {
+                    // Update local state without full reload
+                    var session = _sessions?.FirstOrDefault(s => s.Id == _pendingSessionId);
+                    if (session != null)
+                    {
+                        session.Status = _pendingStatus;
+                    }
+                    _message = "Status updated successfully.";
+                    _isError = false;
+                }
+                else
+                {
+                    _message = result?.Message ?? "Failed to update status.";
+                    _isError = true;
+                }
+            }
+            else
+            {
+                _message = await response.GetFriendlyErrorMessageAsync("Error updating status");
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.GetFriendlyErrorMessage("Error updating status");
+            _isError = true;
+        }
+        finally
+        {
+            _isUpdating = false;
+        }
+    }
+
+    // --- Bulk Status Change ---
+
+    private void RequestBulkStatusChange(string status)
+    {
+        _pendingStatus = status;
+        _showBulkConfirmModal = true;
+    }
+
+    private async Task ConfirmBulkStatusChange()
+    {
+        _showBulkConfirmModal = false;
+        _isUpdating = true;
+        _updateTotal = _selectedIds.Count;
+        _updateProgress = 0;
+
+        try
+        {
+            var request = new BulkUpdateSessionStatusRequest
+            {
+                SessionIds = _selectedIds.ToList(),
+                Status = _pendingStatus
+            };
+
+            var response = await Http.PatchAsJsonAsync("api/classsessions/bulk-status", request);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+                if (result != null && result.IsSuccess)
+                {
+                    if (_sessions != null)
+                    {
+                        foreach (var session in _sessions)
+                        {
+                            if (_selectedIds.Contains(session.Id))
+                            {
+                                session.Status = _pendingStatus;
+                            }
+                        }
+                    }
+                    _message = $"Successfully updated {_selectedIds.Count} session(s) to {_pendingStatus}.";
+                    _isError = false;
+                }
+                else
+                {
+                    _message = result?.Message ?? "Failed to update status.";
+                    _isError = true;
+                }
+            }
+            else
+            {
+                _message = await response.GetFriendlyErrorMessageAsync("Error updating status");
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.GetFriendlyErrorMessage("Error updating status");
+            _isError = true;
+        }
+        finally
+        {
+            _selectedIds.Clear();
+            _isAllSelected = false;
+            _isUpdating = false;
+        }
+    }
+
+    private void CancelConfirm()
+    {
+        _showSingleConfirmModal = false;
+        _showBulkConfirmModal = false;
+    }
+
+    // --- Pagination ---
+
+    private async Task GoToPreviousPage()
+    {
+        if (_pageNumber > 1)
+        {
+            _pageNumber--;
+            await LoadSessions();
+        }
+    }
+
+    private async Task GoToNextPage()
+    {
+        if (_pageNumber < _totalPages)
+        {
+            _pageNumber++;
+            await LoadSessions();
+        }
+    }
+
+    // --- Helpers ---
+
+
+    private string GetBadgeClass(string status) => status switch
+    {
+        "Present" => "bg-emerald-500/15 text-emerald-500 border-emerald-500/30",
+        "Absent" => "bg-destructive/15 text-destructive border-destructive/30",
+        "Cancelled" => "bg-amber-500/15 text-amber-500 border-amber-500/30",
+        "Holiday" => "bg-violet-500/15 text-violet-500 border-violet-500/30",
+        "Not Marked" => "bg-muted text-muted-foreground border-border",
+        _ => "bg-muted text-muted-foreground border-border"
+    };
+}

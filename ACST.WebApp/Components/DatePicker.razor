@@ -23,7 +23,7 @@
 
     @if (_showCalendar)
     {
-        <div class="absolute left-0 right-0 md:right-auto md:w-72 z-50 mt-1 bg-card border border-border rounded-md shadow-lg p-3" 
+        <div class="absolute @(AlignRight ? "right-0" : "left-0 right-0 md:right-auto") md:w-72 z-50 mt-1 bg-card border border-border rounded-md shadow-lg p-3" 
              @onclick:stopPropagation
              @onmousedown:preventDefault="true"
              tabindex="-1">
@@ -72,6 +72,9 @@
 
     [Parameter]
     public EventCallback<DateOnly> ValueChanged { get; set; }
+
+    [Parameter]
+    public bool AlignRight { get; set; }
 
     private string _textValue = string.Empty;
     private bool _showCalendar = false;

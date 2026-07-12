@@ -27,7 +27,7 @@ namespace ACST.Domain.Features
             builder.Services.AddScoped<ISemesterService, SemesterService>();
             builder.Services.AddScoped<IRecurringScheduleService, RecurringScheduleService>();
             var googleConfig = builder.Configuration.GetSection("GoogleCalendar");
-            var enabled = googleConfig.GetValue<bool>("Enabled", true);
+            var enabled = googleConfig.GetValue<bool>("Enabled", false);
             var hasCredentials = !string.IsNullOrEmpty(googleConfig["ClientId"]) && !string.IsNullOrEmpty(googleConfig["ClientSecret"]);
 
             if (enabled && hasCredentials)

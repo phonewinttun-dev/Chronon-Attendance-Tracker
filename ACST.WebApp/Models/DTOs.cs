@@ -192,6 +192,12 @@ public class UpdateModuleRequest
     public List<UpdateRecurringScheduleRequest>? Schedules { get; set; }
 }
 
+public class BulkUpdateSessionStatusRequest
+{
+    public List<long> SessionIds { get; set; } = new();
+    public string Status { get; set; } = string.Empty;
+}
+
 // --- API Wrappers ---
 
 public class ApiResult<T>

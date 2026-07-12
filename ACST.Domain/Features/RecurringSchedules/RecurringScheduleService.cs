@@ -158,6 +158,7 @@ public class RecurringScheduleService : IRecurringScheduleService
             foreach (var s in associatedSessions)
             {
                 s.IsDeleted = true;
+                /*
                 if (!string.IsNullOrEmpty(s.GoogleEventId))
                 {
                     if (_backgroundJobClient is not null)
@@ -170,6 +171,7 @@ public class RecurringScheduleService : IRecurringScheduleService
                         await _googleCalendarService.DeleteEventAsync(s.GoogleEventId);
                     }
                 }
+                */
             }
 
             await _context.SaveChangesAsync();
