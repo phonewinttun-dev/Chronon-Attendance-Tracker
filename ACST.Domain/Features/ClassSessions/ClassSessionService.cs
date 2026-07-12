@@ -233,6 +233,7 @@ public class ClassSessionService : IClassSessionService
 
                 await TriggerDashboardSummaryUpdateAsync(request.SemesterId);
 
+                /*
                 if (request.SyncWithGoogleCalendar)
                 {
                     foreach (var session in newSessions)
@@ -248,6 +249,7 @@ public class ClassSessionService : IClassSessionService
                         }
                     }
                 }
+                */
             }
 
             return Result.Success($"Successfully generated {createdCount} new class sessions.");
@@ -262,6 +264,8 @@ public class ClassSessionService : IClassSessionService
     #region Sync Google Calendar Event
     public async Task SyncGoogleCalendarEventAsync(long sessionId)
     {
+        await Task.CompletedTask;
+        /*
         var sessionData = await _context.TblSessions
             .AsNoTracking()
             .Where(s => s.Id == sessionId && !s.IsDeleted)
@@ -292,6 +296,7 @@ public class ClassSessionService : IClassSessionService
                 .Where(s => s.Id == sessionId)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(s => s.GoogleEventId, googleResult.Data));
         }
+        */
     }
     #endregion
 
@@ -313,6 +318,7 @@ public class ClassSessionService : IClassSessionService
 
             await TriggerDashboardSummaryUpdateAsync(session.SemesterId);
 
+            /*
             if (request.Status == "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
             {
                 if (_backgroundJobClient is not null)
@@ -325,6 +331,7 @@ public class ClassSessionService : IClassSessionService
                     await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Cancelled");
                 }
             }
+            */
 
             return Result.Success("Session status updated successfully.");
         }
@@ -406,6 +413,7 @@ public class ClassSessionService : IClassSessionService
 
             await TriggerDashboardSummaryUpdateAsync(session.SemesterId);
 
+            /*
             if (request.Status == "Cancelled" && !string.IsNullOrEmpty(session.GoogleEventId))
             {
                 if (_backgroundJobClient is not null)
@@ -430,6 +438,7 @@ public class ClassSessionService : IClassSessionService
                     await _googleCalendarService.UpdateEventStatusAsync(session.GoogleEventId, "Confirmed");
                 }
             }
+            */
 
             return Result.Success("Session updated successfully.");
         }
@@ -458,6 +467,7 @@ public class ClassSessionService : IClassSessionService
 
             await TriggerDashboardSummaryUpdateAsync(session.SemesterId);
 
+            /*
             if (!string.IsNullOrEmpty(session.GoogleEventId))
             {
                 if (_backgroundJobClient is not null)
@@ -470,6 +480,7 @@ public class ClassSessionService : IClassSessionService
                     await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
                 }
             }
+            */
 
             return Result.Success("Session deleted successfully.");
         }

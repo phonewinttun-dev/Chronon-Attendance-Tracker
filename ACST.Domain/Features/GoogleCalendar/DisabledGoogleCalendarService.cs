@@ -48,23 +48,8 @@ public class DisabledGoogleCalendarService : IGoogleCalendarService
 
     public Task<Result<List<HolidayDto>>> FetchHolidaysAsync(string holidayCalendarId, DateTime startUtc, DateTime endUtc)
     {
-        _logger.LogInformation("DisabledGoogleCalendarService: Google Calendar integration is disabled. Simulated holiday fetching for calendar: {CalendarId}", holidayCalendarId);
-        
-        var mockHolidays = new List<HolidayDto>
-        {
-            new HolidayDto { Name = "Mock New Year's Day", HolidayDate = new DateOnly(startUtc.Year, 1, 1) },
-            new HolidayDto { Name = "Mock Independence Day", HolidayDate = new DateOnly(startUtc.Year, 1, 4) },
-            new HolidayDto { Name = "Mock Christmas Day", HolidayDate = new DateOnly(startUtc.Year, 12, 25) }
-        };
-        
-        // Filter by date range
-        var startDateOnly = DateOnly.FromDateTime(startUtc);
-        var endDateOnly = DateOnly.FromDateTime(endUtc);
-        var filteredHolidays = mockHolidays
-            .Where(h => h.HolidayDate >= startDateOnly && h.HolidayDate <= endDateOnly)
-            .ToList();
-
-        return Task.FromResult(Result<List<HolidayDto>>.Success(filteredHolidays, "Simulated holiday fetch successful."));
+        _logger.LogInformation("DisabledGoogleCalendarService: Google Calendar integration is disabled. Fetching holidays is disallowed.");
+        return Task.FromResult(Result<List<HolidayDto>>.Failure("Google Calendar integration is disabled."));
     }
 
     #endregion
