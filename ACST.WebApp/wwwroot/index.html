@@ -29,6 +29,21 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
+    <script>
+        window.getButtonPosition = (buttonId) => {
+            const el = document.getElementById(buttonId);
+            if (!el) return null;
+            const rect = el.getBoundingClientRect();
+            return {
+                Left: rect.left,
+                Top: rect.top,
+                Right: rect.right,
+                Bottom: rect.bottom,
+                Width: rect.width,
+                Height: rect.height
+            };
+        };
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 
