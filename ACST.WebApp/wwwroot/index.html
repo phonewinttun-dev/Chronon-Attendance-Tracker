@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="ACST.WebApp.styles.css" rel="stylesheet" />
+    <link rel="manifest" href="manifest.json" />
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 
@@ -45,6 +46,7 @@
         };
     </script>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>
 
 </html>

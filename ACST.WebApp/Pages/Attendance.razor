@@ -385,7 +385,7 @@ else
     {
         try
         {
-            var result = await Http.GetFromJsonAsync<ApiResult<List<SemesterDto>>>("api/semesters");
+            var result = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>("api/semesters");
             if (result?.IsSuccess == true && result.Data != null)
             {
                 _semesters = result.Data;
@@ -398,7 +398,7 @@ else
     {
         try
         {
-            var result = await Http.GetFromJsonAsync<ApiResult<List<ModuleDto>>>("api/modules");
+            var result = await Http.GetFromJsonAsync<PagedResult<ModuleDto>>("api/modules");
             if (result?.IsSuccess == true && result.Data != null)
             {
                 _modules = result.Data;
