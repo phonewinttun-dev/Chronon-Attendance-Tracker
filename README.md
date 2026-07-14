@@ -24,20 +24,32 @@ To avoid academic penalties (such as being barred from exams or failing modules 
 ## 🚀 Key Features
 
 - **Semester & Module Management**: Define academic semesters (with specific start/end boundaries) and register courses/modules with instructors.
-- **Recurring Schedule & Automation Engine**: Define weekly recurring patterns (e.g., Monday 9:00 AM - 11:00 AM) and auto-generate class sessions for the entire semester.
-- **Google Calendar Synchronization**:
-  - Automatically create calendar events for all generated class sessions.
-  - Inject custom, passwordless **"Mark as Present" magic links** directly into the Google Calendar descriptions.
-- **Time-Window Enforced Attendance**: Magic links are valid only within a specific grace period (from 15 minutes before the class starts until 1 hour after it ends) to ensure honest logs.
-- **Smart Holiday & Cancellation Handling**:
-  - Automatically fetch/seed public holidays and tag sessions on holiday dates as `Holiday`.
+- **Recurring Schedule & Automation Engine**: Define weekly recurring patterns (e.g., Monday 9:00 AM - 11:00 AM) and automatically generate class sessions for the entire semester.
+- **Configurable Google Calendar Sync**:
+  - Synchronization functionality is fully optional and configurable.
+  - When enabled, it automatically creates calendar events for generated class sessions and injects secure, passwordless **"Mark as Present" magic links** directly into the Google Calendar descriptions.
+- **Frictionless & Time-Window Enforced Attendance**:
+  - Log attendance with a single click using secure magic links.
+  - Links are valid only within a specific grace period (from 15 minutes before class starts until 1 hour after it ends) to ensure honest logs.
+- **Dedicated Attendance & Bulk Management**:
+  - A comprehensive Attendance page listing all generated class sessions.
+  - Supports robust filtering by Semester, Module, Status (Not Marked, Present, Absent, Cancelled, Holiday), and specific Date Ranges.
+  - Easily perform bulk updates to mark multiple sessions as `Present`, `Absent`, `Cancelled`, or `Not Marked` simultaneously with confirmation dialog flows.
+- **Smart Holiday & Exception Handling**:
+  - Fetch and seed public holidays automatically, tagging matching class sessions as `Holiday`.
   - Exclude holidays and manually cancelled sessions from the attendance denominator.
-- **Analytics & Health Dashboard**:
-  - Clear dashboard home indicating upcoming classes, daily schedules, and overall semester status.
-  - Visual indicators:
+- **Exclusion of Unrecorded Sessions**:
+  - `Not Marked` (future or unrecorded) class sessions are excluded from the attendance rate calculation, ensuring statistics reflect only actual graded classes.
+- **Analytics & Health Dashboard with Month Filtering**:
+  - Real-time analytics displaying upcoming classes, daily schedules, and overall semester status.
+  - **Dynamic Month Filter** to drill down and analyze stats and daily/weekly/monthly breakdowns for a specific month or overall.
+  - Visual status progress bars and indicator alerts:
     - 🟢 **Green ($\ge$ 75%)**: Safe zone.
-    - 🟡 **Yellow (60% - 74%)**: Warning zone, need to attend upcoming sessions.
+    - 🟡 **Yellow (60% - 74%)**: Warning zone.
     - 🔴 **Red (< 60%)**: Critical failure zone.
+- **Progressive Web App (PWA)**:
+  - Configured as a mobile PWA with custom service worker caching and manifest, supporting installation and responsive layouts for seamless mobile use.
+
 
 ---
 
