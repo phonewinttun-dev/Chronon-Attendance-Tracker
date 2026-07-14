@@ -2,6 +2,7 @@
 @using ACST.WebApp.Models
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
 
 <PageTitle>Attendance</PageTitle>
@@ -138,11 +139,11 @@ else
                             <input type="checkbox" class="rounded border-border accent-primary cursor-pointer"
                                    checked="@_isAllSelected" @onchange="ToggleSelectAll" />
                         </th>
-                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Date</th>
+                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Date</th>
                         <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Module</th>
                         <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Time</th>
                         <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Current Status</th>
-                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Quick Actions</th>
+                        <th class="px-4 py-3 w-12 text-center"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -169,25 +170,11 @@ else
                                     @session.Status
                                 </span>
                             </td>
-                            <td class="px-4 py-3">
-                                <div class="flex items-center justify-center gap-1">
-                                    <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Present" ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/30" : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/25 border border-emerald-500/20")"
-                                            title="Present" @onclick='() => RequestSingleStatusChange(session.Id, "Present")'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </button>
-                                    <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Absent" ? "bg-destructive text-white shadow-sm shadow-destructive/30" : "bg-destructive/10 text-destructive hover:bg-destructive/25 border border-destructive/20")"
-                                            title="Absent" @onclick='() => RequestSingleStatusChange(session.Id, "Absent")'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                    </button>
-                                    <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Cancelled" ? "bg-amber-500 text-white shadow-sm shadow-amber-500/30" : "bg-amber-500/10 text-amber-500 hover:bg-amber-500/25 border border-amber-500/20")"
-                                            title="Cancelled" @onclick='() => RequestSingleStatusChange(session.Id, "Cancelled")'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                                    </button>
-                                    <button class="w-7 h-7 rounded-md flex items-center justify-center transition-all @(session.Status == "Not Marked" ? "bg-muted-foreground text-white shadow-sm" : "bg-muted text-muted-foreground hover:bg-accent border border-border")"
-                                            title="Not Marked" @onclick='() => RequestSingleStatusChange(session.Id, "Not Marked")'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                    </button>
-                                </div>
+                            <td class="px-4 py-3 text-center">
+                                <button id="btn-@session.Id" class="p-1 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+                                        @onclick="() => ToggleDropdown(session)" @onclick:stopPropagation>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-more-vertical"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                                </button>
                             </td>
                         </tr>
                     }
@@ -214,6 +201,31 @@ else
                 </div>
             </div>
         }
+    </div>
+}
+
+<!-- Floating Status Dropdown Menu (Escapes container clipping) -->
+@if (_openDropdownSessionId != null && _buttonRect != null)
+{
+    <div class="fixed inset-0 z-40 bg-transparent" @onclick="CloseDropdown"></div>
+    <div class="fixed bg-card border border-border rounded-md shadow-lg z-50 py-1 text-left animate-in fade-in duration-100" 
+         style="@GetDropdownStyle()" @onclick:stopPropagation>
+        <button class="w-full px-3 py-1.5 text-xs font-semibold flex items-center gap-2 hover:bg-emerald-500/10 text-emerald-500 transition-colors"
+                @onclick='() => ChangeStatusDirectly("Present")'>
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Present
+        </button>
+        <button class="w-full px-3 py-1.5 text-xs font-semibold flex items-center gap-2 hover:bg-destructive/10 text-destructive transition-colors"
+                @onclick='() => ChangeStatusDirectly("Absent")'>
+            <span class="w-2 h-2 rounded-full bg-destructive"></span> Absent
+        </button>
+        <button class="w-full px-3 py-1.5 text-xs font-semibold flex items-center gap-2 hover:bg-amber-500/10 text-amber-500 transition-colors"
+                @onclick='() => ChangeStatusDirectly("Cancelled")'>
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span> Cancelled
+        </button>
+        <button class="w-full px-3 py-1.5 text-xs font-semibold flex items-center gap-2 hover:bg-muted-foreground/10 text-muted-foreground transition-colors"
+                @onclick='() => ChangeStatusDirectly("Not Marked")'>
+            <span class="w-2 h-2 rounded-full bg-muted-foreground"></span> Not Marked
+        </button>
     </div>
 }
 
@@ -331,6 +343,18 @@ else
     private bool _showBulkConfirmModal = false;
     private long _pendingSessionId;
     private string _pendingStatus = string.Empty;
+    private long? _openDropdownSessionId;
+    private ElementRect? _buttonRect;
+
+    public class ElementRect
+    {
+        public double Left { get; set; }
+        public double Top { get; set; }
+        public double Right { get; set; }
+        public double Bottom { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+    }
 
     // Progress tracking
     private int _updateProgress = 0;
@@ -361,7 +385,7 @@ else
     {
         try
         {
-            var result = await Http.GetFromJsonAsync<ApiResult<List<SemesterDto>>>("api/semesters");
+            var result = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>("api/semesters");
             if (result?.IsSuccess == true && result.Data != null)
             {
                 _semesters = result.Data;
@@ -374,7 +398,7 @@ else
     {
         try
         {
-            var result = await Http.GetFromJsonAsync<ApiResult<List<ModuleDto>>>("api/modules");
+            var result = await Http.GetFromJsonAsync<PagedResult<ModuleDto>>("api/modules");
             if (result?.IsSuccess == true && result.Data != null)
             {
                 _modules = result.Data;
@@ -628,6 +652,81 @@ else
     {
         _showSingleConfirmModal = false;
         _showBulkConfirmModal = false;
+    }
+
+    private async Task ToggleDropdown(ClassSessionDto session)
+    {
+        if (_openDropdownSessionId == session.Id)
+        {
+            CloseDropdown();
+        }
+        else
+        {
+            _buttonRect = await JSRuntime.InvokeAsync<ElementRect>("getButtonPosition", $"btn-{session.Id}");
+            _openDropdownSessionId = session.Id;
+        }
+    }
+
+    private void CloseDropdown()
+    {
+        _openDropdownSessionId = null;
+        _buttonRect = null;
+    }
+
+    private string GetDropdownStyle()
+    {
+        if (_buttonRect == null) return "display: none;";
+        double left = _buttonRect.Right - 144;
+        double top = _buttonRect.Bottom + 4;
+        return $"position: fixed; left: {left}px; top: {top}px; width: 144px; z-index: 150;";
+    }
+
+    private async Task ChangeStatusDirectly(string status)
+    {
+        if (_openDropdownSessionId == null) return;
+        
+        var sessionId = _openDropdownSessionId.Value;
+        CloseDropdown();
+        
+        _isUpdating = true;
+        try
+        {
+            var response = await Http.PatchAsJsonAsync($"api/classsessions/{sessionId}/status", new { Status = status });
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+                if (result != null && result.IsSuccess)
+                {
+                    var session = _sessions?.FirstOrDefault(s => s.Id == sessionId);
+                    if (session != null)
+                    {
+                        session.Status = status;
+                    }
+                    _message = "Status updated successfully.";
+                    _isError = false;
+                }
+                else
+                {
+                    _message = result?.Message ?? "Failed to update status.";
+                    _isError = true;
+                }
+            }
+            else
+            {
+                _message = await response.GetFriendlyErrorMessageAsync("Error updating status");
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.GetFriendlyErrorMessage("Error updating status");
+            _isError = true;
+        }
+        finally
+        {
+            _isUpdating = false;
+            StateHasChanged();
+        }
     }
 
     // --- Pagination ---

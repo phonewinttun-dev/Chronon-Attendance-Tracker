@@ -75,7 +75,10 @@ public class AnalyticsService : IAnalyticsService
                 AttendanceRate = Math.Round(stats.AttendanceRate, 2),
                 TotalPresent = stats.Present,
                 TotalAbsent = stats.Absent,
-                TotalSessions = stats.Valid
+                TotalSessions = stats.Total,
+                NotMarked = stats.NotMarked,
+                Cancelled = stats.Cancelled,
+                Holiday = stats.Holiday
             });
         }
         catch (Exception ex)
@@ -135,6 +138,7 @@ public class AnalyticsService : IAnalyticsService
                 LateSessions = cache.LateSessions,
                 CancelledSessions = cache.CancelledSessions,
                 HolidaySessions = cache.HolidaySessions,
+                NotMarkedSessions = cache.TotalSessions - (cache.PresentSessions + cache.AbsentSessions + cache.CancelledSessions + cache.HolidaySessions),
                 ValidSessions = cache.ValidSessions,
                 CalculatedRate = cache.CalculatedRate,
                 TodayAttendanceRate = cache.TodayAttendanceRate,
@@ -151,14 +155,20 @@ public class AnalyticsService : IAnalyticsService
         }
     }
 
-    public async Task<Result<DashboardDailyWeeklyDto>> GetDashboardDailyWeeklyAsync(long semesterId)
+    public async Task<Result<DashboardDailyWeeklyDto>> GetDashboardDailyWeeklyAsync(long semesterId, int? month = null)
     {
         try
         {
-            var sessions = await _context.TblSessions
+            var query = _context.TblSessions
                 .AsNoTracking()
-                .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted))
-                .ToListAsync();
+                .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
+
+            if (month.HasValue)
+            {
+                query = query.Where(s => s.SessionDate.Month == month.Value);
+            }
+
+            var sessions = await query.ToListAsync();
 
             // Group by Day of Week
             var dailyBreakdown = new List<DailyAttendanceDto>();
@@ -179,6 +189,7 @@ public class AnalyticsService : IAnalyticsService
                         Late = 0,
                         Cancelled = dStats.Cancelled,
                         Holiday = dStats.Holiday,
+                        NotMarked = dStats.NotMarked,
                         ValidSessions = dStats.Valid,
                         AttendanceRate = Math.Round(dStats.AttendanceRate, 2)
                     });
@@ -218,6 +229,7 @@ public class AnalyticsService : IAnalyticsService
                     Late = 0,
                     Cancelled = wStats.Cancelled,
                     Holiday = wStats.Holiday,
+                    NotMarked = wStats.NotMarked,
                     ValidSessions = wStats.Valid,
                     AttendanceRate = Math.Round(wStats.AttendanceRate, 2)
                 });
@@ -248,6 +260,7 @@ public class AnalyticsService : IAnalyticsService
                     Late = 0,
                     Cancelled = mStats.Cancelled,
                     Holiday = mStats.Holiday,
+                    NotMarked = mStats.NotMarked,
                     ValidSessions = mStats.Valid,
                     AttendanceRate = Math.Round(mStats.AttendanceRate, 2)
                 });
@@ -266,14 +279,20 @@ public class AnalyticsService : IAnalyticsService
         }
     }
 
-    public async Task<Result<List<ModuleAnalyticsDto>>> GetDashboardModulesAsync(long semesterId)
+    public async Task<Result<List<ModuleAnalyticsDto>>> GetDashboardModulesAsync(long semesterId, int? month = null)
     {
         try
         {
-            var sessions = await _context.TblSessions
+            var query = _context.TblSessions
                 .AsNoTracking()
-                .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted))
-                .ToListAsync();
+                .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
+
+            if (month.HasValue)
+            {
+                query = query.Where(s => s.SessionDate.Month == month.Value);
+            }
+
+            var sessions = await query.ToListAsync();
 
             var modules = await _context.TblModules
                 .AsNoTracking()
@@ -294,7 +313,10 @@ public class AnalyticsService : IAnalyticsService
                     TotalPresent = mStats.Present,
                     TotalAbsent = mStats.Absent,
                     TotalLate = 0,
-                    TotalSessions = mStats.Valid
+                    TotalSessions = mStats.Total,
+                    NotMarked = mStats.NotMarked,
+                    Cancelled = mStats.Cancelled,
+                    Holiday = mStats.Holiday
                 });
             }
 
@@ -393,9 +415,9 @@ public class AnalyticsService : IAnalyticsService
         }
     }
 
-    private record SessionStats(int Total, int Present, int Absent, int Cancelled, int Holiday)
+    private record SessionStats(int Total, int Present, int Absent, int Cancelled, int Holiday, int NotMarked)
     {
-        public int Valid => Total - (Cancelled + Holiday);
+        public int Valid => Total - (Cancelled + Holiday + NotMarked);
         public double AttendanceRate => Valid > 0 ? (double)Present / Valid * 100 : 0;
     }
 
@@ -407,7 +429,8 @@ public class AnalyticsService : IAnalyticsService
             list.Count(s => s.Status == "Present"),
             list.Count(s => s.Status == "Absent"),
             list.Count(s => s.Status == "Cancelled"),
-            list.Count(s => s.Status == "Holiday")
+            list.Count(s => s.Status == "Holiday"),
+            list.Count(s => s.Status == "Not Marked")
         );
     }
 }

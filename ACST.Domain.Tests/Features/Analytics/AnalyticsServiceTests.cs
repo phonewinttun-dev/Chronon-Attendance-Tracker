@@ -121,6 +121,7 @@ public class AnalyticsServiceTests
         Assert.Equal(0, data.LateSessions);
         Assert.Equal(1, data.CancelledSessions);
         Assert.Equal(1, data.HolidaySessions);
+        Assert.Equal(1, data.NotMarkedSessions);
         Assert.Equal(3, data.ValidSessions); // 5 - (1 cancelled + 1 holiday)
         
         // Present (1) / Valid (3) * 100 = 33.33%
@@ -201,9 +202,12 @@ public class AnalyticsServiceTests
         var mod1 = modulesData.First();
         Assert.Equal(1, mod1.ModuleId);
         Assert.Equal("Module 1", mod1.ModuleName);
-        Assert.Equal(3, mod1.TotalSessions); // only valid count
+        Assert.Equal(5, mod1.TotalSessions);
         Assert.Equal(1, mod1.TotalPresent);
         Assert.Equal(1, mod1.TotalAbsent);
+        Assert.Equal(1, mod1.Cancelled);
+        Assert.Equal(1, mod1.Holiday);
+        Assert.Equal(0, mod1.NotMarked);
         Assert.Equal(33.33, mod1.AttendanceRate);
     }
 

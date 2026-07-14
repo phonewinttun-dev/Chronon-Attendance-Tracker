@@ -582,6 +582,25 @@ else
     </div>
 }
 
+@if (_showAlertModal)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[200] animate-in fade-in duration-200">
+        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in zoom-in duration-200">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary mb-4">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h3 class="text-base font-bold text-foreground mb-2">@_alertTitle</h3>
+            <p class="text-sm text-muted-foreground mb-5 font-sans">@_alertMessage</p>
+            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
+                    @onclick="() => { _showAlertModal = false; }">
+                OK
+            </button>
+        </div>
+    </div>
+}
+
 @code {
     private static string _viewMode = "table";
     private List<ClassSessionDto>? _sessions;
@@ -596,6 +615,9 @@ else
     private bool _showStatusConfirmModal = false;
     private long _confirmSessionId;
     private string _confirmStatus = string.Empty;
+    private bool _showAlertModal = false;
+    private string _alertMessage = string.Empty;
+    private string _alertTitle = "Already Marked";
 
     private int _pageNumber = 1;
     private int _pageSize = 10;
@@ -858,6 +880,14 @@ else
 
     private void RequestUpdateStatus(long id, string status)
     {
+        var session = _sessions?.FirstOrDefault(s => s.Id == id);
+        if (session != null && session.Status == status)
+        {
+            _alertTitle = "Already Marked";
+            _alertMessage = $"Already Marked As {status}";
+            _showAlertModal = true;
+            return;
+        }
         _confirmSessionId = id;
         _confirmStatus = status;
         _showStatusConfirmModal = true;

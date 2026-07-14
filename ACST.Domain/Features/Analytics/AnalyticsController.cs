@@ -38,16 +38,16 @@ public class AnalyticsController : ControllerBase
     }
 
     [HttpGet("/api/semesters/{id}/dashboard/daily-weekly")]
-    public async Task<IActionResult> GetDashboardDailyWeekly(long id)
+    public async Task<IActionResult> GetDashboardDailyWeekly(long id, [FromQuery] int? month = null)
     {
-        var result = await _analyticsService.GetDashboardDailyWeeklyAsync(id);
+        var result = await _analyticsService.GetDashboardDailyWeeklyAsync(id, month);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     [HttpGet("/api/semesters/{id}/dashboard/modules")]
-    public async Task<IActionResult> GetDashboardModules(long id)
+    public async Task<IActionResult> GetDashboardModules(long id, [FromQuery] int? month = null)
     {
-        var result = await _analyticsService.GetDashboardModulesAsync(id);
+        var result = await _analyticsService.GetDashboardModulesAsync(id, month);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 }
