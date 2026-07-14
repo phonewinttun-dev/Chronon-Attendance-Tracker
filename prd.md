@@ -10,9 +10,9 @@
 
 ### 1. Product Overview
 
-This application helps you automatically manage your class schedule, track attendance, handle holidays and cancellations, and maintain a Google Calendar sync with one-click "Mark as Present" magic links.
+This application helps you automatically manage your class schedule, track attendance, handle holidays and cancellations, and maintain an optional Google Calendar sync with one-click "Mark as Present" magic links.
 
-The system supports recurring weekly classes, auto-generates individual sessions per semester, intelligently handles holidays, and provides clear attendance analytics.
+The system supports recurring weekly classes, auto-generates individual sessions per semester, intelligently handles holidays, provides detailed bulk status management, and provides clear attendance analytics with month-level filtering.
 
 ---
 
@@ -48,11 +48,13 @@ The system supports recurring weekly classes, auto-generates individual sessions
 - **Session Status Enum**
   Each class session must have one of the following statuses:
 
-$$\text{Status} \in \{\text{Present}, \text{Absent}, \text{Cancelled}, \text{Holiday}\}$$
+$$\text{Status} \in \{\text{Present}, \text{Absent}, \text{Cancelled}, \text{Holiday}, \text{Not Marked}\}$$
+
+  *Note: Generated class sessions default to `Not Marked` status unless they fall on a holiday, in which case they default to `Holiday`.*
 
 - **Holiday Management**
   - Maintain a `Holidays` table seeded with public holidays.
-  - Use the Google Calendar Public Holiday API (or similar reliable source) to fetch and pre-populate holidays for the relevant country/region.
+  - Use the Google Calendar Public Holiday API to fetch and pre-populate holidays for the relevant country/region. *Note: Holiday fetching from Google Calendar is only supported when Google Calendar integration is explicitly enabled.*
   - During class session generation, if a session falls on a holiday date, its status is automatically set to `Holiday`.
 
 - **Manual Overrides**
@@ -61,23 +63,25 @@ $$\text{Status} \in \{\text{Present}, \text{Absent}, \text{Cancelled}, \text{Hol
 
 ---
 
-#### 2.3 Google Calendar Integration
+#### 2.3 Google Calendar Integration (Optional & Configurable)
 
-- **Automatic Event Creation**
-  For every generated `ClassSession`, automatically create a corresponding Google Calendar event.
+- **Optional Integration**
+  Google Calendar integration is optional and configured via `GoogleCalendar:Enabled` settings (defaults to `false`).
+  
+- **Sync Behavior (When Enabled)**
+  - When enabled, automatically create a corresponding Google Calendar event for every generated `ClassSession` and store the returned `EventId` in the database for future updates/deletes.
+  - Authorization is performed via an OAuth connection flow in the UI.
 
-- **Magic Link in Event**
-  Each event’s description must include a unique **"Mark as Present"** magic link containing a GUID token for that specific session.
-
-- **Event Details**
+- **Magic Link in Event (When Enabled)**
+  - Each event’s description includes a unique, passwordless **"Mark as Present"** magic link containing a GUID token for that specific session.
   - Title: Module Name
   - Time: Exact session start/end
   - Description: Module details + clickable Magic Link + optional notes
-  - Store the returned Google `EventId` in the database for future updates/deletes.
 
-- **Sync Behavior**
-  - Create events during session generation.
-  - Update or delete events when a session status changes to `Cancelled` (optional enhancement).
+- **Behavior When Disabled (Default)**
+  - Google Calendar event creation, updates, and deletions are completely skipped.
+  - The calendar connection controls and integration status settings are hidden from the UI.
+  - Holiday fetching via the Google API is disallowed.
 
 ---
 
@@ -96,34 +100,37 @@ $$\text{Status} \in \{\text{Present}, \text{Absent}, \text{Cancelled}, \text{Hol
   Multiple clicks on the same link are safely handled — the system returns _"Already marked as present."_ without duplicate updates.
 
 - **Manual Marking via Dashboard**
-  View daily/weekly classes in the Blazor dashboard and update status with one click (Present, Absent, Late, etc.).
+  - View daily/weekly/monthly classes in the Blazor dashboard and update status via a vertical three-dot actions menu (replaces the quick action column) with a confirmation dialog flow.
+  - **Bulk Status Management**: Select multiple class sessions on the Attendance page and perform bulk updates to mark them as `Present`, `Absent`, `Cancelled`, or `Not Marked` simultaneously with confirmation flow dialogs.
 
 ---
 
 #### 2.5 Analytics & Health Dashboard
 
 - **Attendance Calculation Rules**
-  Holidays and Cancelled sessions are **completely excluded** from statistics.
+  Holidays, Cancelled, and **Not Marked** (future or unrecorded) sessions are **completely excluded** from attendance rate calculations.
 
   **Formula:**
 
   $$
-  \text{Attendance Rate} = \frac{\text{Number of Present Sessions}}{\text{Total Sessions} - (\text{Holidays} + \text{Cancelled})} \times 100
+  \text{Attendance Rate} = \frac{\text{Present Sessions}}{\text{Total Sessions} - (\text{Holidays} + \text{Cancelled} + \text{Not Marked})} \times 100\%
   $$
 
-- **Views Required**
-  - Per-module attendance percentage
-  - Overall semester attendance percentage (average)
-  - Granular list of all sessions with filters (by module, date range, status)
+- **Views & Filtering Required**
+  - Per-module attendance percentage and total session counts.
+  - Overall semester attendance percentage (average).
+  - Granular list of all sessions with filters (by module, date range, status, day of week) on the Attendance page.
+  - **Dynamic Month Filter**: Drill down and analyze stats and daily/weekly/monthly breakdowns for a specific month or overall.
 
 - **Visual Indicators**
   - Show attendance rate with color coding:
-    - Green: ≥ 75%
-    - Yellow/Warning: < 75%
-    - Red < 60%
+    - Green (Safe): ≥ 75%
+    - Yellow (Warning): 60% - 74%
+    - Red (Critical): < 60%
+  - Display "Not Marked" columns in breakdowns.
 
 - **Dashboard Home**
-  Overview of upcoming classes, today’s schedule, and current semester health.
+  Overview of upcoming classes, today’s schedule, total sessions, and current semester health, supporting filtering by specific month.
 
 ---
 
@@ -171,8 +178,8 @@ $$\text{Status} \in \{\text{Present}, \text{Absent}, \text{Cancelled}, \text{Hol
 ### 6. Success Criteria
 
 - Ability to define modules + recurring schedules and auto-generate all sessions accurately.
-- Reliable Google Calendar events with working magic links.
-- Correct attendance percentage that ignores Holidays and Cancelled classes.
-- Intuitive dashboard showing clear progress and warnings.
+- Configurable and optional Google Calendar integration with working magic links when enabled.
+- Correct attendance percentage that ignores Holidays, Cancelled, and Not Marked sessions.
+- Intuitive dashboard showing clear progress, warnings, and dynamic month-level filtering.
 
 ---

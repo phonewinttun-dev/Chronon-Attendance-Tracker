@@ -34,31 +34,32 @@
 
 **US-5:** As the user, I want Holidays to be automatically handled so attendance stats remain accurate.
 **Acceptance Criteria:**
-- Holidays are seeded into the database from Google Calendar Public Holiday API (or manual entry).
+- When Google Calendar integration is enabled, holidays are seeded into the database from the Google Calendar Public Holiday API. If disabled, calendar holiday fetching is disallowed and the option is hidden from the UI.
 - During session generation, any session on a Holiday date gets `Status = Holiday`.
-- Holidays can be viewed and managed in the UI.
+- Holidays can be viewed in the UI.
 
-**US-6:** As the user, I want to manually update session status so I can handle cancellations or corrections.
+**US-6:** As the user, I want to manually or bulk update session status so I can handle cancellations or corrections.
 **Acceptance Criteria:**
-- I can change the status of any individual session (Pending → Present/Absent/Late/Cancelled).
-- Only the Status field is updated (efficient operation).
-- Changing to `Cancelled` optionally updates the linked Google Calendar event.
+- I can change the status of any individual session (Not Marked → Present/Absent/Cancelled) using a vertical three-dot actions menu with a confirmation dialog flow.
+- I can select multiple sessions on the Attendance page and perform bulk updates to change their statuses simultaneously (to Present, Absent, Cancelled, or Not Marked) via a confirmation dialog flow.
+- Only the Status field of the sessions is modified (efficient database operations).
+- Changing to `Cancelled` optionally updates the linked Google Calendar event (when Google Calendar integration is enabled).
 
 ---
 
-#### Google Calendar Integration
+#### Google Calendar Integration (Optional)
 
-**US-7:** As the user, I want class sessions to appear automatically in my Google Calendar.
+**US-7:** As the user, I want class sessions to appear automatically in my Google Calendar when the integration is enabled.
 **Acceptance Criteria:**
-- After session generation, a corresponding event is created in Google Calendar.
+- Integration is optional and disabled by default. When `GoogleCalendar:Enabled` is true and valid credentials are provided, corresponding events are created in Google Calendar after session generation.
 - Event includes: Module name as title, correct time, and description with Magic Link.
-- The Google `EventId` is stored in the database for future reference.
-- Events are created with proper timezone handling.
+- The Google `EventId` is stored in the database.
+- If integration is disabled, all background Google Calendar event synchronization is skipped, and calendar connection settings are hidden from the UI.
 
 **US-8:** As the user, I want a convenient Magic Link in Google Calendar events so I can mark attendance quickly.
 **Acceptance Criteria:**
-- The event description contains a clickable “Mark as Present” link with the unique session token.
-- The link points to my application’s public endpoint.
+- When Google Calendar integration is enabled, the event description contains a clickable "Mark as Present" link containing the unique session GUID token.
+- The link points to the application's public endpoint.
 
 ---
 
@@ -73,10 +74,10 @@
 - If outside time window → shows “Outside of attendance window.”
 - All operations are idempotent.
 
-**US-10:** As the user, I want to manually mark attendance from the dashboard.
+**US-10:** As the user, I want to manually or bulk mark attendance from the dashboard/attendance views.
 **Acceptance Criteria:**
-- Dashboard shows today’s / upcoming / past sessions.
-- I can update status with one click (Present, Absent, Late, etc.).
+- Dashboard and Attendance views show class sessions.
+- I can update a session's status with confirmation dialogs.
 - Changes are immediately reflected in analytics.
 
 ---
@@ -85,15 +86,16 @@
 
 **US-11:** As the user, I want clear attendance statistics so I can monitor my progress.
 **Acceptance Criteria:**
-- Attendance rate excludes Holidays and Cancelled sessions.
-- Formula: `(Present) / (Total Valid Sessions) × 100` is correctly calculated.
-- I can see per-module percentages and overall semester average.
-- Rates ≥ 75% are shown in green; below 75% are flagged in red/warning color.
-- I can filter and view detailed session list.
+- Attendance rate calculations exclude Holidays, Cancelled, and Not Marked sessions.
+- Formula: `Present / (Total - (Holidays + Cancelled + Not Marked)) × 100` is correctly calculated.
+- I can see per-module percentages, total session counts, and overall semester average.
+- Rates ≥ 75% are shown in green; between 60% and 74% are yellow (warning); below 60% are flagged in red.
+- I can filter and view the detailed session list on the Attendance page.
 
-**US-12:** As the user, I want a clean home dashboard for quick overview.
+**US-12:** As the user, I want a clean home dashboard for quick overview with month-level filtering.
 **Acceptance Criteria:**
-- Dashboard shows: Upcoming classes, Today’s schedule, Current semester attendance health.
+- Dashboard shows: Upcoming classes, Today’s schedule, Total sessions, and current semester attendance health (with Not Marked breakdown columns).
+- I can select a specific month via a dynamic month filter to drill down and analyze stats and breakdowns for only that month, or choose to view the overall semester stats.
 - Visual warnings for low attendance.
 
 ---

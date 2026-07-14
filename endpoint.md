@@ -42,6 +42,7 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 | `GET` | `api/ClassSessions/{id}` | `GetById` | Retrieves a specific class session by its unique ID. |
 | `POST` | `api/ClassSessions/generate` | `Generate` | Generates recurring class sessions based on a range and schedule. |
 | `PATCH` | `api/ClassSessions/{id}/status` | `UpdateStatus` | Updates the status of a specific class session (e.g. Present, Absent, Cancelled). |
+| `PATCH` | `api/ClassSessions/bulk-status` | `BulkUpdateStatus` | Bulk updates the status of multiple class sessions (e.g. to Present, Absent, Cancelled, or Not Marked). |
 | `PUT` | `api/ClassSessions/{id}` | `Update` | Replaces/updates details of an existing class session by its ID. |
 | `DELETE` | `api/ClassSessions/{id}` | `Delete` | Deletes a specific class session by its ID. |
 
@@ -106,6 +107,8 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 | `GET` | `api/google-auth/callback`<br>`api/googlecalendar/callback` | `Callback` | Handles the Google OAuth callback, exchanging the authorization code for access/refresh tokens and displaying a success page. |
 | `POST` | `api/google-auth/disconnect`<br>`api/googlecalendar/disconnect` | `Disconnect` | Revokes and disconnects Google Calendar integration. |
 
+*Note: The above Google Calendar integration endpoints are optional. They require the `GoogleCalendar:Enabled` API setting to be set to `true` (defaults to `false`) and client credentials to be configured. If disabled, calls to these endpoints will return a failure result.*
+
 ---
 
 ## 9. Analytics
@@ -117,5 +120,5 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 | `GET` | `api/Analytics/overall/{semesterId}` | `GetOverall` | Retrieves overall statistics and analytics summary for a given semester ID. |
 | `GET` | `api/Analytics/modules/{moduleId}/{semesterId}` | `GetByModule` | Retrieves detailed, module-level analytics for a specific module and semester. |
 | `GET` | `api/semesters/{id}/dashboard/summary` | `GetDashboardSummary` | Retrieves overall attendance rate for current semester & warnings. |
-| `GET` | `api/semesters/{id}/dashboard/daily-weekly` | `GetDashboardDailyWeekly` | Retrieves day/week chart data. |
-| `GET` | `api/semesters/{id}/dashboard/modules` | `GetDashboardModules` | Retrieves module breakdown. |
+| `GET` | `api/semesters/{id}/dashboard/daily-weekly` | `GetDashboardDailyWeekly` | Retrieves day/week chart data. Supports an optional `month` query parameter (integer) to filter statistics for a specific month. |
+| `GET` | `api/semesters/{id}/dashboard/modules` | `GetDashboardModules` | Retrieves module breakdown. Supports an optional `month` query parameter (integer) to filter statistics for a specific month. |
