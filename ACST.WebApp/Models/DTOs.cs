@@ -63,6 +63,7 @@ public class DashboardSummaryDto
     public int LateSessions { get; set; }
     public int CancelledSessions { get; set; }
     public int HolidaySessions { get; set; }
+    public int NotMarkedSessions { get; set; }
     public int ValidSessions { get; set; }
     public double CalculatedRate { get; set; }
     public double? TodayAttendanceRate { get; set; }
@@ -83,6 +84,7 @@ public class DailyAttendanceDto
     public int Late { get; set; }
     public int Cancelled { get; set; }
     public int Holiday { get; set; }
+    public int NotMarked { get; set; }
     public int ValidSessions { get; set; }
     public double AttendanceRate { get; set; }
 }
@@ -98,6 +100,7 @@ public class WeeklyAttendanceDto
     public int Late { get; set; }
     public int Cancelled { get; set; }
     public int Holiday { get; set; }
+    public int NotMarked { get; set; }
     public int ValidSessions { get; set; }
     public double AttendanceRate { get; set; }
 }
@@ -113,6 +116,7 @@ public class MonthlyAttendanceDto
     public int Late { get; set; }
     public int Cancelled { get; set; }
     public int Holiday { get; set; }
+    public int NotMarked { get; set; }
     public int ValidSessions { get; set; }
     public double AttendanceRate { get; set; }
 }
@@ -127,6 +131,9 @@ public class ModuleAnalyticsDto
     public int TotalAbsent { get; set; }
     public int TotalLate { get; set; }
     public int TotalSessions { get; set; }
+    public int NotMarked { get; set; }
+    public int Cancelled { get; set; }
+    public int Holiday { get; set; }
 }
 
 public class RecurringScheduleDto
