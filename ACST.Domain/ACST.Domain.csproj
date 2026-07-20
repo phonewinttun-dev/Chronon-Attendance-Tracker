@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -14,6 +14,9 @@
   <ItemGroup>
     <PackageReference Include="Google.Apis.Calendar.v3" Version="1.74.0.4154" />
     <PackageReference Include="Hangfire.Core" Version="1.8.23" />
+	<PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.0" />
+
   </ItemGroup>
 
   <ItemGroup>
