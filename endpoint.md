@@ -5,7 +5,7 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 ---
 
 ## 1. Semesters
-* **Controller:** [SemestersController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Domain/Features/Semesters/SemestersController.cs)
+* **Controller:** [SemestersController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Api/Controllers/SemestersController.cs)
 * **Base Route:** `api/Semesters`
 
 | HTTP Verb | Route | Method | Description |
@@ -19,7 +19,7 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 ---
 
 ## 2. Modules
-* **Controller:** [ModulesController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Domain/Features/Modules/ModulesController.cs)
+* **Controller:** [ModulesController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Api/Controllers/ModulesController.cs)
 * **Base Route:** `api/Modules`
 
 | HTTP Verb | Route | Method | Description |
@@ -32,8 +32,8 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 
 ---
 
-## 3. Class Sessions
-* **Controller:** [ClassSessionsController.cs (ClassSessionsController)](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Domain/Features/ClassSessions/ClassSessionsController.cs#L11)
+## 3. Class Sessions & Attendance
+* **Controller:** [ClassSessionsController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Api/Controllers/ClassSessionsController.cs)
 * **Base Route:** `api/ClassSessions`
 
 | HTTP Verb | Route | Method | Description |
@@ -45,22 +45,13 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 | `PATCH` | `api/ClassSessions/bulk-status` | `BulkUpdateStatus` | Bulk updates the status of multiple class sessions (e.g. to Present, Absent, Cancelled, or Not Marked). |
 | `PUT` | `api/ClassSessions/{id}` | `Update` | Replaces/updates details of an existing class session by its ID. |
 | `DELETE` | `api/ClassSessions/{id}` | `Delete` | Deletes a specific class session by its ID. |
-
----
-
-## 4. Attendance (Public / Dashboard)
-* **Controller:** [ClassSessionsController.cs (AttendanceController)](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Domain/Features/ClassSessions/ClassSessionsController.cs#L72)
-* **Base Route:** `api/attendance`
-
-| HTTP Verb | Route | Method | Description |
-| :--- | :--- | :--- | :--- |
-| `GET` | `api/attendance/magic-link/{token}` | `MagicLink` | Marks attendance for a student using a secure magic link token, returning an Obsidian-style HTML success/error page. |
-| `POST` | `api/attendance` | `MarkAttendance` | Marks or updates a class session's attendance status from the dashboard. |
+| `GET` | `api/ClassSessions/magic-link/{token}` | `MagicLink` | Marks attendance using a secure magic link token, returning an HTML confirmation page. |
+| `POST` | `api/ClassSessions/attendance` | `MarkAttendance` | Marks or updates a class session's attendance status from the dashboard. |
 
 ---
 
 ## 5. Search
-* **Controller:** [SearchController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Domain/Features/Search/SearchController.cs)
+* **Controller:** [SearchController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Api/Controllers/SearchController.cs)
 * **Base Route:** `api/Search`
 
 | HTTP Verb | Route | Method | Description |
@@ -72,7 +63,7 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 ---
 
 ## 6. Recurring Schedules
-* **Controller:** [RecurringSchedulesController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Domain/Features/RecurringSchedules/RecurringSchedulesController.cs)
+* **Controller:** [RecurringSchedulesController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Api/Controllers/RecurringSchedulesController.cs)
 * **Base Route:** `api/modules/{moduleId}/recurring-schedules`
 
 | HTTP Verb | Route | Method | Description |
@@ -84,7 +75,7 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 ---
 
 ## 7. Holidays
-* **Controller:** [HolidaysController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Domain/Features/Holidays/HolidaysController.cs)
+* **Controller:** [HolidaysController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Api/Controllers/HolidaysController.cs)
 * **Base Route:** `api/Holidays`
 
 | HTTP Verb | Route | Method | Description |
@@ -97,7 +88,7 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 ---
 
 ## 8. Google Calendar Integration
-* **Controller:** [GoogleCalendarController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Domain/Features/GoogleCalendar/GoogleCalendarController.cs)
+* **Controller:** [GoogleCalendarController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Api/Controllers/GoogleCalendarController.cs)
 * **Base Routes:** `api/google-auth` or `api/googlecalendar`
 
 | HTTP Verb | Route | Method | Description |
@@ -112,7 +103,7 @@ This document lists all of the HTTP endpoints defined within the `ACST.Domain` p
 ---
 
 ## 9. Analytics
-* **Controller:** [AnalyticsController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Domain/Features/Analytics/AnalyticsController.cs)
+* **Controller:** [AnalyticsController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Api/Controllers/AnalyticsController.cs)
 * **Base Route:** `api/Analytics`
 
 | HTTP Verb | Route | Method | Description |

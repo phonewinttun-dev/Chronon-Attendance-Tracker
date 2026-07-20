@@ -1,9 +1,9 @@
-using System.Threading.Tasks;
 using ACST.Domain.DTOs.RecurringSchedule;
+using ACST.Domain.Features.RecurringSchedules;
 using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ACST.Domain.Features.RecurringSchedules;
+namespace ACST.Api.Controllers;
 
 [Route("api/modules/{moduleId}/recurring-schedules")]
 [ApiController]

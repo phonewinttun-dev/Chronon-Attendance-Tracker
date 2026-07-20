@@ -1,59 +1,59 @@
-using System.Threading.Tasks;
-using ACST.Domain.DTOs.Module;
+using ACST.Domain.DTOs.Semester;
+using ACST.Domain.Features.Semesters;
 using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ACST.Domain.Features.Modules;
+namespace ACST.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ModulesController : ControllerBase
+public class SemestersController : ControllerBase
 {
-    private readonly IModuleService _moduleService;
+    private readonly ISemesterService _semesterService;
 
-    public ModulesController(IModuleService moduleService)
+    public SemestersController(ISemesterService semesterService)
     {
-        _moduleService = moduleService;
+        _semesterService = semesterService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] PaginationRequest request, long? semesterId = null)
+    public async Task<IActionResult> GetAll([FromQuery] PaginationRequest request)
     {
-        var result = await _moduleService.GetAllModulesAsync(request, semesterId);
+        var result = await _semesterService.GetAllSemestersAsync(request);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
-        var result = await _moduleService.GetModuleByIdAsync(id);
+        var result = await _semesterService.GetSemesterByIdAsync(id);
         return result.IsSuccess ? Ok(result) : NotFound(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateModuleRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateSemesterRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(Result.Failure("Invalid request parameters."));
 
-        var result = await _moduleService.CreateModuleAsync(request);
+        var result = await _semesterService.CreateSemesterAsync(request);
         return result.IsSuccess ? CreatedAtAction(nameof(GetById), new { id = result.Data?.Id }, result) : BadRequest(result);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(long id, [FromBody] UpdateModuleRequest request)
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateSemesterRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(Result.Failure("Invalid request parameters."));
 
-        var result = await _moduleService.UpdateModuleAsync(id, request);
+        var result = await _semesterService.UpdateSemesterAsync(id, request);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {
-        var result = await _moduleService.DeleteModuleAsync(id);
+        var result = await _semesterService.DeleteSemesterAsync(id);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 }

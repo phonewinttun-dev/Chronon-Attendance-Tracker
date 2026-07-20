@@ -281,7 +281,7 @@ public class ClassSessionService : IClassSessionService
         if (sessionData == null) return;
 
         var baseUrl = _configuration?["BaseUrl"] ?? "https://localhost:7119";
-        var description = $"Module: {sessionData.ModuleName}\n\nMark Attendance: {baseUrl.TrimEnd('/')}/api/attendance/magic-link/{sessionData.MagicLinkToken}";
+        var description = $"Module: {sessionData.ModuleName}\n\nMark Attendance: {baseUrl.TrimEnd('/')}/api/ClassSessions/magic-link/{sessionData.MagicLinkToken}";
 
         var googleResult = await _googleCalendarService.CreateEventAsync(
             sessionData.ModuleName, 

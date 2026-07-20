@@ -1,10 +1,9 @@
-using System;
-using System.Threading.Tasks;
 using ACST.Domain.DTOs.ClassSession;
+using ACST.Domain.Features.ClassSessions;
 using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ACST.Domain.Features.ClassSessions;
+namespace ACST.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -73,20 +72,8 @@ public class ClassSessionsController : ControllerBase
         var result = await _sessionService.DeleteSessionAsync(id);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
-}
 
-// Separate controller for public Magic Link
-[Route("api/attendance")]
-[ApiController]
-public class AttendanceController : ControllerBase
-{
-    private readonly IClassSessionService _sessionService;
-
-    public AttendanceController(IClassSessionService sessionService)
-    {
-        _sessionService = sessionService;
-    }
-
+    // Public Magic Link Endpoint
     [HttpGet("magic-link/{token}")]
     public async Task<IActionResult> MagicLink(Guid token)
     {
@@ -123,16 +110,11 @@ public class AttendanceController : ControllerBase
         return Content(html, "text/html");
     }
 
-    [HttpPost]
+    // Attendance Update Endpoint
+    [HttpPost("attendance")]
     public async Task<IActionResult> MarkAttendance([FromBody] DashboardAttendanceRequest request)
     {
         var result = await _sessionService.UpdateSessionStatusAsync(request.SessionId, new UpdateSessionStatusRequest { Status = request.Status });
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
-}
-
-public class DashboardAttendanceRequest
-{
-    public long SessionId { get; set; }
-    public string Status { get; set; } = string.Empty;
 }

@@ -1,9 +1,9 @@
-using System.Threading.Tasks;
 using ACST.Domain.DTOs.Holiday;
+using ACST.Domain.Features.Holidays;
 using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ACST.Domain.Features.Holidays;
+namespace ACST.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -32,8 +32,6 @@ public class HolidaysController : ControllerBase
         var result = await _holidayService.CreateHolidayAsync(request);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
-
-
 
     [HttpPost("import-google")]
     public async Task<IActionResult> ImportGoogleHolidays([FromBody] ImportGoogleHolidaysRequest request)

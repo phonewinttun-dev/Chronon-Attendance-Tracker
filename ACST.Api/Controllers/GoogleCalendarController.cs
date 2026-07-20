@@ -1,12 +1,8 @@
-using System;
-using System.Threading.Tasks;
+using ACST.Domain.Features.GoogleCalendar;
 using ACST.Domain.Features.Holidays;
-using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
-namespace ACST.Domain.Features.GoogleCalendar;
+namespace ACST.Api.Controllers;
 
 [Route("api/google-auth")]
 [Route("api/googlecalendar")]
