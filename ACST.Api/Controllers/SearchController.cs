@@ -1,3 +1,4 @@
+using ACST.Api.Middleware;
 using ACST.Domain.DTOs.Search;
 using ACST.Domain.Features.Search;
 using ACST.Shared;
@@ -7,6 +8,7 @@ namespace ACST.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[HasPermission(Permissions.Search.View)]
 public class SearchController : ControllerBase
 {
     private readonly ISearchService _searchService;

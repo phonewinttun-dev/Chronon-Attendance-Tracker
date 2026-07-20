@@ -1,5 +1,7 @@
+using ACST.Api.Middleware;
 using ACST.Domain.Features.GoogleCalendar;
 using ACST.Domain.Features.Holidays;
+using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ACST.Api.Controllers;
@@ -29,6 +31,7 @@ public class GoogleCalendarController : ControllerBase
     #region Status Endpoint
 
     [HttpGet("status")]
+    [HasPermission(Permissions.GoogleCalendar.Manage)]
     public async Task<IActionResult> GetStatus()
     {
         bool isEnabled = _calendarService is not DisabledGoogleCalendarService;
@@ -48,6 +51,7 @@ public class GoogleCalendarController : ControllerBase
     #region Connect Endpoint
 
     [HttpGet("connect")]
+    [HasPermission(Permissions.GoogleCalendar.Manage)]
     public async Task<IActionResult> Connect([FromQuery] string? redirectUrl)
     {
         bool isEnabled = _calendarService is not DisabledGoogleCalendarService;
@@ -129,6 +133,7 @@ public class GoogleCalendarController : ControllerBase
     #region Disconnect Endpoint
 
     [HttpPost("disconnect")]
+    [HasPermission(Permissions.GoogleCalendar.Manage)]
     public async Task<IActionResult> Disconnect()
     {
         bool isEnabled = _calendarService is not DisabledGoogleCalendarService;

@@ -1,3 +1,4 @@
+using ACST.Api.Middleware;
 using ACST.Domain.DTOs.Semester;
 using ACST.Domain.Features.Semesters;
 using ACST.Shared;
@@ -17,6 +18,7 @@ public class SemestersController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission(Permissions.Semesters.View)]
     public async Task<IActionResult> GetAll([FromQuery] PaginationRequest request)
     {
         var result = await _semesterService.GetAllSemestersAsync(request);
@@ -24,6 +26,7 @@ public class SemestersController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [HasPermission(Permissions.Semesters.View)]
     public async Task<IActionResult> GetById(long id)
     {
         var result = await _semesterService.GetSemesterByIdAsync(id);
@@ -31,6 +34,7 @@ public class SemestersController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission(Permissions.Semesters.Create)]
     public async Task<IActionResult> Create([FromBody] CreateSemesterRequest request)
     {
         if (!ModelState.IsValid)
@@ -41,6 +45,7 @@ public class SemestersController : ControllerBase
     }
 
     [HttpPatch("{id}")]
+    [HasPermission(Permissions.Semesters.Update)]
     public async Task<IActionResult> Update(long id, [FromBody] UpdateSemesterRequest request)
     {
         if (!ModelState.IsValid)
@@ -51,6 +56,7 @@ public class SemestersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [HasPermission(Permissions.Semesters.Delete)]
     public async Task<IActionResult> Delete(long id)
     {
         var result = await _semesterService.DeleteSemesterAsync(id);

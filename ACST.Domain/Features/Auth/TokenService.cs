@@ -1,4 +1,4 @@
-﻿using ACST.Database.ApplicationDbContextModels.Models;
+using ACST.Database.ApplicationDbContextModels.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,7 +17,7 @@ namespace ACST.Domain.Features.Auth
             _configuration = configuration;
         }
 
-        public string GenerateAccessToken(TblUser user)
+        public string GenerateAccessToken(TblUser user, IEnumerable<string>? permissions = null)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("SecretKey not found.");
@@ -29,12 +29,23 @@ namespace ACST.Domain.Features.Auth
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(ClaimTypes.Email, user.Email ?? ""),
-            new Claim(ClaimTypes.Name, user.FullName ?? ""),
-            new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "")
-        };
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Email, user.Email ?? ""),
+                new Claim(ClaimTypes.Name, user.FullName ?? ""),
+                new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "")
+            };
+
+            if (permissions != null)
+            {
+                foreach (var permission in permissions)
+                {
+                    if (!string.IsNullOrWhiteSpace(permission))
+                    {
+                        claims.Add(new Claim("permission", permission));
+                    }
+                }
+            }
 
             var token = new JwtSecurityToken(
                 issuer: issuer,

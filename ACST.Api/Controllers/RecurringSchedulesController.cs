@@ -1,3 +1,4 @@
+using ACST.Api.Middleware;
 using ACST.Domain.DTOs.RecurringSchedule;
 using ACST.Domain.Features.RecurringSchedules;
 using ACST.Shared;
@@ -17,6 +18,7 @@ public class RecurringSchedulesController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission(Permissions.RecurringSchedules.View)]
     public async Task<IActionResult> GetByModule(long moduleId)
     {
         var result = await _scheduleService.GetSchedulesByModuleAsync(moduleId);
@@ -24,6 +26,7 @@ public class RecurringSchedulesController : ControllerBase
     }
 
     [HttpPost("{semesterId}")]
+    [HasPermission(Permissions.RecurringSchedules.Manage)]
     public async Task<IActionResult> Create(long moduleId, long semesterId, [FromBody] CreateRecurringScheduleRequest request)
     {
         if (!ModelState.IsValid)
@@ -34,6 +37,7 @@ public class RecurringSchedulesController : ControllerBase
     }
 
     [HttpDelete("~/api/recurring-schedules/{id}")]
+    [HasPermission(Permissions.RecurringSchedules.Manage)]
     public async Task<IActionResult> Delete(long id)
     {
         var result = await _scheduleService.DeleteScheduleAsync(id);

@@ -1,10 +1,13 @@
+using ACST.Api.Middleware;
 using ACST.Domain.Features.Analytics;
+using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ACST.Api.Controllers.Analytics;
 
 [Route("api/[controller]")]
 [ApiController]
+[HasPermission(Permissions.Analytics.View)]
 public class AnalyticsController : ControllerBase
 {
     private readonly IAnalyticsService _analyticsService;

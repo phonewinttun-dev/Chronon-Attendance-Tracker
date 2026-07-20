@@ -83,7 +83,7 @@ namespace ACST.Domain.Features.Auth
                 .Select(rp => rp.Permission!.PermissionName!)
                 .ToListAsync();
 
-            var accessToken = _tokenService.GenerateAccessToken(user);
+            var accessToken = _tokenService.GenerateAccessToken(user, permissions);
             var refreshTokenString = _tokenService.GenerateRefreshToken();
 
             // Store Refresh Token
@@ -135,7 +135,7 @@ namespace ACST.Domain.Features.Auth
                 .Select(rp => rp.Permission!.PermissionName!)
                 .ToListAsync();
 
-            var newAccessToken = _tokenService.GenerateAccessToken(user);
+            var newAccessToken = _tokenService.GenerateAccessToken(user, permissions);
             var newRefreshTokenString = _tokenService.GenerateRefreshToken();
 
             // Revoke current refresh token
