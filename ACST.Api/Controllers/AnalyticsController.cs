@@ -1,9 +1,7 @@
-using System.Threading.Tasks;
 using ACST.Domain.Features.Analytics;
-using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ACST.Domain.Features.Analytics;
+namespace ACST.Api.Controllers.Analytics;
 
 [Route("api/[controller]")]
 [ApiController]

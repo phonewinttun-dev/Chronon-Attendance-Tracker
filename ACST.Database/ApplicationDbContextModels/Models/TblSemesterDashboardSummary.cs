@@ -22,6 +22,8 @@ public partial class TblSemesterDashboardSummary
     public double? TodayAttendanceRate { get; set; }
     public string WarningsJson { get; set; } = "[]";
     public DateTime UpdatedAt { get; set; }
+    public int? UserId { get; set; }
 
     public virtual TblSemester Semester { get; set; } = null!;
+    public virtual TblUser? User { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ACST.Database.ApplicationDbContextModels.Models;
@@ -18,6 +18,10 @@ public partial class TblSemester
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
+
+    public int? UserId { get; set; }
+
+    public virtual TblUser? User { get; set; }
 
     public virtual ICollection<TblModule> TblModules { get; set; } = new List<TblModule>();
 
