@@ -1,5 +1,6 @@
 using ACST.Domain.Features;
 using ACST.Domain.Features.Analytics;
+using ACST.Domain.Features.Notifications;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Scalar.AspNetCore;
@@ -66,6 +67,26 @@ try
             "daily-dashboard-update",
             service => service.UpdateAllActiveSemesterSummariesAsync(),
             Cron.Daily);
+
+        recurringJobManager.AddOrUpdate<INotificationService>(
+            "upcoming-class-notifications",
+            service => service.ProcessUpcomingClassNotificationsAsync(),
+            "*/5 * * * *");
+
+        recurringJobManager.AddOrUpdate<INotificationService>(
+            "post-class-30min-reminders",
+            service => service.ProcessPostClass30MinRemindersAsync(),
+            "*/5 * * * *");
+
+        recurringJobManager.AddOrUpdate<INotificationService>(
+            "evening-attendance-reminder",
+            service => service.ProcessEveningAttendanceRemindersAsync(),
+            "30 18 * * *");
+
+        recurringJobManager.AddOrUpdate<INotificationService>(
+            "cleanup-old-notifications",
+            service => service.PurgeOldNotificationsAsync(),
+            "0 2 * * *");
     }
 
     app.UseAuthorization();

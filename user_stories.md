@@ -117,25 +117,25 @@
 **Acceptance Criteria:**
 
 - I can view a list of all roles.
-- The list includes role name and description.
+- The list includes role name.
 
 **US-14:** As an Admin, I want to create a new role to define custom access levels.
 **Acceptance Criteria:**
 
-- I can create a new role with name and description.
+- I can create a new role with name.
 - The new role is added to the list of roles.
 
 **US-15:** As an Admin, I want to view a list of all available permissions to understand system access capabilities.
 **Acceptance Criteria:**
 
 - I can view a list of all available permissions.
-- The list includes permission name and description.
+- The list includes permission name.
 
 **US-16:** As an Admin, I want to view permissions assigned to a specific role to review its access scope.
 **Acceptance Criteria:**
 
 - I can view permissions assigned to a specific role.
-- The list includes permission name and description.
+- The list includes permission name.
 
 **US-17:** As an Admin, I want to set or update permissions for a role to control what users in that role can do.
 **Acceptance Criteria:**
@@ -188,7 +188,8 @@
 
 - The reminder is triggered 30 minutes after the class has ended.
 - The reminder is triggered only once for each class.
-- The reminder is triggered every evening at 7:30 PM.
+- The reminder is triggered every evening at 6:30 PM server time.
 - The reminder is displayed in the UI.
 - The reminder is displayed only for classes which are not marked as present or absent.
 
+---

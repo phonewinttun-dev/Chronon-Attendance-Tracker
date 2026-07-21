@@ -40,4 +40,6 @@ public partial class TblSession
     public virtual TblSemester Semester { get; set; } = null!;
 
     public virtual TblUser? User { get; set; }
+
+    public virtual ICollection<TblNotification> TblNotifications { get; set; } = new List<TblNotification>();
 }

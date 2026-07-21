@@ -33,5 +33,7 @@ namespace ACST.Database.ApplicationDbContextModels.Models
         public virtual ICollection<TblSession> TblSessions { get; set; } = new List<TblSession>();
 
         public virtual ICollection<TblSemesterDashboardSummary> TblSemesterDashboardSummaries { get; set; } = new List<TblSemesterDashboardSummary>();
+
+        public virtual ICollection<TblNotification> TblNotifications { get; set; } = new List<TblNotification>();
     }
 }

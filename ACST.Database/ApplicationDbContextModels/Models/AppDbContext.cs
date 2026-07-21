@@ -34,6 +34,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<TblUsertoken> TblUsertokens { get; set; }
 
+    public virtual DbSet<TblNotification> TblNotifications { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("extensions", "uuid-ossp");
@@ -241,6 +243,30 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.TblUsertokens)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("tblusertoken_user_id_fkey");
+        });
+
+        modelBuilder.Entity<TblNotification>(entity =>
+        {
+            entity.HasKey(e => e.NotificationId).HasName("tblnotification_pkey");
+
+            entity.ToTable("TblNotification");
+
+            entity.Property(e => e.NotificationId).UseIdentityAlwaysColumn().HasColumnName("NotificationID");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+            entity.Property(e => e.SessionId).HasColumnName("SessionID");
+            entity.Property(e => e.IsRead).HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.TriggeredAt).HasDefaultValueSql("now()");
+
+            entity.HasOne(d => d.User).WithMany(p => p.TblNotifications)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_TblNotification_User");
+
+            entity.HasOne(d => d.Session).WithMany(p => p.TblNotifications)
+                .HasForeignKey(d => d.SessionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_TblNotification_Session");
         });
 
         OnModelCreatingPartial(modelBuilder);

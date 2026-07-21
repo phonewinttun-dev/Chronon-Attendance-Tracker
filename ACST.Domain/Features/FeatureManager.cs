@@ -5,6 +5,7 @@ using ACST.Domain.Features.ClassSessions;
 using ACST.Domain.Features.GoogleCalendar;
 using ACST.Domain.Features.Holidays;
 using ACST.Domain.Features.Modules;
+using ACST.Domain.Features.Notifications;
 using ACST.Domain.Features.RecurringSchedules;
 using ACST.Domain.Features.RolePermission;
 using ACST.Domain.Features.Search;
@@ -46,6 +47,7 @@ namespace ACST.Domain.Features
             builder.Services.AddScoped<IClassSessionService, ClassSessionService>();
             builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
             builder.Services.AddScoped<ISearchService, SearchService>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
         }
     }
 }
