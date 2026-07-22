@@ -1,265 +1,450 @@
 @page "/roles"
 @using ACST.WebApp.Models
+@using ACST.WebApp.Services
+@implements IDisposable
 @inject HttpClient Http
+@inject AuthStateService AuthState
+@inject NavigationManager Navigation
 
 <PageTitle>Role & Permission Management</PageTitle>
 
-<!-- Header -->
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-    <div>
-        <div class="flex items-center gap-2 mb-1">
-            <span class="px-2.5 py-0.5 text-[11px] font-semibold tracking-wider uppercase rounded-full bg-primary/10 text-primary border border-primary/20">
-                Access Control
-            </span>
-        </div>
-        <h1 class="text-2xl font-bold tracking-tight text-foreground font-sans">Role & Permission Management</h1>
-        <p class="text-xs text-muted-foreground mt-1">Configure role-based access control, define custom roles, and assign granular system permissions.</p>
-    </div>
-    <div class="flex items-center gap-3">
-        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg text-xs font-semibold transition-all shadow-sm flex items-center gap-2" 
-                @onclick="ToggleCreateRoleModal">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Create New Role
-        </button>
-    </div>
-</div>
-
-<!-- Alert Banner -->
-@if (!string.IsNullOrEmpty(_message))
+@if (!AuthState.IsAdmin)
 {
-    <div class="border p-4 rounded-xl mb-6 text-xs font-medium flex items-center justify-between gap-3 transition-all animate-in fade-in duration-150 @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-primary/10 border-primary/30 text-primary")">
-        <div class="flex items-center gap-2.5">
-            @if (_isError)
-            {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            }
-            else
-            {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
-            }
-            <span>@_message</span>
+    <div class="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center bg-card border border-border/80 rounded-2xl shadow-xl max-w-xl mx-auto my-12 animate-in zoom-in-95 duration-200">
+        <div class="w-16 h-16 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mb-4 border border-destructive/20 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-8 h-8"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
-        <button class="text-muted-foreground hover:text-foreground text-sm" @onclick="() => _message = null">×</button>
-    </div>
-}
-
-<!-- Create Role Modal -->
-@if (_showCreateRoleModal)
-{
-    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-150">
-            <div class="flex items-center justify-between border-b border-border/60 pb-4 mb-4">
-                <h3 class="text-base font-semibold text-foreground">Create Custom Role</h3>
-                <button @onclick="ToggleCreateRoleModal" class="text-muted-foreground hover:text-foreground text-lg">×</button>
-            </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-foreground mb-1.5">Role Name <span class="text-destructive">*</span></label>
-                    <input type="text" 
-                           class="w-full px-3.5 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
-                           placeholder="e.g. Department Head, Registrar" 
-                           @bind="_newRoleName" />
-                </div>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border/60">
-                <button class="px-4 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-colors" @onclick="ToggleCreateRoleModal">Cancel</button>
-                <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50" 
-                        disabled="@_isSubmittingRole" 
-                        @onclick="CreateRole">
-                    @(_isSubmittingRole ? "Creating..." : "Create Role")
-                </button>
-            </div>
+        <span class="px-3 py-1 text-[11px] font-semibold tracking-wider uppercase rounded-full bg-destructive/10 text-destructive border border-destructive/20 mb-3">
+            Admin Access Required
+        </span>
+        <h2 class="text-2xl font-bold tracking-tight text-foreground font-sans mb-2">Access Restricted</h2>
+        <p class="text-xs text-muted-foreground max-w-md mb-6 leading-relaxed">
+            Role & Permission Management is restricted exclusively to system <strong>Administrators</strong>. Your current active account role (<strong>@AuthState.ActiveRole</strong>) does not have authorization to view or configure security roles.
+        </p>
+        <div class="flex items-center gap-3">
+            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2.5 rounded-lg text-xs font-semibold transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+                    @onclick='() => Navigation.NavigateTo("")'>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Return to Dashboard
+            </button>
         </div>
     </div>
 }
-
-<!-- Main Layout Grid -->
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-    <!-- Left Column: Roles List (4 cols) -->
-    <div class="lg:col-span-4 space-y-4">
-        <div class="bg-card border border-border rounded-xl p-5 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-bold text-foreground tracking-tight">System Roles</h2>
-                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border/40">
-                    @(_roles?.Count ?? 0) Roles
+else
+{
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="px-2.5 py-0.5 text-[11px] font-semibold tracking-wider uppercase rounded-full bg-primary/10 text-primary border border-primary/20">
+                    Access Control
                 </span>
             </div>
-
-            @if (_isLoadingRoles)
-            {
-                <div class="py-12 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-                    <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    Loading roles...
-                </div>
-            }
-            else if (_roles == null || !_roles.Any())
-            {
-                <div class="py-8 text-center text-xs text-muted-foreground">No roles found.</div>
-            }
-            else
-            {
-                <div class="space-y-2">
-                    @foreach (var role in _roles)
-                    {
-                        var isSelected = _selectedRoleId == role.RoleId;
-                        <div @onclick="() => SelectRole(role.RoleId)" 
-                             class="p-3.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between group @(isSelected ? "bg-primary/10 border-primary/40 text-foreground font-semibold shadow-sm" : "bg-background/50 border-border/60 hover:bg-accent/40 text-muted-foreground hover:text-foreground")">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold @(isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:bg-accent")">
-                                    @role.RoleName.Substring(0, Math.Min(2, role.RoleName.Length)).ToUpper()
-                                </div>
-                                <div>
-                                    <h3 class="text-xs font-medium text-foreground">@role.RoleName</h3>
-                                    <span class="text-[10px] text-muted-foreground">ID: #@role.RoleId</span>
-                                </div>
-                            </div>
-                            @if (role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-                            {
-                                <span class="px-2 py-0.5 text-[10px] font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full">
-                                    Super Admin
-                                </span>
-                            }
-                            else if (isSelected)
-                            {
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-primary shrink-0"><path d="m9 18 6-6-6-6"/></svg>
-                            }
-                        </div>
-                    }
-                </div>
-            }
+            <h1 class="text-2xl font-bold tracking-tight text-foreground font-sans">Role & Permission Management</h1>
+            <p class="text-xs text-muted-foreground mt-1">Configure role-based access control (RBAC), define custom system roles, and assign granular permissions.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg text-xs font-semibold transition-all shadow-sm flex items-center gap-2 cursor-pointer" 
+                    @onclick="ToggleCreateRoleModal">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Create New Role
+            </button>
         </div>
     </div>
 
-    <!-- Right Column: Permission Matrix (8 cols) -->
-    <div class="lg:col-span-8 space-y-4">
-        @if (_selectedRoleId > 0)
-        {
-            var selectedRole = _roles?.FirstOrDefault(r => r.RoleId == _selectedRoleId);
-            var isAdminRole = selectedRole?.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
+    <!-- Stats Summary Overview Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-card border border-border/70 p-4 rounded-xl shadow-sm flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+                <div class="text-[11px] font-medium text-muted-foreground">Total Roles</div>
+                <div class="text-xl font-bold text-foreground font-mono">@(_roles?.Count ?? 0)</div>
+            </div>
+        </div>
 
-            <div class="bg-card border border-border rounded-xl p-5 shadow-sm space-y-5">
-                <!-- Header -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h2 class="text-base font-bold text-foreground">Permissions for @selectedRole?.RoleName</h2>
-                            <span class="text-xs font-mono px-2 py-0.5 rounded bg-primary/10 text-primary font-semibold">
-                                @(_selectedPermissionIds.Count) Assigned
-                            </span>
-                        </div>
-                        <p class="text-xs text-muted-foreground mt-0.5">Toggle permissions below to control actions for users with this role.</p>
-                    </div>
+        <div class="bg-card border border-border/70 p-4 rounded-xl shadow-sm flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+            <div>
+                <div class="text-[11px] font-medium text-muted-foreground">Total Permissions</div>
+                <div class="text-xl font-bold text-foreground font-mono">@(_allPermissions?.Count ?? 0)</div>
+            </div>
+        </div>
 
-                    <div class="flex items-center gap-2">
-                        <button class="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted rounded-md transition-colors"
-                                @onclick="SelectAllPermissions">
-                            Select All
-                        </button>
-                        <button class="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted rounded-md transition-colors"
-                                @onclick="DeselectAllPermissions">
-                            Clear All
-                        </button>
-                    </div>
-                </div>
+        <div class="bg-card border border-border/70 p-4 rounded-xl shadow-sm flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+                <div class="text-[11px] font-medium text-muted-foreground">System Admin</div>
+                <div class="text-xl font-bold text-foreground font-mono">@(_roles?.Count(r => r.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase)) ?? 0)</div>
+            </div>
+        </div>
 
-                <!-- Admin Bypass Notice (US-20) -->
-                @if (isAdminRole)
+        <div class="bg-card border border-border/70 p-4 rounded-xl shadow-sm flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+            <div>
+                <div class="text-[11px] font-medium text-muted-foreground">Custom Roles</div>
+                <div class="text-xl font-bold text-foreground font-mono">@(_roles?.Count(r => !r.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase)) ?? 0)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert / Toast Banner -->
+    @if (!string.IsNullOrEmpty(_message))
+    {
+        <div class="border p-4 rounded-xl mb-6 text-xs font-medium flex items-center justify-between gap-3 transition-all animate-in fade-in duration-150 @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-primary/10 border-primary/30 text-primary")">
+            <div class="flex items-center gap-2.5">
+                @if (_isError)
                 {
-                    <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3.5 text-xs text-amber-500 flex items-start gap-2.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0 mt-0.5"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>
-                        <div>
-                            <span class="font-bold">Admin Permission Bypass Active (US-20):</span> Users assigned to the <strong>Admin</strong> role automatically bypass all permission restrictions across the entire system.
-                        </div>
-                    </div>
-                }
-
-                <!-- Search Input -->
-                <div class="relative max-w-xs">
-                    <input type="text" 
-                           class="w-full pl-9 pr-4 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
-                           placeholder="Filter permissions..." 
-                           @bind="_permissionSearchTerm" 
-                           @bind:event="oninput" />
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                    </div>
-                </div>
-
-                <!-- Permission List Grid -->
-                @if (_isLoadingPermissions)
-                {
-                    <div class="py-12 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-                        <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        Loading permissions...
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 }
                 else
                 {
-                    var filteredPermissions = GetFilteredPermissions();
-
-                    @if (!filteredPermissions.Any())
-                    {
-                        <div class="py-8 text-center text-xs text-muted-foreground">No permissions match filter.</div>
-                    }
-                    else
-                    {
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            @foreach (var perm in filteredPermissions)
-                            {
-                                var isChecked = _selectedPermissionIds.Contains(perm.PermissionId);
-                                <label class="p-3 rounded-lg border transition-all cursor-pointer flex items-center justify-between select-none @(isChecked ? "bg-primary/5 border-primary/30 text-foreground" : "bg-background/30 border-border/50 text-muted-foreground hover:bg-accent/30")">
-                                    <div class="flex items-center gap-3">
-                                        <input type="checkbox" 
-                                               class="w-4 h-4 rounded border-border text-primary focus:ring-primary/20 accent-primary cursor-pointer" 
-                                               checked="@isChecked" 
-                                               @onchange="(e) => TogglePermission(perm.PermissionId, (bool)(e.Value ?? false))" />
-                                        <div>
-                                            <div class="text-xs font-semibold text-foreground font-mono">@perm.PermissionName</div>
-                                        </div>
-                                    </div>
-                                    <span class="text-[10px] font-mono text-muted-foreground/70">#@perm.PermissionId</span>
-                                </label>
-                            }
-                        </div>
-                    }
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
                 }
+                <span>@_message</span>
+            </div>
+            <button class="text-muted-foreground hover:text-foreground text-sm cursor-pointer" @onclick="() => _message = null">×</button>
+        </div>
+    }
 
-                <!-- Save Action Footer -->
-                <div class="flex items-center justify-end border-t border-border/60 pt-4 mt-6">
-                    <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-lg text-xs font-semibold transition-all shadow-sm disabled:opacity-50 flex items-center gap-2" 
-                            disabled="@_isSavingPermissions" 
-                            @onclick="SaveRolePermissions">
-                        @if (_isSavingPermissions)
+    <!-- Create Role Modal -->
+    @if (_showCreateRoleModal)
+    {
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-150">
+                <div class="flex items-center justify-between border-b border-border/60 pb-4 mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-foreground">Create Custom Role</h3>
+                            <p class="text-[11px] text-muted-foreground">Define a new access role for system users.</p>
+                        </div>
+                    </div>
+                    <button @onclick="ToggleCreateRoleModal" class="text-muted-foreground hover:text-foreground text-lg cursor-pointer">×</button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-foreground mb-1.5">Role Name <span class="text-destructive">*</span></label>
+                        <input type="text" 
+                               class="w-full px-3.5 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
+                               placeholder="e.g. Department Head, Registrar, TA" 
+                               @bind="_newRoleName" />
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border/60">
+                    <button class="px-4 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" @onclick="ToggleCreateRoleModal">Cancel</button>
+                    <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer" 
+                            disabled="@_isSubmittingRole" 
+                            @onclick="CreateRole">
+                        @if (_isSubmittingRole)
                         {
                             <svg class="animate-spin h-3.5 w-3.5 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            <span>Saving...</span>
+                            <span>Creating...</span>
                         }
                         else
                         {
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                            <span>Save Permissions</span>
+                            <span>Create Role</span>
                         }
                     </button>
                 </div>
             </div>
-        }
-        else
-        {
-            <div class="bg-card border border-border rounded-xl p-12 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-10 h-10 opacity-40"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
-                <span>Select a role from the left panel to review and manage its permissions.</span>
+        </div>
+    }
+
+    <!-- Main Layout Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Roles List (4 cols) -->
+        <div class="lg:col-span-4 space-y-4">
+            <div class="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-foreground tracking-tight">System Roles</h2>
+                    <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border/40">
+                        @GetFilteredRoles().Count Roles
+                    </span>
+                </div>
+
+                <!-- Role Search Filter -->
+                <div class="relative">
+                    <input type="text" 
+                           class="w-full pl-9 pr-7 py-1.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
+                           placeholder="Filter roles..." 
+                           @bind="_roleSearchTerm" 
+                           @bind:event="oninput" />
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    </div>
+                    @if (!string.IsNullOrEmpty(_roleSearchTerm))
+                    {
+                        <button class="absolute inset-y-0 right-0 pr-2 flex items-center text-muted-foreground hover:text-foreground text-xs cursor-pointer" @onclick="() => _roleSearchTerm = string.Empty">×</button>
+                    }
+                </div>
+
+                @if (_isLoadingRoles)
+                {
+                    <div class="py-12 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+                        <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        Loading roles...
+                    </div>
+                }
+                else if (_roles == null || !_roles.Any())
+                {
+                    <div class="py-8 text-center text-xs text-muted-foreground">No roles found.</div>
+                }
+                else
+                {
+                    var filteredRoles = GetFilteredRoles();
+                    if (!filteredRoles.Any())
+                    {
+                        <div class="py-8 text-center text-xs text-muted-foreground">No roles match filter.</div>
+                    }
+                    else
+                    {
+                        <div class="space-y-2 max-h-[580px] overflow-y-auto pr-1">
+                            @foreach (var role in filteredRoles)
+                            {
+                                var isSelected = _selectedRoleId == role.RoleId;
+                                var isAdmin = role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+
+                                <div @onclick="() => SelectRole(role.RoleId)" 
+                                     class="p-3.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between group @(isSelected ? "bg-primary/10 border-primary/40 text-foreground font-semibold shadow-sm" : "bg-background/50 border-border/60 hover:bg-accent/40 text-muted-foreground hover:text-foreground")">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold shrink-0 @(isSelected ? "bg-primary text-primary-foreground" : (isAdmin ? "bg-amber-500/15 text-amber-500" : "bg-muted text-muted-foreground group-hover:bg-accent"))">
+                                            @role.RoleName.Substring(0, Math.Min(2, role.RoleName.Length)).ToUpper()
+                                        </div>
+                                        <div class="truncate">
+                                            <h3 class="text-xs font-medium text-foreground truncate">@role.RoleName</h3>
+                                            <span class="text-[10px] text-muted-foreground font-mono">ID: #@role.RoleId</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        @if (isAdmin)
+                                        {
+                                            <span class="px-2 py-0.5 text-[10px] font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full">
+                                                Super Admin
+                                            </span>
+                                        }
+                                        else if (isSelected)
+                                        {
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-primary shrink-0"><path d="m9 18 6-6-6-6"/></svg>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
             </div>
-        }
+        </div>
+
+        <!-- Right Column: Categorized Permission Matrix (8 cols) -->
+        <div class="lg:col-span-8 space-y-4">
+            @if (_selectedRoleId > 0)
+            {
+                var selectedRole = _roles?.FirstOrDefault(r => r.RoleId == _selectedRoleId);
+                var isAdminRole = selectedRole?.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
+                var hasUnsavedChanges = HasUnsavedChanges();
+
+                <div class="bg-card border border-border rounded-xl p-5 shadow-sm space-y-5">
+                    <!-- Selected Role Header -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
+                        <div>
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <h2 class="text-base font-bold text-foreground">Permissions for @selectedRole?.RoleName</h2>
+                                <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">
+                                    @(_selectedPermissionIds.Count) / @(_allPermissions?.Count ?? 0) Active
+                                </span>
+                                @if (hasUnsavedChanges)
+                                {
+                                    <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/30 animate-pulse">
+                                        Unsaved Changes
+                                    </span>
+                                }
+                            </div>
+                            <p class="text-xs text-muted-foreground mt-0.5">Toggle permissions below to configure system access levels for this role.</p>
+                        </div>
+
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button class="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted rounded-md transition-colors cursor-pointer"
+                                    @onclick="SelectAllPermissions">
+                                Select All
+                            </button>
+                            <button class="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted rounded-md transition-colors cursor-pointer"
+                                    @onclick="DeselectAllPermissions">
+                                Clear All
+                            </button>
+                            @if (hasUnsavedChanges)
+                            {
+                                <button class="px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 rounded-md transition-colors cursor-pointer"
+                                        @onclick="ResetPermissions">
+                                    Reset
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Admin Bypass Notice (US-20) -->
+                    @if (isAdminRole)
+                    {
+                        <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3.5 text-xs text-amber-500 flex items-start gap-2.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0 mt-0.5"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>
+                            <div>
+                                <span class="font-bold">Admin Permission Bypass Active (US-20):</span> Users assigned to the <strong>Admin</strong> role automatically bypass all permission restrictions across the entire system.
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Search Input -->
+                    <div class="relative max-w-xs">
+                        <input type="text" 
+                               class="w-full pl-9 pr-7 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
+                               placeholder="Filter permissions..." 
+                               @bind="_permissionSearchTerm" 
+                               @bind:event="oninput" />
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        </div>
+                        @if (!string.IsNullOrEmpty(_permissionSearchTerm))
+                        {
+                            <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-muted-foreground hover:text-foreground text-xs cursor-pointer" @onclick="() => _permissionSearchTerm = string.Empty">×</button>
+                        }
+                    </div>
+
+                    <!-- Categorized Permission Matrix -->
+                    @if (_isLoadingPermissions)
+                    {
+                        <div class="py-12 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+                            <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            Loading permissions...
+                        </div>
+                    }
+                    else
+                    {
+                        var groupedPermissions = GetGroupedPermissions();
+
+                        @if (!groupedPermissions.Any())
+                        {
+                            <div class="py-8 text-center text-xs text-muted-foreground">No permissions match filter.</div>
+                        }
+                        else
+                        {
+                            <div class="space-y-6 max-h-[600px] overflow-y-auto pr-1">
+                                @foreach (var group in groupedPermissions)
+                                {
+                                    var groupPermIds = group.Permissions.Select(p => p.PermissionId).ToList();
+                                    var activeInGroup = groupPermIds.Count(id => _selectedPermissionIds.Contains(id));
+                                    var isAllGroupSelected = groupPermIds.All(id => _selectedPermissionIds.Contains(id));
+
+                                    <div class="border border-border/70 rounded-xl p-4 bg-background/30 space-y-3">
+                                        <!-- Category Header -->
+                                        <div class="flex items-center justify-between border-b border-border/40 pb-2.5">
+                                            <div class="flex items-center gap-2.5">
+                                                <span class="text-base">@group.Icon</span>
+                                                <div>
+                                                    <h3 class="text-xs font-bold text-foreground">@group.CategoryName</h3>
+                                                    <p class="text-[10px] text-muted-foreground">@group.Description</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                                                    @activeInGroup / @group.Permissions.Count active
+                                                </span>
+                                                <button class="text-[11px] font-medium text-primary hover:underline cursor-pointer"
+                                                        @onclick="() => ToggleGroupPermissions(groupPermIds, !isAllGroupSelected)">
+                                                    @(isAllGroupSelected ? "Deselect Group" : "Select Group")
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Permission Checkboxes -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                            @foreach (var perm in group.Permissions)
+                                            {
+                                                var isChecked = _selectedPermissionIds.Contains(perm.PermissionId);
+                                                <label class="p-3 rounded-lg border transition-all cursor-pointer flex items-center justify-between select-none @(isChecked ? "bg-primary/10 border-primary/40 text-foreground shadow-xs" : "bg-card border-border/50 text-muted-foreground hover:bg-accent/40")">
+                                                    <div class="flex items-center gap-3 min-w-0">
+                                                        <input type="checkbox" 
+                                                               class="w-4 h-4 rounded border-border text-primary focus:ring-primary/20 accent-primary cursor-pointer shrink-0" 
+                                                               checked="@isChecked" 
+                                                               @onchange="(e) => TogglePermission(perm.PermissionId, (bool)(e.Value ?? false))" />
+                                                        <div class="truncate">
+                                                            <div class="text-xs font-semibold text-foreground">@GetHumanizedPermissionName(perm.PermissionName)</div>
+                                                            <div class="text-[10px] font-mono text-muted-foreground/70 truncate">@perm.PermissionName</div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="text-[10px] font-mono text-muted-foreground/50 shrink-0">#@perm.PermissionId</span>
+                                                </label>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+
+                    <!-- Save Action Footer -->
+                    <div class="flex items-center justify-between border-t border-border/60 pt-4 mt-6">
+                        <div class="text-xs text-muted-foreground">
+                            @if (hasUnsavedChanges)
+                            {
+                                <span class="text-amber-500 font-medium flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                                    You have unsaved permission changes.
+                                </span>
+                            }
+                            else
+                            {
+                                <span>All permission changes saved.</span>
+                            }
+                        </div>
+
+                        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-lg text-xs font-semibold transition-all shadow-sm disabled:opacity-50 flex items-center gap-2 cursor-pointer" 
+                                disabled="@(_isSavingPermissions || !hasUnsavedChanges)" 
+                                @onclick="SaveRolePermissions">
+                            @if (_isSavingPermissions)
+                            {
+                                <svg class="animate-spin h-3.5 w-3.5 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                <span>Saving...</span>
+                            }
+                            else
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                <span>Save Permissions</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="bg-card border border-border rounded-xl p-16 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-6 h-6"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+                    </div>
+                    <h3 class="text-sm font-semibold text-foreground">No Role Selected</h3>
+                    <p class="max-w-xs text-muted-foreground">Select a role from the left panel to review, configure, and manage its system permissions.</p>
+                </div>
+            }
+        </div>
     </div>
-</div>
+}
 
 @code {
     private List<RoleDto>? _roles;
     private List<PermissionDto>? _allPermissions;
     private HashSet<int> _selectedPermissionIds = new();
+    private HashSet<int> _initialPermissionIds = new();
     private int _selectedRoleId = 0;
     private bool _isLoadingRoles = true;
     private bool _isLoadingPermissions = false;
@@ -267,14 +452,35 @@
     private bool _showCreateRoleModal = false;
     private bool _isSubmittingRole = false;
     private string _newRoleName = string.Empty;
+    private string _roleSearchTerm = string.Empty;
     private string _permissionSearchTerm = string.Empty;
     private string? _message;
     private bool _isError = false;
 
+    private class PermissionCategoryGroup
+    {
+        public string CategoryKey { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
+        public string Icon { get; set; } = "⚙️";
+        public string Description { get; set; } = string.Empty;
+        public List<PermissionDto> Permissions { get; set; } = new();
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        await LoadRoles();
-        await LoadAllPermissions();
+        AuthState.OnChange += StateHasChanged;
+        await AuthState.InitializeAsync();
+
+        if (AuthState.IsAdmin)
+        {
+            await LoadRoles();
+            await LoadAllPermissions();
+        }
+    }
+
+    public void Dispose()
+    {
+        AuthState.OnChange -= StateHasChanged;
     }
 
     private async Task LoadRoles()
@@ -320,6 +526,7 @@
         _selectedRoleId = roleId;
         _isLoadingPermissions = true;
         _selectedPermissionIds.Clear();
+        _initialPermissionIds.Clear();
 
         try
         {
@@ -329,6 +536,7 @@
                 foreach (var p in res.Data.Permissions)
                 {
                     _selectedPermissionIds.Add(p.PermissionId);
+                    _initialPermissionIds.Add(p.PermissionId);
                 }
             }
         }
@@ -342,12 +550,33 @@
         }
     }
 
+    private bool HasUnsavedChanges()
+    {
+        return !_selectedPermissionIds.SetEquals(_initialPermissionIds);
+    }
+
+    private void ResetPermissions()
+    {
+        _selectedPermissionIds = new HashSet<int>(_initialPermissionIds);
+    }
+
     private void TogglePermission(int permissionId, bool isChecked)
     {
         if (isChecked)
             _selectedPermissionIds.Add(permissionId);
         else
             _selectedPermissionIds.Remove(permissionId);
+    }
+
+    private void ToggleGroupPermissions(List<int> permissionIds, bool select)
+    {
+        foreach (var id in permissionIds)
+        {
+            if (select)
+                _selectedPermissionIds.Add(id);
+            else
+                _selectedPermissionIds.Remove(id);
+        }
     }
 
     private void SelectAllPermissions()
@@ -364,14 +593,87 @@
         _selectedPermissionIds.Clear();
     }
 
-    private List<PermissionDto> GetFilteredPermissions()
+    private List<RoleDto> GetFilteredRoles()
+    {
+        if (_roles == null) return new();
+        if (string.IsNullOrWhiteSpace(_roleSearchTerm)) return _roles;
+
+        return _roles
+            .Where(r => r.RoleName.Contains(_roleSearchTerm, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private List<PermissionCategoryGroup> GetGroupedPermissions()
     {
         if (_allPermissions == null) return new();
-        if (string.IsNullOrWhiteSpace(_permissionSearchTerm)) return _allPermissions;
 
-        return _allPermissions
-            .Where(p => p.PermissionName.Contains(_permissionSearchTerm, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        var filtered = _allPermissions;
+        if (!string.IsNullOrWhiteSpace(_permissionSearchTerm))
+        {
+            filtered = _allPermissions
+                .Where(p => p.PermissionName.Contains(_permissionSearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                            GetHumanizedPermissionName(p.PermissionName).Contains(_permissionSearchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        var groups = new List<PermissionCategoryGroup>();
+
+        var rawGroups = filtered.GroupBy(p => ExtractCategory(p.PermissionName));
+
+        foreach (var g in rawGroups)
+        {
+            var meta = GetCategoryMetadata(g.Key);
+            groups.Add(new PermissionCategoryGroup
+            {
+                CategoryKey = g.Key,
+                CategoryName = meta.Name,
+                Icon = meta.Icon,
+                Description = meta.Description,
+                Permissions = g.OrderBy(p => p.PermissionName).ToList()
+            });
+        }
+
+        return groups.OrderBy(g => g.CategoryName).ToList();
+    }
+
+    private string ExtractCategory(string permName)
+    {
+        var parts = permName.Split('.');
+        if (parts.Length >= 2)
+        {
+            return parts[parts.Length - 2];
+        }
+        return "General";
+    }
+
+    private (string Name, string Icon, string Description) GetCategoryMetadata(string categoryKey)
+    {
+        return categoryKey.ToLowerInvariant() switch
+        {
+            "roles" => ("Roles & Access Control", "🛡️", "Manage user roles and system permission assignments"),
+            "modules" => ("Modules & Courses", "📚", "Course module creation, updates, and teacher assignments"),
+            "semesters" => ("Semesters & Timetable", "🎓", "Academic semesters and term schedule boundaries"),
+            "classsessions" => ("Class Sessions & Attendance", "⏱️", "Daily session generation, status tracking, and attendance logs"),
+            "holidays" => ("Holidays & Calendar", "📅", "Academic holidays and exception date management"),
+            "recurringschedules" => ("Recurring Schedules", "🔄", "Weekly timetable patterns and recurring class slots"),
+            "analytics" => ("Analytics & Reports", "📊", "Attendance statistics, export tools, and module performance"),
+            "googlecalendar" => ("Google Calendar", "🗓️", "Google Calendar synchronization and event mapping"),
+            "search" => ("Global Search", "🔍", "System-wide fast search capabilities"),
+            _ => (categoryKey, "⚙️", "System level permissions")
+        };
+    }
+
+    private string GetHumanizedPermissionName(string permName)
+    {
+        var parts = permName.Split('.');
+        if (parts.Length > 0)
+        {
+            var action = parts[parts.Length - 1];
+            var category = parts.Length >= 2 ? parts[parts.Length - 2] : "";
+
+            return $"{action} {category}".Trim();
+        }
+        return permName;
     }
 
     private async Task SaveRolePermissions()
@@ -387,6 +689,7 @@
 
             if (response.IsSuccessStatusCode && result?.IsSuccess == true)
             {
+                _initialPermissionIds = new HashSet<int>(_selectedPermissionIds);
                 SetMessage("Permissions updated successfully!", false);
             }
             else
@@ -453,3 +756,5 @@
         _isError = error;
     }
 }
+
+

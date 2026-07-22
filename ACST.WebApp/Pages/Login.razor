@@ -1,7 +1,9 @@
 @page "/login"
 @using ACST.WebApp.Models
+@using ACST.WebApp.Services
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject AuthStateService AuthState
 
 <PageTitle>Login - Chronon Tracker</PageTitle>
 
@@ -90,7 +92,7 @@
         <div class="text-center border-t border-border/60 pt-4">
             <p class="text-xs text-muted-foreground">
                 Don't have an account? 
-                <a href="register" class="font-semibold text-primary hover:underline">Register now (US-18)</a>
+                <a href="register" class="font-semibold text-primary hover:underline">Register now</a>
             </p>
         </div>
     </div>
@@ -118,7 +120,8 @@
                 _message = $"Login successful! Welcome {result.Data.FullName} ({result.Data.RoleName}).";
                 _isError = false;
                 
-                await Task.Delay(1000);
+                await AuthState.SetSessionAsync(result.Data);
+                await Task.Delay(800);
                 Navigation.NavigateTo("");
             }
             else
@@ -138,3 +141,4 @@
         }
     }
 }
+
