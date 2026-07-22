@@ -1,32 +1,32 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS public."TblRole" (
-  "RoleID" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "RoleId" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
   "RoleName" text,
   "DeleteFlag" boolean DEFAULT false,
-  CONSTRAINT tblrole_pkey PRIMARY KEY ("RoleID")
+  CONSTRAINT tblrole_pkey PRIMARY KEY ("RoleId")
 );
 
 CREATE TABLE IF NOT EXISTS public."TblPermission" (
-  "PermissionID" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "PermissionId" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
   "PermissionName" text,
   "DeleteFlag" boolean DEFAULT false,
-  CONSTRAINT tblpermission_pkey PRIMARY KEY ("PermissionID")
+  CONSTRAINT tblpermission_pkey PRIMARY KEY ("PermissionId")
 );
 
 CREATE TABLE IF NOT EXISTS public."TblRolePermission" (
-  "RolePermissionID" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
-  "RoleID" integer,
-  "PermissionID" integer,
+  "RolePermissionId" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "RoleId" integer,
+  "PermissionId" integer,
   "DeleteFlag" boolean DEFAULT false,
-  CONSTRAINT tblrolepermission_pkey PRIMARY KEY ("RolePermissionID"),
-  CONSTRAINT tblrolepermission_role_id_fkey FOREIGN KEY ("RoleID") REFERENCES public."TblRole"("RoleID"),
-  CONSTRAINT tblrolepermission_permission_id_fkey FOREIGN KEY ("PermissionID") REFERENCES public."TblPermission"("PermissionID")
+  CONSTRAINT tblrolepermission_pkey PRIMARY KEY ("RolePermissionId"),
+  CONSTRAINT tblrolepermission_role_id_fkey FOREIGN KEY ("RoleId") REFERENCES public."TblRole"("RoleId"),
+  CONSTRAINT tblrolepermission_permission_id_fkey FOREIGN KEY ("PermissionId") REFERENCES public."TblPermission"("PermissionId")
 );
 
 CREATE TABLE IF NOT EXISTS public."TblUser" (
-  "UserID" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
-  "RoleID" integer,
+  "UserId" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "RoleId" integer,
   "FullName" text,
   "Email" text,
   "MobileNum" text,
@@ -34,21 +34,21 @@ CREATE TABLE IF NOT EXISTS public."TblUser" (
   "CreatedAt" timestamp with time zone DEFAULT now(),
   "UpdatedAt" timestamp with time zone DEFAULT now(),
   "DeleteFlag" boolean DEFAULT false,
-  CONSTRAINT tbluser_pkey PRIMARY KEY ("UserID"),
-  CONSTRAINT tbluser_role_id_fkey FOREIGN KEY ("RoleID") REFERENCES public."TblRole"("RoleID")
+  CONSTRAINT tbluser_pkey PRIMARY KEY ("UserId"),
+  CONSTRAINT tbluser_role_id_fkey FOREIGN KEY ("RoleId") REFERENCES public."TblRole"("RoleId")
 );
 
 CREATE TABLE IF NOT EXISTS public."TblUserToken" (
-  "UserTokenID" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
-  "UserID" integer,
+  "UserTokenId" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "UserId" integer,
   "RefreshToken" text NOT NULL,
   "IsRevoked" boolean DEFAULT false,
   "ExpiresAt" timestamp with time zone,
   "CreatedAt" timestamp with time zone DEFAULT now(),
   "UpdatedAt" timestamp with time zone DEFAULT now(),
   "DeleteFlag" boolean DEFAULT false,
-  CONSTRAINT tblusertoken_pkey PRIMARY KEY ("UserTokenID"),
-  CONSTRAINT tblusertoken_user_id_fkey FOREIGN KEY ("UserID") REFERENCES public."TblUser"("UserID")
+  CONSTRAINT tblusertoken_pkey PRIMARY KEY ("UserTokenId"),
+  CONSTRAINT tblusertoken_user_id_fkey FOREIGN KEY ("UserId") REFERENCES public."TblUser"("UserId")
 );
 
 CREATE TABLE IF NOT EXISTS public."TblHoliday" (
@@ -64,37 +64,37 @@ CREATE TABLE IF NOT EXISTS public."TblHoliday" (
 CREATE INDEX IF NOT EXISTS idx_tblholiday_date ON public."TblHoliday" ("holiday_date");
 
 CREATE TABLE IF NOT EXISTS public."TblSemester" (
-  "ID" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "Id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   "Name" text NOT NULL,
   "StartDate" date NOT NULL,
   "EndDate" date NOT NULL,
   "IsDeleted" boolean NOT NULL DEFAULT false,
   "CreatedAt" timestamp with time zone NOT NULL DEFAULT now(),
   "UpdatedAt" timestamp with time zone NOT NULL DEFAULT now(),
-  "UserID" integer,
-  CONSTRAINT tblsemester_pkey PRIMARY KEY ("ID"),
-  CONSTRAINT "FK_TblSemester_User" FOREIGN KEY ("UserID") REFERENCES public."TblUser"("UserID") ON DELETE CASCADE
+  "UserId" integer,
+  CONSTRAINT tblsemester_pkey PRIMARY KEY ("Id"),
+  CONSTRAINT "FK_TblSemester_User" FOREIGN KEY ("UserId") REFERENCES public."TblUser"("UserId") ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS public."TblModule" (
-  "ID" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "Id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   "Name" text NOT NULL,
   "ModuleCode" text NOT NULL,
   "TeacherName" text,
   "IsDeleted" boolean NOT NULL DEFAULT false,
   "CreatedAt" timestamp with time zone NOT NULL DEFAULT now(),
   "UpdatedAt" timestamp with time zone NOT NULL DEFAULT now(),
-  "SemesterID" bigint,
-  "UserID" integer,
-  CONSTRAINT tblmodule_pkey PRIMARY KEY ("ID"),
-  CONSTRAINT tblmodule_semester_id_fkey FOREIGN KEY ("SemesterID") REFERENCES public."TblSemester"("ID"),
-  CONSTRAINT "FK_TblModule_User" FOREIGN KEY ("UserID") REFERENCES public."TblUser"("UserID") ON DELETE CASCADE
+  "SemesterId" bigint,
+  "UserId" integer,
+  CONSTRAINT tblmodule_pkey PRIMARY KEY ("Id"),
+  CONSTRAINT tblmodule_semester_id_fkey FOREIGN KEY ("SemesterId") REFERENCES public."TblSemester"("Id"),
+  CONSTRAINT "FK_TblModule_User" FOREIGN KEY ("UserId") REFERENCES public."TblUser"("UserId") ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS public."TblRecurringSchedule" (
-  "ID" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  "ModuleID" bigint NOT NULL,
-  "SemesterID" bigint NOT NULL,
+  "Id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "ModuleId" bigint NOT NULL,
+  "SemesterId" bigint NOT NULL,
   "DayOfWeek" smallint NOT NULL CHECK ("DayOfWeek" >= 0 AND "DayOfWeek" <= 6),
   "StartTime" time without time zone NOT NULL,
   "EndTime" time without time zone NOT NULL,
@@ -102,38 +102,38 @@ CREATE TABLE IF NOT EXISTS public."TblRecurringSchedule" (
   "IsDeleted" boolean NOT NULL DEFAULT false,
   "CreatedAt" timestamp with time zone NOT NULL DEFAULT now(),
   "UpdatedAt" timestamp with time zone NOT NULL DEFAULT now(),
-  "UserID" integer,
-  CONSTRAINT tblrecurringschedule_pkey PRIMARY KEY ("ID"),
-  CONSTRAINT recurring_schedules_module_id_fkey FOREIGN KEY ("ModuleID") REFERENCES public."TblModule"("ID"),
-  CONSTRAINT recurring_schedules_semester_id_fkey FOREIGN KEY ("SemesterID") REFERENCES public."TblSemester"("ID"),
-  CONSTRAINT "FK_TblRecurringSchedule_User" FOREIGN KEY ("UserID") REFERENCES public."TblUser"("UserID") ON DELETE CASCADE
+  "UserId" integer,
+  CONSTRAINT tblrecurringschedule_pkey PRIMARY KEY ("Id"),
+  CONSTRAINT recurring_schedules_module_id_fkey FOREIGN KEY ("ModuleId") REFERENCES public."TblModule"("Id"),
+  CONSTRAINT recurring_schedules_semester_id_fkey FOREIGN KEY ("SemesterId") REFERENCES public."TblSemester"("Id"),
+  CONSTRAINT "FK_TblRecurringSchedule_User" FOREIGN KEY ("UserId") REFERENCES public."TblUser"("UserId") ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS public."TblSession" (
-  "ID" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  "RecurringScheduleID" bigint NOT NULL,
-  "ModuleID" bigint NOT NULL,
-  "SemesterID" bigint NOT NULL,
+  "Id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "RecurringScheduleId" bigint NOT NULL,
+  "ModuleId" bigint NOT NULL,
+  "SemesterId" bigint NOT NULL,
   "SessionDate" date NOT NULL,
   "StartDatetime" timestamp with time zone NOT NULL,
   "EndDatetime" timestamp with time zone NOT NULL,
   "Status" text NOT NULL DEFAULT 'Not Marked'::text CHECK ("Status" = ANY (ARRAY['Not Marked'::text, 'Present'::text, 'Absent'::text, 'Cancelled'::text, 'Holiday'::text])),
   "MagicLinkToken" uuid NOT NULL DEFAULT uuid_generate_v4(),
-  "GoogleEventID" text,
+  "GoogleEventId" text,
   "IsDeleted" boolean NOT NULL DEFAULT false,
   "CreatedAt" timestamp with time zone NOT NULL DEFAULT now(),
   "UpdatedAt" timestamp with time zone NOT NULL DEFAULT now(),
-  "UserID" integer,
-  CONSTRAINT tblsession_pkey PRIMARY KEY ("ID"),
+  "UserId" integer,
+  CONSTRAINT tblsession_pkey PRIMARY KEY ("Id"),
   CONSTRAINT "TblSession_MagicLinkToken_key" UNIQUE ("MagicLinkToken"),
-  CONSTRAINT class_sessions_recurring_schedule_id_fkey FOREIGN KEY ("RecurringScheduleID") REFERENCES public."TblRecurringSchedule"("ID"),
-  CONSTRAINT class_sessions_module_id_fkey FOREIGN KEY ("ModuleID") REFERENCES public."TblModule"("ID"),
-  CONSTRAINT class_sessions_semester_id_fkey FOREIGN KEY ("SemesterID") REFERENCES public."TblSemester"("ID"),
-  CONSTRAINT "FK_TblSession_User" FOREIGN KEY ("UserID") REFERENCES public."TblUser"("UserID") ON DELETE CASCADE
+  CONSTRAINT class_sessions_recurring_schedule_id_fkey FOREIGN KEY ("RecurringScheduleId") REFERENCES public."TblRecurringSchedule"("Id"),
+  CONSTRAINT class_sessions_module_id_fkey FOREIGN KEY ("ModuleId") REFERENCES public."TblModule"("Id"),
+  CONSTRAINT class_sessions_semester_id_fkey FOREIGN KEY ("SemesterId") REFERENCES public."TblSemester"("Id"),
+  CONSTRAINT "FK_TblSession_User" FOREIGN KEY ("UserId") REFERENCES public."TblUser"("UserId") ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS public."TblSemesterDashboardSummary" (
-  "SemesterID" bigint NOT NULL,
+  "SemesterId" bigint NOT NULL,
   "SemesterName" text NOT NULL,
   "StartDate" date NOT NULL,
   "EndDate" date NOT NULL,
@@ -151,23 +151,23 @@ CREATE TABLE IF NOT EXISTS public."TblSemesterDashboardSummary" (
   "TodayAttendanceRate" double precision,
   "WarningsJson" text NOT NULL DEFAULT '[]'::text,
   "UpdatedAt" timestamp with time zone NOT NULL DEFAULT now(),
-  "UserID" integer,
-  CONSTRAINT "TblSemesterDashboardSummary_pkey" PRIMARY KEY ("SemesterID"),
-  CONSTRAINT "TblSemesterDashboardSummary_semester_id_fkey" FOREIGN KEY ("SemesterID") REFERENCES public."TblSemester"("ID") ON DELETE CASCADE,
-  CONSTRAINT "FK_TblSemesterDashboardSummary_User" FOREIGN KEY ("UserID") REFERENCES public."TblUser"("UserID") ON DELETE CASCADE
+  "UserId" integer,
+  CONSTRAINT "TblSemesterDashboardSummary_pkey" PRIMARY KEY ("SemesterId"),
+  CONSTRAINT "TblSemesterDashboardSummary_semester_id_fkey" FOREIGN KEY ("SemesterId") REFERENCES public."TblSemester"("Id") ON DELETE CASCADE,
+  CONSTRAINT "FK_TblSemesterDashboardSummary_User" FOREIGN KEY ("UserId") REFERENCES public."TblUser"("UserId") ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS public."TblNotification" (
-  "NotificationID" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  "UserID" integer NOT NULL,
-  "SessionID" bigint,
+  "NotificationId" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "UserId" integer NOT NULL,
+  "SessionId" bigint,
   "Title" text NOT NULL,
   "Message" text NOT NULL,
   "NotificationType" text NOT NULL,
   "IsRead" boolean NOT NULL DEFAULT false,
   "CreatedAt" timestamp with time zone NOT NULL DEFAULT now(),
   "TriggeredAt" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT tblnotification_pkey PRIMARY KEY ("NotificationID"),
-  CONSTRAINT "FK_TblNotification_User" FOREIGN KEY ("UserID") REFERENCES public."TblUser" ON DELETE CASCADE,
-  CONSTRAINT "FK_TblNotification_Session" FOREIGN KEY ("SessionID") REFERENCES public."TblSession" ON DELETE CASCADE
+  CONSTRAINT tblnotification_pkey PRIMARY KEY ("NotificationId"),
+  CONSTRAINT "FK_TblNotification_User" FOREIGN KEY ("UserId") REFERENCES public."TblUser" ON DELETE CASCADE,
+  CONSTRAINT "FK_TblNotification_Session" FOREIGN KEY ("SessionId") REFERENCES public."TblSession" ON DELETE CASCADE
 );

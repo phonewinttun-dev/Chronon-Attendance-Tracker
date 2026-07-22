@@ -128,7 +128,7 @@ public partial class AppDbContext : DbContext
         {
             entity.HasKey(e => e.RolePermissionId).HasName("tblrolepermission_pkey");
 
-            entity.ToTable("TblRolepermission");
+            entity.ToTable("TblRolePermission");
 
             entity.Property(e => e.RolePermissionId).UseIdentityAlwaysColumn();
             entity.Property(e => e.DeleteFlag).HasDefaultValue(false);
@@ -164,7 +164,7 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("TblSemesterDashboardSummary");
 
-            entity.Property(e => e.SemesterId).ValueGeneratedNever().HasColumnName("SemesterId");
+            entity.Property(e => e.SemesterId).ValueGeneratedNever();
             entity.Property(e => e.WarningsJson).HasDefaultValueSql("'[]'::text");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
 
@@ -189,9 +189,9 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(e => e.MagicLinkToken, "TblSession_MagicLinkToken_key").IsUnique();
 
             entity.Property(e => e.Id).UseIdentityAlwaysColumn();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
-            entity.Property(e => e.MagicLinkToken).HasDefaultValueSql("uuid_generate_v4()");
             entity.Property(e => e.Status).HasDefaultValueSql("'Not Marked'::text");
+            entity.Property(e => e.MagicLinkToken).HasDefaultValueSql("uuid_generate_v4()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
 
             entity.HasOne(d => d.Module).WithMany(p => p.TblSessions)
@@ -232,13 +232,13 @@ public partial class AppDbContext : DbContext
         {
             entity.HasKey(e => e.UserTokenId).HasName("tblusertoken_pkey");
 
-            entity.ToTable("TblUsertoken");
+            entity.ToTable("TblUserToken");
 
             entity.Property(e => e.UserTokenId).UseIdentityAlwaysColumn();
+            entity.Property(e => e.IsRevoked).HasDefaultValue(false);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
             entity.Property(e => e.DeleteFlag).HasDefaultValue(false);
-            entity.Property(e => e.IsRevoked).HasDefaultValue(false);
 
             entity.HasOne(d => d.User).WithMany(p => p.TblUsertokens)
                 .HasForeignKey(d => d.UserId)
@@ -251,9 +251,7 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("TblNotification");
 
-            entity.Property(e => e.NotificationId).UseIdentityAlwaysColumn().HasColumnName("NotificationID");
-            entity.Property(e => e.UserId).HasColumnName("UserID");
-            entity.Property(e => e.SessionId).HasColumnName("SessionID");
+            entity.Property(e => e.NotificationId).UseIdentityAlwaysColumn();
             entity.Property(e => e.IsRead).HasDefaultValue(false);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
             entity.Property(e => e.TriggeredAt).HasDefaultValueSql("now()");
