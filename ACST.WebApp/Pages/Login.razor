@@ -1,0 +1,140 @@
+@page "/login"
+@using ACST.WebApp.Models
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Login - Chronon Tracker</PageTitle>
+
+<div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-card border border-border/80 rounded-2xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+        
+        <!-- Header -->
+        <div class="text-center space-y-2">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary mb-2 border border-primary/20">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h2 class="text-2xl font-bold tracking-tight text-foreground font-sans">Welcome Back</h2>
+            <p class="text-xs text-muted-foreground">Sign in to your Chronon Attendance Tracker account</p>
+        </div>
+
+        <!-- Alert Message -->
+        @if (!string.IsNullOrEmpty(_message))
+        {
+            <div class="p-3.5 rounded-lg border text-xs font-medium flex items-center gap-2.5 @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-primary/10 border-primary/30 text-primary")">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>@_message</span>
+            </div>
+        }
+
+        <!-- Form -->
+        <EditForm Model="@_loginModel" OnValidSubmit="HandleLogin" class="mt-8 space-y-5">
+            <DataAnnotationsValidator />
+
+            <div>
+                <label class="block text-xs font-semibold text-foreground mb-1.5">Email Address</label>
+                <div class="relative">
+                    <input type="email" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
+                           placeholder="you@example.com" 
+                           @bind="_loginModel.Email" 
+                           required />
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-foreground mb-1.5">Password</label>
+                <div class="relative">
+                    <input type="@(_showPassword ? "text" : "password")" 
+                           class="w-full pl-10 pr-10 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
+                           placeholder="••••••••" 
+                           @bind="_loginModel.Password" 
+                           required />
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <button type="button" 
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
+                            @onclick="() => _showPassword = !_showPassword">
+                        @if (_showPassword)
+                        {
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        }
+                        else
+                        {
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                        }
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" 
+                    disabled="@_isSubmitting" 
+                    class="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2.5 rounded-lg text-xs font-bold transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2">
+                @if (_isSubmitting)
+                {
+                    <svg class="animate-spin h-4 w-4 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span>Signing In...</span>
+                }
+                else
+                {
+                    <span>Sign In</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                }
+            </button>
+        </EditForm>
+
+        <!-- Footer Link -->
+        <div class="text-center border-t border-border/60 pt-4">
+            <p class="text-xs text-muted-foreground">
+                Don't have an account? 
+                <a href="register" class="font-semibold text-primary hover:underline">Register now (US-18)</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginRequestDto _loginModel = new();
+    private bool _isSubmitting = false;
+    private bool _showPassword = false;
+    private string? _message;
+    private bool _isError = false;
+
+    private async Task HandleLogin()
+    {
+        _isSubmitting = true;
+        _message = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/Auth/login", _loginModel);
+            var result = await response.Content.ReadFromJsonAsync<ApiResult<LoginResponseDto>>();
+
+            if (response.IsSuccessStatusCode && result?.IsSuccess == true && result.Data != null)
+            {
+                _message = $"Login successful! Welcome {result.Data.FullName} ({result.Data.RoleName}).";
+                _isError = false;
+                
+                await Task.Delay(1000);
+                Navigation.NavigateTo("");
+            }
+            else
+            {
+                _message = result?.Message ?? "Invalid email or password.";
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = $"Error: {ex.Message}";
+            _isError = true;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

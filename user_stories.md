@@ -182,6 +182,7 @@
 - I can receive notifications for upcoming classes.
 - The notifications are displayed in the UI.
 - The notifications are displayed in the correct time.
+- The reminder is displayed in the UI.
 
 **US-22:** As an user, I want to receive notifications which remind me to fill up attendance.
 **Acceptance Criteria:**

@@ -3,8 +3,11 @@ using ACST.Domain.Features.Analytics;
 using ACST.Domain.Features.Notifications;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
+using System.Text;
 
 try
 {
@@ -29,9 +32,41 @@ try
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
-        .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(connectionString)));
+        .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(connectionString), new PostgreSqlStorageOptions
+        {
+            UseNativeDatabaseTransactions = true,
+            DistributedLockTimeout = TimeSpan.FromSeconds(30)
+        }));
 
     builder.Services.AddHangfireServer();
+
+    // Configure JWT Authentication & Authorization
+    var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+    var secretKey = jwtSettings["SecretKey"];
+
+    if (!string.IsNullOrEmpty(secretKey))
+    {
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings["Issuer"],
+                ValidAudience = jwtSettings["Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+            };
+        });
+    }
+
+    builder.Services.AddAuthorization();
 
     // Add CORS policy for Blazor WebApp
     builder.Services.AddCors(options =>
@@ -51,12 +86,15 @@ try
     var app = builder.Build();
 
     // Configure the HTTP request pipeline.
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-
     app.UseCors("AllowAll");
 
     app.UseHttpsRedirection();
+
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     app.UseHangfireDashboard();
 
@@ -88,8 +126,6 @@ try
             service => service.PurgeOldNotificationsAsync(),
             "0 2 * * *");
     }
-
-    app.UseAuthorization();
 
     app.MapControllers();
 

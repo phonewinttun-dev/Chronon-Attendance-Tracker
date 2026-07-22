@@ -26,6 +26,7 @@ namespace ACST.Domain.Features
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Feature Services
+            builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IRolePermissionService, RolePermissionService>();
             builder.Services.AddScoped<IModuleService, ModuleService>();

@@ -1,0 +1,155 @@
+@page "/users"
+@using ACST.WebApp.Models
+@inject HttpClient Http
+
+<PageTitle>User Accounts & Sessions</PageTitle>
+
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <div class="flex items-center gap-2 mb-1">
+            <span class="px-2.5 py-0.5 text-[11px] font-semibold tracking-wider uppercase rounded-full bg-primary/10 text-primary border border-primary/20">
+                User Management
+            </span>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-foreground font-sans">User Accounts & Sessions</h1>
+        <p class="text-xs text-muted-foreground mt-1">Manage registered system accounts, view user role assignments, and check active sessions.</p>
+    </div>
+    <div class="flex items-center gap-3">
+        <a href="register" class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg text-xs font-semibold transition-all shadow-sm flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            Register New User (US-18)
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div class="relative w-full md:max-w-xs">
+        <input type="text" 
+               class="w-full pl-9 pr-8 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
+               placeholder="Search name, email, or role..." 
+               @bind="_searchTerm" 
+               @bind:event="oninput" />
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+        @if (!string.IsNullOrEmpty(_searchTerm))
+        {
+            <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-muted-foreground hover:text-foreground text-sm" @onclick="() => _searchTerm = string.Empty">×</button>
+        }
+    </div>
+</div>
+
+<!-- Users Table Card -->
+<div class="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+    @if (_isLoading)
+    {
+        <div class="py-16 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+            <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            Loading user accounts...
+        </div>
+    }
+    else
+    {
+        var filteredUsers = GetFilteredUsers();
+
+        @if (!filteredUsers.Any())
+        {
+            <div class="py-12 text-center text-xs text-muted-foreground">No user accounts found.</div>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-muted/40 border-b border-border text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">
+                            <th class="py-3 px-4">User ID</th>
+                            <th class="py-3 px-4">Full Name</th>
+                            <th class="py-3 px-4">Email Address</th>
+                            <th class="py-3 px-4">Mobile</th>
+                            <th class="py-3 px-4">Assigned Role</th>
+                            <th class="py-3 px-4">Created Date</th>
+                            <th class="py-3 px-4">Session Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border/40 font-mono">
+                        @foreach (var user in filteredUsers)
+                        {
+                            <tr class="hover:bg-accent/30 transition-colors">
+                                <td class="py-3.5 px-4 font-bold text-foreground">#@user.UserId</td>
+                                <td class="py-3.5 px-4 font-sans font-medium text-foreground">@user.FullName</td>
+                                <td class="py-3.5 px-4 text-muted-foreground">@user.Email</td>
+                                <td class="py-3.5 px-4 text-muted-foreground">@(user.MobileNum ?? "—")</td>
+                                <td class="py-3.5 px-4">
+                                    @if (user.RoleName?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true)
+                                    {
+                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold font-sans bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full">
+                                            Admin
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold font-sans bg-primary/10 text-primary border border-primary/20 rounded-full">
+                                            @(user.RoleName ?? "No Role")
+                                        </span>
+                                    }
+                                </td>
+                                <td class="py-3.5 px-4 text-muted-foreground">
+                                    @(user.CreatedAt.HasValue ? user.CreatedAt.Value.ToLocalTime().ToString("MMM dd, yyyy") : "—")
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-sans font-medium bg-emerald-500/10 text-emerald-500 rounded-full">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        Active (Silent Refresh)
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<UserAccountDto>? _users;
+    private bool _isLoading = true;
+    private string _searchTerm = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        _isLoading = true;
+        try
+        {
+            var res = await Http.GetFromJsonAsync<ApiResult<List<UserAccountDto>>>("api/Auth/users");
+            if (res?.IsSuccess == true && res.Data != null)
+            {
+                _users = res.Data;
+            }
+        }
+        catch { }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private List<UserAccountDto> GetFilteredUsers()
+    {
+        if (_users == null) return new();
+        if (string.IsNullOrWhiteSpace(_searchTerm)) return _users;
+
+        return _users.Where(u => 
+            (u.FullName?.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) == true) ||
+            (u.Email?.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) == true) ||
+            (u.RoleName?.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) == true)
+        ).ToList();
+    }
+}

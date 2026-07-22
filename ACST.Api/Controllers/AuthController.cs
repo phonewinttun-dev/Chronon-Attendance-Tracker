@@ -1,4 +1,4 @@
-﻿using ACST.Domain.DTOs.Auth;
+using ACST.Domain.DTOs.Auth;
 using ACST.Domain.Features.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +36,14 @@ namespace ACST.Api.Controllers
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             var result = await _authService.RefreshTokenAsync(request);
+            if (result.IsFailure) return BadRequest(result);
+            return Ok(result);
+        }
+
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            var result = await _authService.GetAllUsersAsync();
             if (result.IsFailure) return BadRequest(result);
             return Ok(result);
         }
