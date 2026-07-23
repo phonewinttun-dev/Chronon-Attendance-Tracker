@@ -1,10 +1,10 @@
-using System;
-using System.Threading.Tasks;
+using ACST.Api.Middleware;
 using ACST.Domain.DTOs.ClassSession;
+using ACST.Domain.Features.ClassSessions;
 using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ACST.Domain.Features.ClassSessions;
+namespace ACST.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -18,6 +18,7 @@ public class ClassSessionsController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission(Permissions.ClassSessions.View)]
     public async Task<IActionResult> Get([FromQuery] GetClassSessionsRequest request)
     {
         var result = await _sessionService.GetSessionsAsync(request);
@@ -25,6 +26,7 @@ public class ClassSessionsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [HasPermission(Permissions.ClassSessions.View)]
     public async Task<IActionResult> GetById(long id)
     {
         var result = await _sessionService.GetSessionByIdAsync(id);
@@ -32,6 +34,7 @@ public class ClassSessionsController : ControllerBase
     }
 
     [HttpPost("generate")]
+    [HasPermission(Permissions.ClassSessions.Manage)]
     public async Task<IActionResult> Generate([FromBody] GenerateSessionsRequest request)
     {
         if (!ModelState.IsValid) return BadRequest(Result.Failure("Invalid request parameters."));
@@ -41,6 +44,7 @@ public class ClassSessionsController : ControllerBase
     }
 
     [HttpPatch("{id}/status")]
+    [HasPermission(Permissions.ClassSessions.Manage)]
     public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateSessionStatusRequest request)
     {
         if (!ModelState.IsValid) return BadRequest(Result.Failure("Invalid request parameters."));
@@ -50,6 +54,7 @@ public class ClassSessionsController : ControllerBase
     }
 
     [HttpPatch("bulk-status")]
+    [HasPermission(Permissions.ClassSessions.Manage)]
     public async Task<IActionResult> BulkUpdateStatus([FromBody] BulkUpdateSessionStatusRequest request)
     {
         if (!ModelState.IsValid) return BadRequest(Result.Failure("Invalid request parameters."));
@@ -59,6 +64,7 @@ public class ClassSessionsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [HasPermission(Permissions.ClassSessions.Manage)]
     public async Task<IActionResult> Update(long id, [FromBody] UpdateClassSessionRequest request)
     {
         if (!ModelState.IsValid) return BadRequest(Result.Failure("Invalid request parameters."));
@@ -68,25 +74,14 @@ public class ClassSessionsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [HasPermission(Permissions.ClassSessions.Delete)]
     public async Task<IActionResult> Delete(long id)
     {
         var result = await _sessionService.DeleteSessionAsync(id);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
-}
 
-// Separate controller for public Magic Link
-[Route("api/attendance")]
-[ApiController]
-public class AttendanceController : ControllerBase
-{
-    private readonly IClassSessionService _sessionService;
-
-    public AttendanceController(IClassSessionService sessionService)
-    {
-        _sessionService = sessionService;
-    }
-
+    // Public Magic Link Endpoint
     [HttpGet("magic-link/{token}")]
     public async Task<IActionResult> MagicLink(Guid token)
     {
@@ -123,16 +118,12 @@ public class AttendanceController : ControllerBase
         return Content(html, "text/html");
     }
 
-    [HttpPost]
+    // Attendance Update Endpoint
+    [HttpPost("attendance")]
+    [HasPermission(Permissions.ClassSessions.Manage)]
     public async Task<IActionResult> MarkAttendance([FromBody] DashboardAttendanceRequest request)
     {
         var result = await _sessionService.UpdateSessionStatusAsync(request.SessionId, new UpdateSessionStatusRequest { Status = request.Status });
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
-}
-
-public class DashboardAttendanceRequest
-{
-    public long SessionId { get; set; }
-    public string Status { get; set; } = string.Empty;
 }

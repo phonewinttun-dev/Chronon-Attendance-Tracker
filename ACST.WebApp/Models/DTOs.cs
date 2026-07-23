@@ -290,3 +290,91 @@ public class ImportGoogleHolidaysRequest
     public DateOnly EndDate { get; set; }
 }
 
+public class NotificationDto
+{
+    public long NotificationId { get; set; }
+    public int UserId { get; set; }
+    public long? SessionId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string NotificationType { get; set; } = string.Empty;
+    public bool IsRead { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime TriggeredAt { get; set; }
+    public string? ModuleName { get; set; }
+    public DateTime? SessionStartDatetime { get; set; }
+    public DateTime? SessionEndDatetime { get; set; }
+}
+
+public class NotificationCountDto
+{
+    public int UnreadCount { get; set; }
+}
+
+// Role & Permission Management DTOs
+public class RoleDto
+{
+    public int RoleId { get; set; }
+    public string RoleName { get; set; } = string.Empty;
+}
+
+public class PermissionDto
+{
+    public int PermissionId { get; set; }
+    public string PermissionName { get; set; } = string.Empty;
+}
+
+public class RolePermissionsDto
+{
+    public int RoleId { get; set; }
+    public string RoleName { get; set; } = string.Empty;
+    public List<PermissionDto> Permissions { get; set; } = new();
+}
+
+public class SetRolePermissionsRequestDto
+{
+    public List<int> PermissionIds { get; set; } = new();
+}
+
+public class CreateRoleRequestDto
+{
+    public string RoleName { get; set; } = string.Empty;
+}
+
+// Authentication & Authorization DTOs
+public class RegisterRequestDto
+{
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public string? MobileNum { get; set; }
+    public int RoleId { get; set; }
+}
+
+public class LoginRequestDto
+{
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+}
+
+public class LoginResponseDto
+{
+    public string AccessToken { get; set; } = string.Empty;
+    public string RefreshToken { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string RoleName { get; set; } = string.Empty;
+    public List<string> Permissions { get; set; } = new();
+}
+
+public class UserAccountDto
+{
+    public int UserId { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? MobileNum { get; set; }
+    public int? RoleId { get; set; }
+    public string? RoleName { get; set; }
+    public DateTime? CreatedAt { get; set; }
+}
+

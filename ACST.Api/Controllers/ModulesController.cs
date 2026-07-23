@@ -1,9 +1,10 @@
-using System.Threading.Tasks;
+using ACST.Api.Middleware;
 using ACST.Domain.DTOs.Module;
+using ACST.Domain.Features.Modules;
 using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ACST.Domain.Features.Modules;
+namespace ACST.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -17,6 +18,7 @@ public class ModulesController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission(Permissions.Modules.View)]
     public async Task<IActionResult> GetAll([FromQuery] PaginationRequest request, long? semesterId = null)
     {
         var result = await _moduleService.GetAllModulesAsync(request, semesterId);
@@ -24,6 +26,7 @@ public class ModulesController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [HasPermission(Permissions.Modules.View)]
     public async Task<IActionResult> GetById(long id)
     {
         var result = await _moduleService.GetModuleByIdAsync(id);
@@ -31,6 +34,7 @@ public class ModulesController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission(Permissions.Modules.Create)]
     public async Task<IActionResult> Create([FromBody] CreateModuleRequest request)
     {
         if (!ModelState.IsValid)
@@ -41,6 +45,7 @@ public class ModulesController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [HasPermission(Permissions.Modules.Update)]
     public async Task<IActionResult> Update(long id, [FromBody] UpdateModuleRequest request)
     {
         if (!ModelState.IsValid)
@@ -51,6 +56,7 @@ public class ModulesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [HasPermission(Permissions.Modules.Delete)]
     public async Task<IActionResult> Delete(long id)
     {
         var result = await _moduleService.DeleteModuleAsync(id);

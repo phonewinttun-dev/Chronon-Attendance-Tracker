@@ -40,14 +40,15 @@ Every business module (e.g., {{EXAMPLE_FEATURE_1}}, {{EXAMPLE_FEATURE_2}}) has d
 
 For any feature (e.g., `Features/{{EXAMPLE_FEATURE_1}}`), the code is organized across:
 
-1. **`{{PROJECT_NAME}}.Domain/Features/[FeatureName]/`**
+1. **`ACST.Api/Controllers/`**
    - **`[FeatureName]sController.cs`**: The API Controller exposing the REST endpoints. It receives requests, delegates processing to the service, and maps responses using the Result Pattern.
+2. **`ACST.Domain/Features/[FeatureName]/`**
    - **`[FeatureName]Service.cs`** (and optional `I[FeatureName]Service.cs`): The business service class containing the feature logic (CRUD, validations, logic operations).
-2. **`{{PROJECT_NAME}}.Domain/DTOs/[FeatureName]/`**
+3. **`ACST.Domain/DTOs/[FeatureName]/`**
    - **`[FeatureName]DTO.cs`**: Request and Response data transfer objects (DTOs) for the feature endpoints.
 
 > [!IMPORTANT]
-> **Controllers live in `{{PROJECT_NAME}}.Domain`**, not in `{{PROJECT_NAME}}.Api`. The API project loads them dynamically using ASP.NET Core Application Parts scanned from the domain assembly.
+> **Controllers live in `ACST.Api/Controllers/`**, exposing RESTful API endpoints and delegating business logic to services in `ACST.Domain`.
 
 ### **Current Features Registry**
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ACST.Database.ApplicationDbContextModels.Models;
@@ -25,9 +25,13 @@ public partial class TblRecurringSchedule
 
     public DateTime UpdatedAt { get; set; }
 
+    public int? UserId { get; set; }
+
     public virtual TblModule Module { get; set; } = null!;
 
     public virtual TblSemester Semester { get; set; } = null!;
+
+    public virtual TblUser? User { get; set; }
 
     public virtual ICollection<TblSession> TblSessions { get; set; } = new List<TblSession>();
 }

@@ -1,9 +1,10 @@
-using System.Threading.Tasks;
+using ACST.Api.Middleware;
 using ACST.Domain.DTOs.Holiday;
+using ACST.Domain.Features.Holidays;
 using ACST.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ACST.Domain.Features.Holidays;
+namespace ACST.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -17,6 +18,7 @@ public class HolidaysController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission(Permissions.Holidays.View)]
     public async Task<IActionResult> GetAll([FromQuery] int? pageNumber, [FromQuery] int? pageSize)
     {
         var result = await _holidayService.GetAllHolidaysAsync(pageNumber, pageSize);
@@ -24,6 +26,7 @@ public class HolidaysController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission(Permissions.Holidays.Manage)]
     public async Task<IActionResult> Create([FromBody] CreateHolidayRequest request)
     {
         if (!ModelState.IsValid)
@@ -33,9 +36,8 @@ public class HolidaysController : ControllerBase
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
-
-
     [HttpPost("import-google")]
+    [HasPermission(Permissions.Holidays.Manage)]
     public async Task<IActionResult> ImportGoogleHolidays([FromBody] ImportGoogleHolidaysRequest request)
     {
         if (!ModelState.IsValid)
@@ -46,6 +48,7 @@ public class HolidaysController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [HasPermission(Permissions.Holidays.Manage)]
     public async Task<IActionResult> Delete(long id)
     {
         var result = await _holidayService.DeleteHolidayAsync(id);
