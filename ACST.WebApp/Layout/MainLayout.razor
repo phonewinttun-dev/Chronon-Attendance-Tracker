@@ -127,6 +127,20 @@ else
                     </NavLink>
                 }
             </div>
+
+            <!-- Sidebar Footer / Sign Out -->
+            @if (AuthState.IsLoggedIn)
+            {
+                <div class="mt-auto py-3 border-t border-border">
+                    <button class="@GetNavLinkClass() text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                            @onclick="HandleLogout" title="Sign Out">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 shrink-0"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        <span class="@GetNavLinkTextClass()">
+                            Sign Out
+                        </span>
+                    </button>
+                </div>
+            }
         </nav>
 
         <!-- Main Content Area -->
@@ -137,30 +151,20 @@ else
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-muted-foreground font-medium">Active Mode:</span>
                     <div class="inline-flex p-0.5 rounded-lg bg-muted border border-border/60 text-xs">
-                        <button class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer @(AuthState.IsAdmin ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground")"
+                        <button class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1 @(AuthState.IsAdmin ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground")"
                                 @onclick='() => ChangeRole("Admin")'>
-                            🛡️ Admin
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span>Admin</span>
                         </button>
-                        <button class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer @(!AuthState.IsAdmin ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground")"
+                        <button class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1 @(!AuthState.IsAdmin ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground")"
                                 @onclick='() => ChangeRole("User")'>
-                            👤 User
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span>User</span>
                         </button>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    @if (AuthState.IsLoggedIn)
-                    {
-                        <div class="flex items-center gap-2 px-3 py-1 bg-muted/50 rounded-lg border border-border/50 text-xs">
-                            <span class="font-semibold text-foreground">@AuthState.CurrentUser?.FullName</span>
-                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-mono">@AuthState.ActiveRole</span>
-                        </div>
-                        <button class="text-xs font-semibold text-muted-foreground hover:text-destructive transition-colors px-2.5 py-1 rounded-md hover:bg-destructive/10 cursor-pointer flex items-center gap-1.5"
-                                @onclick="HandleLogout" title="Sign Out">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                            <span>Sign Out</span>
-                        </button>
-                    }
                     <NotificationBell />
                 </div>
             </header>
@@ -176,7 +180,7 @@ else
 <div id="blazor-error-ui">
     An unhandled error has occurred.
     <a href="" class="reload text-primary ml-2 hover:underline">Reload</a>
-    <a class="dismiss cursor-pointer float-right mr-2 hover:text-destructive">🗙</a>
+    <a class="dismiss cursor-pointer float-right mr-2 hover:text-destructive">×</a>
 </div>
 
 @code {

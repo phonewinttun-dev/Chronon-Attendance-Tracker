@@ -9,7 +9,7 @@
       },
       "dotnetRunMessages": true,
       "browser": "Edge",
-      "applicationUrl": "http://localhost:5211"
+      "applicationUrl": "https://localhost:7019;http://localhost:5211"
     },
     "https": {
       "commandName": "Project",

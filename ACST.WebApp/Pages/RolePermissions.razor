@@ -350,7 +350,6 @@ else
                                         <!-- Category Header -->
                                         <div class="flex items-center justify-between border-b border-border/40 pb-2.5">
                                             <div class="flex items-center gap-2.5">
-                                                <span class="text-base">@group.Icon</span>
                                                 <div>
                                                     <h3 class="text-xs font-bold text-foreground">@group.CategoryName</h3>
                                                     <p class="text-[10px] text-muted-foreground">@group.Description</p>
@@ -461,7 +460,7 @@ else
     {
         public string CategoryKey { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
-        public string Icon { get; set; } = "⚙️";
+        public string Icon { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public List<PermissionDto> Permissions { get; set; } = new();
     }
@@ -650,16 +649,16 @@ else
     {
         return categoryKey.ToLowerInvariant() switch
         {
-            "roles" => ("Roles & Access Control", "🛡️", "Manage user roles and system permission assignments"),
-            "modules" => ("Modules & Courses", "📚", "Course module creation, updates, and teacher assignments"),
-            "semesters" => ("Semesters & Timetable", "🎓", "Academic semesters and term schedule boundaries"),
-            "classsessions" => ("Class Sessions & Attendance", "⏱️", "Daily session generation, status tracking, and attendance logs"),
-            "holidays" => ("Holidays & Calendar", "📅", "Academic holidays and exception date management"),
-            "recurringschedules" => ("Recurring Schedules", "🔄", "Weekly timetable patterns and recurring class slots"),
-            "analytics" => ("Analytics & Reports", "📊", "Attendance statistics, export tools, and module performance"),
-            "googlecalendar" => ("Google Calendar", "🗓️", "Google Calendar synchronization and event mapping"),
-            "search" => ("Global Search", "🔍", "System-wide fast search capabilities"),
-            _ => (categoryKey, "⚙️", "System level permissions")
+            "roles" => ("Roles & Access Control", "", "Manage user roles and system permission assignments"),
+            "modules" => ("Modules & Courses", "", "Course module creation, updates, and teacher assignments"),
+            "semesters" => ("Semesters & Timetable", "", "Academic semesters and term schedule boundaries"),
+            "classsessions" => ("Class Sessions & Attendance", "", "Daily session generation, status tracking, and attendance logs"),
+            "holidays" => ("Holidays & Calendar", "", "Academic holidays and exception date management"),
+            "recurringschedules" => ("Recurring Schedules", "", "Weekly timetable patterns and recurring class slots"),
+            "analytics" => ("Analytics & Reports", "", "Attendance statistics, export tools, and module performance"),
+            "googlecalendar" => ("Google Calendar", "", "Google Calendar synchronization and event mapping"),
+            "search" => ("Global Search", "", "System-wide fast search capabilities"),
+            _ => (categoryKey, "", "System level permissions")
         };
     }
 
