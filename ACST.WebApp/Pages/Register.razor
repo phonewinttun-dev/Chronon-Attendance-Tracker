@@ -178,7 +178,7 @@
 
             if (response.IsSuccessStatusCode && result?.IsSuccess == true)
             {
-                _message = "Account registered successfully! Redirecting to login...";
+                _message = "Account registered successfully! Redirecting...";
                 _isError = false;
                 
                 await Task.Delay(1200);
@@ -186,13 +186,20 @@
             }
             else
             {
-                _message = result?.Message ?? "Registration failed. Please check details.";
+                _message = result?.Message ?? "Registration failed.";
                 _isError = true;
             }
         }
         catch (Exception ex)
         {
-            _message = $"Error: {ex.Message}";
+            if (ex.Message.Contains("Failed to fetch", StringComparison.OrdinalIgnoreCase) || ex is HttpRequestException)
+            {
+                _message = "Unable to connect to the server.";
+            }
+            else
+            {
+                _message = $"Error: {ex.Message}";
+            }
             _isError = true;
         }
         finally

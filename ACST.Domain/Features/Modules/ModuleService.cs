@@ -70,6 +70,7 @@ public class ModuleService : IModuleService
                         SemesterName = m.Semester != null ? m.Semester.Name : null,
                         TotalValidSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled"),
                         PresentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Present"),
+                        AbsentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Absent"),
                         Schedules = m.TblRecurringSchedules
                             .Where(s => !s.IsDeleted)
                             .Select(s => new RecurringScheduleDto
@@ -90,20 +91,25 @@ public class ModuleService : IModuleService
                     .Take(request.PageSize)
                     .ToListAsync();
 
-                var items = rawItems.Select(m => new ModuleDto
-                {
-                    Id = m.Id,
-                    Name = m.Name,
-                    ModuleCode = m.ModuleCode,
-                    TeacherName = m.TeacherName,
-                    SemesterId = m.SemesterId,
-                    SemesterName = m.SemesterName,
-                    TotalValidSessions = m.TotalValidSessions,
-                    PresentSessions = m.PresentSessions,
-                    AttendanceRate = m.TotalValidSessions > 0 ? Math.Round((double)m.PresentSessions / m.TotalValidSessions * 100, 2) : 0,
-                    Schedules = m.Schedules,
-                    CreatedAt = m.CreatedAt,
-                    UpdatedAt = m.UpdatedAt
+                var items = rawItems.Select(m => {
+                    var completed = m.PresentSessions + m.AbsentSessions;
+                    return new ModuleDto
+                    {
+                        Id = m.Id,
+                        Name = m.Name,
+                        ModuleCode = m.ModuleCode,
+                        TeacherName = m.TeacherName,
+                        SemesterId = m.SemesterId,
+                        SemesterName = m.SemesterName,
+                        TotalValidSessions = m.TotalValidSessions,
+                        PresentSessions = m.PresentSessions,
+                        AbsentSessions = m.AbsentSessions,
+                        CompletedSessions = completed,
+                        AttendanceRate = completed > 0 ? Math.Round((double)m.PresentSessions / completed * 100, 2) : 0,
+                        Schedules = m.Schedules,
+                        CreatedAt = m.CreatedAt,
+                        UpdatedAt = m.UpdatedAt
+                    };
                 }).ToList();
 
                 var pagination = new Pagination(request.PageNumber, request.PageSize, totalCount);
@@ -134,6 +140,7 @@ public class ModuleService : IModuleService
                     SemesterName = m.Semester != null ? m.Semester.Name : null,
                     TotalValidSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status != "Holiday" && s.Status != "Cancelled"),
                     PresentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Present"),
+                    AbsentSessions = m.TblSessions.Count(s => !s.IsDeleted && s.Status == "Absent"),
                     Schedules = m.TblRecurringSchedules
                         .Where(s => !s.IsDeleted)
                         .Select(s => new RecurringScheduleDto
@@ -157,6 +164,7 @@ public class ModuleService : IModuleService
                 return Result<ModuleDto>.Failure("Module not found.");
             }
 
+            var completed = moduleData.PresentSessions + moduleData.AbsentSessions;
             return Result<ModuleDto>.Success(new ModuleDto
             {
                 Id = moduleData.Id,
@@ -167,7 +175,9 @@ public class ModuleService : IModuleService
                 SemesterName = moduleData.SemesterName,
                 TotalValidSessions = moduleData.TotalValidSessions,
                 PresentSessions = moduleData.PresentSessions,
-                AttendanceRate = moduleData.TotalValidSessions > 0 ? Math.Round((double)moduleData.PresentSessions / moduleData.TotalValidSessions * 100, 2) : 0,
+                AbsentSessions = moduleData.AbsentSessions,
+                CompletedSessions = completed,
+                AttendanceRate = completed > 0 ? Math.Round((double)moduleData.PresentSessions / completed * 100, 2) : 0,
                 Schedules = moduleData.Schedules,
                 CreatedAt = moduleData.CreatedAt,
                 UpdatedAt = moduleData.UpdatedAt
@@ -291,11 +301,13 @@ public class ModuleService : IModuleService
                 Name = module.Name,
                 ModuleCode = module.ModuleCode,
                 TeacherName = module.TeacherName,
-                SemesterId = module.SemesterId,
+                        SemesterId = module.SemesterId,
                 SemesterName = semesterName,
                 AttendanceRate = 0,
                 TotalValidSessions = 0,
                 PresentSessions = 0,
+                AbsentSessions = 0,
+                CompletedSessions = 0,
                 Schedules = schedulesList,
                 CreatedAt = module.CreatedAt,
                 UpdatedAt = module.UpdatedAt
@@ -303,9 +315,7 @@ public class ModuleService : IModuleService
         }
         catch (Exception)
         {
-            // Rollback all database modifications
             await transaction.RollbackAsync();
-
             return Result<ModuleDto>.Failure("An unexpected error occurred while creating the module.");
         }
     }
@@ -329,14 +339,17 @@ public class ModuleService : IModuleService
                 }
             }
         }
+
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
             var module = await _context.TblModules.FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
+
             if (module == null)
             {
                 return Result<ModuleDto>.Failure("Module not found.");
             }
+
             string? semesterName = null;
             if (request.SemesterId is long semesterId)
             {
@@ -348,85 +361,74 @@ public class ModuleService : IModuleService
                 semesterName = semester.Name;
             }
 
-            if (!string.IsNullOrEmpty(request.Name))
-            {
-                module.Name = request.Name;
-            }
-            if (!string.IsNullOrEmpty(request.ModuleCode))
-            {
-                module.ModuleCode = request.ModuleCode;
-            }
-            if (request.TeacherName != null)
-            {
-                module.TeacherName = request.TeacherName;
-            }
-            if (request.SemesterId.HasValue)
-            {
-                module.SemesterId = request.SemesterId.Value;
-            }
+            module.Name = request.Name;
+            module.ModuleCode = request.ModuleCode;
+            module.TeacherName = request.TeacherName;
+            module.SemesterId = request.SemesterId;
+            module.UpdatedAt = DateTime.UtcNow;
 
-            var googleEventsToDelete = new List<string>();
+            // Fetch active schedules once to reduce database calls
+            var existingSchedules = await _context.TblRecurringSchedules
+                .Where(s => s.ModuleId == id && !s.IsDeleted)
+                .ToListAsync();
 
             if (request.Schedules != null)
             {
-                var existingSchedules = await _context.TblRecurringSchedules
-                    .Where(s => s.ModuleId == id && !s.IsDeleted)
-                    .ToListAsync();
-                var requestIds = request.Schedules
-                    .Where(s => s.Id is not null)
+                var requestScheduleIds = request.Schedules
+                    .Where(s => s.Id.HasValue && s.Id.Value > 0)
                     .Select(s => s.Id!.Value)
+                    .ToHashSet();
+
+                var schedulesToDelete = existingSchedules
+                    .Where(s => !requestScheduleIds.Contains(s.Id))
                     .ToList();
-                var toDelete = existingSchedules.Where(s => !requestIds.Contains(s.Id)).ToList();
-                var toDeleteIds = toDelete.Select(d => d.Id).ToList();
+
+                var toDeleteIds = schedulesToDelete.Select(d => d.Id).ToList();
                 if (toDeleteIds.Any())
                 {
-                    // Soft-delete obsolete schedules
-                    foreach (var sch in toDelete)
+                    foreach (var s in schedulesToDelete)
                     {
-                        sch.IsDeleted = true;
+                        s.IsDeleted = true;
+                        s.UpdatedAt = DateTime.UtcNow;
                     }
-                    // Batch load all associated sessions
+
                     var associatedSessions = await _context.TblSessions
                         .Where(s => toDeleteIds.Contains(s.RecurringScheduleId) && !s.IsDeleted && s.StartDatetime >= DateTime.UtcNow)
                         .ToListAsync();
                     foreach (var session in associatedSessions)
                     {
                         session.IsDeleted = true;
-                        /*
-                        if (!string.IsNullOrEmpty(session.GoogleEventId))
-                        {
-                            googleEventsToDelete.Add(session.GoogleEventId);
-                        }
-                        */
                     }
                 }
-                // Add or update schedules
-                foreach (var schReq in request.Schedules)
+
+                foreach (var schedReq in request.Schedules)
                 {
-                    if (schReq.Id is long scheduleId)
+                    if (schedReq.Id.HasValue && schedReq.Id.Value > 0)
                     {
-                        var existing = existingSchedules.FirstOrDefault(s => s.Id == scheduleId);
+                        var existing = existingSchedules.FirstOrDefault(s => s.Id == schedReq.Id.Value);
                         if (existing != null)
                         {
-                            existing.DayOfWeek = schReq.DayOfWeek;
-                            existing.StartTime = schReq.StartTime;
-                            existing.EndTime = schReq.EndTime;
                             existing.SemesterId = request.SemesterId ?? 0;
+                            existing.DayOfWeek = schedReq.DayOfWeek;
+                            existing.StartTime = schedReq.StartTime;
+                            existing.EndTime = schedReq.EndTime;
+                            existing.UpdatedAt = DateTime.UtcNow;
                         }
                     }
                     else
                     {
-                        var newSch = new TblRecurringSchedule
+                        var newSchedule = new TblRecurringSchedule
                         {
-                            ModuleId = module.Id,
+                            ModuleId = id,
                             SemesterId = request.SemesterId ?? 0,
-                            DayOfWeek = schReq.DayOfWeek,
-                            StartTime = schReq.StartTime,
-                            EndTime = schReq.EndTime,
+                            DayOfWeek = schedReq.DayOfWeek,
+                            StartTime = schedReq.StartTime,
+                            EndTime = schedReq.EndTime,
                             IsActive = true,
-                            IsDeleted = false
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
                         };
-                        _context.TblRecurringSchedules.Add(newSch);
+                        _context.TblRecurringSchedules.Add(newSchedule);
                     }
                 }
             }
@@ -446,12 +448,15 @@ public class ModuleService : IModuleService
                 .Select(g => new
                 {
                     TotalValid = g.Count(s => s.Status != "Holiday" && s.Status != "Cancelled"),
-                    Present = g.Count(s => s.Status == "Present")
+                    Present = g.Count(s => s.Status == "Present"),
+                    Absent = g.Count(s => s.Status == "Absent")
                 })
                 .FirstOrDefaultAsync();
             var totalValid = sessionStats?.TotalValid ?? 0;
             var present = sessionStats?.Present ?? 0;
-            var rate = totalValid > 0 ? Math.Round((double)present / totalValid * 100, 2) : 0;
+            var absent = sessionStats?.Absent ?? 0;
+            var completed = present + absent;
+            var rate = completed > 0 ? Math.Round((double)present / completed * 100, 2) : 0;
             var schedulesList = await _context.TblRecurringSchedules
                 .Where(s => s.ModuleId == id && !s.IsDeleted)
                 .Select(s => new RecurringScheduleDto
@@ -470,29 +475,7 @@ public class ModuleService : IModuleService
                 })
                 .ToListAsync();
             await transaction.CommitAsync();
-            // Asynchronous Out-of-Transaction Cleanup for External Services
-            // Prevents holding DB locks during slow Google Calendar API calls
-            /*
-            foreach (var eventId in googleEventsToDelete)
-            {
-                if (_backgroundJobClient is not null)
-                {
-                    _backgroundJobClient.Enqueue<IGoogleCalendarService>(service =>
-                        service.DeleteEventAsync(eventId));
-                }
-                else
-                {
-                    try
-                    {
-                        await _googleCalendarService.DeleteEventAsync(eventId);
-                    }
-                    catch (Exception)
-                    {
-                        //_logger.LogWarning(calendarEx, "Failed to delete orphaned Google Calendar event {EventId}", eventId);
-                    }
-                }
-            }
-            */
+
             return Result<ModuleDto>.Success(new ModuleDto
             {
                 Id = module.Id,
@@ -504,6 +487,8 @@ public class ModuleService : IModuleService
                 AttendanceRate = rate,
                 TotalValidSessions = totalValid,
                 PresentSessions = present,
+                AbsentSessions = absent,
+                CompletedSessions = completed,
                 Schedules = schedulesList,
                 CreatedAt = module.CreatedAt,
                 UpdatedAt = module.UpdatedAt

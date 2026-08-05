@@ -132,7 +132,14 @@
         }
         catch (Exception ex)
         {
-            _message = $"Error: {ex.Message}";
+            if (ex.Message.Contains("Failed to fetch", StringComparison.OrdinalIgnoreCase) || ex is HttpRequestException)
+            {
+                _message = "Unable to connect to the server.";
+            }
+            else
+            {
+                _message = $"Error: {ex.Message}";
+            }
             _isError = true;
         }
         finally

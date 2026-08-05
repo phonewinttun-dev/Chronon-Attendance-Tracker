@@ -9,10 +9,19 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Connect to the ASP.NET Core Backend API
-// Dynamically select HTTP/HTTPS backend port based on the active client scheme to handle certificate trust issues.
-var apiBaseUrl = new Uri(builder.HostEnvironment.BaseAddress).Scheme == "https"
-    ? "https://localhost:7019"
-    : "http://localhost:5211";
+var isHttps = new Uri(builder.HostEnvironment.BaseAddress).Scheme == "https";
+var configuredUrl = isHttps ? builder.Configuration["HttpsApiBaseUrl"] : builder.Configuration["HttpApiBaseUrl"];
+var apiBaseUrl = configuredUrl ?? builder.Configuration["ApiBaseUrl"];
+
+if (string.IsNullOrWhiteSpace(apiBaseUrl))
+{
+    apiBaseUrl = isHttps ? "https://localhost:7019/" : "http://localhost:5211/";
+}
+
+if (!apiBaseUrl.EndsWith("/"))
+{
+    apiBaseUrl += "/";
+}
 
 builder.Services.AddScoped(sp =>
 {

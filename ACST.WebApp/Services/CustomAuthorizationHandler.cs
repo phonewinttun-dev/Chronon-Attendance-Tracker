@@ -37,7 +37,43 @@ namespace ACST.WebApp.Services
                 Console.WriteLine($"[CustomAuthorizationHandler] Warning: Could not retrieve auth session token: {ex.Message}");
             }
 
-            return await base.SendAsync(request, cancellationToken);
+            try
+            {
+                return await base.SendAsync(request, cancellationToken);
+            }
+            catch (Exception)
+            {
+                // Attempt fallback port if primary port is unreachable (e.g. 7019 <-> 5211)
+                var originalUri = request.RequestUri;
+                if (originalUri != null)
+                {
+                    Uri? fallbackUri = null;
+                    if (originalUri.Port == 7019)
+                    {
+                        fallbackUri = new UriBuilder(originalUri) { Scheme = "http", Port = 5211 }.Uri;
+                    }
+                    else if (originalUri.Port == 5211)
+                    {
+                        fallbackUri = new UriBuilder(originalUri) { Scheme = "https", Port = 7019 }.Uri;
+                    }
+
+                    if (fallbackUri != null)
+                    {
+                        try
+                        {
+                            Console.WriteLine($"[CustomAuthorizationHandler] Connection failed to {originalUri}. Retrying with fallback: {fallbackUri}");
+                            request.RequestUri = fallbackUri;
+                            return await base.SendAsync(request, cancellationToken);
+                        }
+                        catch (Exception fallbackEx)
+                        {
+                            Console.WriteLine($"[CustomAuthorizationHandler] Fallback connection to {fallbackUri} also failed: {fallbackEx.Message}");
+                        }
+                    }
+                }
+
+                throw;
+            }
         }
     }
 }

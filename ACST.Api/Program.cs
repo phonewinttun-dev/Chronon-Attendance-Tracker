@@ -105,7 +105,10 @@ try
     // Configure the HTTP request pipeline.
     app.UseCors("AllowAll");
 
-    app.UseHttpsRedirection();
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
 
     app.UseSwagger();
     app.MapScalarApiReference(options =>

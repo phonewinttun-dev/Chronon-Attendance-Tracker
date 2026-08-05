@@ -225,7 +225,6 @@ else
                                         </div>
                                         <div class="truncate">
                                             <h3 class="text-xs font-medium text-foreground truncate">@role.RoleName</h3>
-                                            <span class="text-[10px] text-muted-foreground font-mono">ID: #@role.RoleId</span>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0">
@@ -294,16 +293,6 @@ else
                         </div>
                     </div>
 
-                    <!-- Admin Bypass Notice (US-20) -->
-                    @if (isAdminRole)
-                    {
-                        <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3.5 text-xs text-amber-500 flex items-start gap-2.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0 mt-0.5"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>
-                            <div>
-                                <span class="font-bold">Admin Permission Bypass Active (US-20):</span> Users assigned to the <strong>Admin</strong> role automatically bypass all permission restrictions across the entire system.
-                            </div>
-                        </div>
-                    }
 
                     <!-- Search Input -->
                     <div class="relative max-w-xs">
@@ -350,7 +339,6 @@ else
                                         <!-- Category Header -->
                                         <div class="flex items-center justify-between border-b border-border/40 pb-2.5">
                                             <div class="flex items-center gap-2.5">
-                                                <span class="text-base">@group.Icon</span>
                                                 <div>
                                                     <h3 class="text-xs font-bold text-foreground">@group.CategoryName</h3>
                                                     <p class="text-[10px] text-muted-foreground">@group.Description</p>
@@ -383,7 +371,6 @@ else
                                                             <div class="text-[10px] font-mono text-muted-foreground/70 truncate">@perm.PermissionName</div>
                                                         </div>
                                                     </div>
-                                                    <span class="text-[10px] font-mono text-muted-foreground/50 shrink-0">#@perm.PermissionId</span>
                                                 </label>
                                             }
                                         </div>
@@ -461,7 +448,7 @@ else
     {
         public string CategoryKey { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
-        public string Icon { get; set; } = "⚙️";
+        public string Icon { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public List<PermissionDto> Permissions { get; set; } = new();
     }
@@ -650,16 +637,16 @@ else
     {
         return categoryKey.ToLowerInvariant() switch
         {
-            "roles" => ("Roles & Access Control", "🛡️", "Manage user roles and system permission assignments"),
-            "modules" => ("Modules & Courses", "📚", "Course module creation, updates, and teacher assignments"),
-            "semesters" => ("Semesters & Timetable", "🎓", "Academic semesters and term schedule boundaries"),
-            "classsessions" => ("Class Sessions & Attendance", "⏱️", "Daily session generation, status tracking, and attendance logs"),
-            "holidays" => ("Holidays & Calendar", "📅", "Academic holidays and exception date management"),
-            "recurringschedules" => ("Recurring Schedules", "🔄", "Weekly timetable patterns and recurring class slots"),
-            "analytics" => ("Analytics & Reports", "📊", "Attendance statistics, export tools, and module performance"),
-            "googlecalendar" => ("Google Calendar", "🗓️", "Google Calendar synchronization and event mapping"),
-            "search" => ("Global Search", "🔍", "System-wide fast search capabilities"),
-            _ => (categoryKey, "⚙️", "System level permissions")
+            "roles" => ("Roles & Access Control", "", "Manage user roles and system permission assignments"),
+            "modules" => ("Modules & Courses", "", "Course module creation, updates, and teacher assignments"),
+            "semesters" => ("Semesters & Timetable", "", "Academic semesters and term schedule boundaries"),
+            "classsessions" => ("Class Sessions & Attendance", "", "Daily session generation, status tracking, and attendance logs"),
+            "holidays" => ("Holidays & Calendar", "", "Academic holidays and exception date management"),
+            "recurringschedules" => ("Recurring Schedules", "", "Weekly timetable patterns and recurring class slots"),
+            "analytics" => ("Analytics & Reports", "", "Attendance statistics, export tools, and module performance"),
+            "googlecalendar" => ("Google Calendar", "", "Google Calendar synchronization and event mapping"),
+            "search" => ("Global Search", "", "System-wide fast search capabilities"),
+            _ => (categoryKey, "", "System level permissions")
         };
     }
 
