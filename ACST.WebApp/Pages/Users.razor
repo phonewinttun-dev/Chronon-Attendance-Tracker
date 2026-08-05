@@ -92,7 +92,6 @@ else
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="bg-muted/40 border-b border-border text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">
-                                <th class="py-3 px-4">User ID</th>
                                 <th class="py-3 px-4">Full Name</th>
                                 <th class="py-3 px-4">Email Address</th>
                                 <th class="py-3 px-4">Mobile</th>
@@ -105,7 +104,6 @@ else
                             @foreach (var user in filteredUsers)
                             {
                                 <tr class="hover:bg-accent/30 transition-colors">
-                                    <td class="py-3.5 px-4 font-bold text-foreground">#@user.UserId</td>
                                     <td class="py-3.5 px-4 font-sans font-medium text-foreground">@user.FullName</td>
                                     <td class="py-3.5 px-4 text-muted-foreground">@user.Email</td>
                                     <td class="py-3.5 px-4 text-muted-foreground">@(user.MobileNum ?? "—")</td>
