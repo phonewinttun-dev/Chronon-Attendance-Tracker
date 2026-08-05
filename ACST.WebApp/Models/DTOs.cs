@@ -22,6 +22,8 @@ public class ModuleDto
     public double AttendanceRate { get; set; }
     public int TotalValidSessions { get; set; }
     public int PresentSessions { get; set; }
+    public int AbsentSessions { get; set; }
+    public int CompletedSessions { get; set; }
     public List<RecurringScheduleDto> Schedules { get; set; } = new();
 }
 
