@@ -29,10 +29,22 @@ namespace ACST.Domain.Features.Auth
                 return Result<UserAccountResponse>.Failure("Email is already registered.");
             }
 
-            var role = await _context.TblRoles.FirstOrDefaultAsync(r => r.RoleId == request.RoleId && r.DeleteFlag != true);
+            // Default to "User" Role if invalid/unspecified role provided
+            TblRole? role = null;
+            if (request.RoleId > 0)
+            {
+                role = await _context.TblRoles.FirstOrDefaultAsync(r => r.RoleId == request.RoleId && r.DeleteFlag != true);
+            }
+
             if (role == null)
             {
-                return Result<UserAccountResponse>.Failure("Invalid Role selected.");
+                role = await _context.TblRoles.FirstOrDefaultAsync(r => r.RoleName == "User" && r.DeleteFlag != true)
+                       ?? await _context.TblRoles.FirstOrDefaultAsync(r => r.DeleteFlag != true);
+            }
+
+            if (role == null)
+            {
+                return Result<UserAccountResponse>.Failure("Default role 'User' could not be found.");
             }
 
             var passwordHash = HashPassword(request.Password);
@@ -43,7 +55,7 @@ namespace ACST.Domain.Features.Auth
                 FullName = request.FullName,
                 MobileNum = request.MobileNum,
                 PasswordHash = passwordHash,
-                RoleId = request.RoleId,
+                RoleId = role.RoleId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 DeleteFlag = false
@@ -85,14 +97,15 @@ namespace ACST.Domain.Features.Auth
 
             var accessToken = _tokenService.GenerateAccessToken(user, permissions);
             var refreshTokenString = _tokenService.GenerateRefreshToken();
+            var hashedRefreshToken = HashToken(refreshTokenString);
 
-            // Store Refresh Token
+            // Store Hashed Refresh Token with 7-30 days stay logged in duration
             var userToken = new TblUsertoken
             {
                 UserId = user.UserId,
-                RefreshToken = refreshTokenString,
+                RefreshToken = hashedRefreshToken,
                 IsRevoked = false,
-                ExpiresAt = DateTime.UtcNow.AddDays(double.Parse(_configuration["JwtSettings:RefreshTokenExpiryInDays"] ?? "7")),
+                ExpiresAt = DateTime.UtcNow.AddDays(GetRefreshTokenExpiryInDays()),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 DeleteFlag = false
@@ -117,10 +130,12 @@ namespace ACST.Domain.Features.Auth
 
         public async Task<Result<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request)
         {
+            var hashedIncomingToken = HashToken(request.RefreshToken);
+
             var userToken = await _context.TblUsertokens
                 .Include(ut => ut.User)
                 .ThenInclude(u => u.Role!)
-                .FirstOrDefaultAsync(ut => ut.RefreshToken == request.RefreshToken && ut.DeleteFlag != true);
+                .FirstOrDefaultAsync(ut => (ut.RefreshToken == hashedIncomingToken || ut.RefreshToken == request.RefreshToken) && ut.DeleteFlag != true);
 
             if (userToken == null || userToken.IsRevoked == true || userToken.ExpiresAt < DateTime.UtcNow || userToken.User == null || userToken.User.DeleteFlag == true)
             {
@@ -137,18 +152,19 @@ namespace ACST.Domain.Features.Auth
 
             var newAccessToken = _tokenService.GenerateAccessToken(user, permissions);
             var newRefreshTokenString = _tokenService.GenerateRefreshToken();
+            var newHashedRefreshToken = HashToken(newRefreshTokenString);
 
             // Revoke current refresh token
             userToken.IsRevoked = true;
             userToken.UpdatedAt = DateTime.UtcNow;
 
-            // Add new refresh token
+            // Add new hashed refresh token
             var newUsertoken = new TblUsertoken
             {
                 UserId = user.UserId,
-                RefreshToken = newRefreshTokenString,
+                RefreshToken = newHashedRefreshToken,
                 IsRevoked = false,
-                ExpiresAt = DateTime.UtcNow.AddDays(double.Parse(_configuration["JwtSettings:RefreshTokenExpiryInDays"] ?? "7")),
+                ExpiresAt = DateTime.UtcNow.AddDays(GetRefreshTokenExpiryInDays()),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 DeleteFlag = false
@@ -231,6 +247,15 @@ namespace ACST.Domain.Features.Auth
             using var sha256 = SHA256.Create();
             var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(token));
             return Convert.ToBase64String(hashedBytes);
+        }
+
+        private double GetRefreshTokenExpiryInDays()
+        {
+            if (double.TryParse(_configuration["JwtSettings:RefreshTokenExpiryInDays"], out double days))
+            {
+                return Math.Clamp(days, 7, 30);
+            }
+            return 30; // Default 30 days stay logged in duration
         }
     }
 }

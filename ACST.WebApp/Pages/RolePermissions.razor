@@ -225,7 +225,6 @@ else
                                         </div>
                                         <div class="truncate">
                                             <h3 class="text-xs font-medium text-foreground truncate">@role.RoleName</h3>
-                                            <span class="text-[10px] text-muted-foreground font-mono">ID: #@role.RoleId</span>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0">
@@ -294,16 +293,6 @@ else
                         </div>
                     </div>
 
-                    <!-- Admin Bypass Notice (US-20) -->
-                    @if (isAdminRole)
-                    {
-                        <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3.5 text-xs text-amber-500 flex items-start gap-2.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0 mt-0.5"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>
-                            <div>
-                                <span class="font-bold">Admin Permission Bypass Active (US-20):</span> Users assigned to the <strong>Admin</strong> role automatically bypass all permission restrictions across the entire system.
-                            </div>
-                        </div>
-                    }
 
                     <!-- Search Input -->
                     <div class="relative max-w-xs">
@@ -382,7 +371,6 @@ else
                                                             <div class="text-[10px] font-mono text-muted-foreground/70 truncate">@perm.PermissionName</div>
                                                         </div>
                                                     </div>
-                                                    <span class="text-[10px] font-mono text-muted-foreground/50 shrink-0">#@perm.PermissionId</span>
                                                 </label>
                                             }
                                         </div>
