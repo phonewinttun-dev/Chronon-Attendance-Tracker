@@ -22,7 +22,13 @@ namespace ACST.WebApp.Services
         {
             try
             {
-                var json = await _js.InvokeAsync<string?>("sessionStorage.getItem", "chronon_auth_session");
+                string? json = null;
+                try { json = await _js.InvokeAsync<string?>("localStorage.getItem", "chronon_auth_session"); } catch { }
+                if (string.IsNullOrEmpty(json))
+                {
+                    try { json = await _js.InvokeAsync<string?>("sessionStorage.getItem", "chronon_auth_session"); } catch { }
+                }
+
                 if (!string.IsNullOrEmpty(json))
                 {
                     var session = JsonSerializer.Deserialize<LoginResponseDto>(json);

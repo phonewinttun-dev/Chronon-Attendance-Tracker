@@ -25,6 +25,9 @@ namespace ACST.Domain.Features
             builder.Services.AddDbContextPool<AppDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            // HttpContextAccessor for ClaimsPrincipal access
+            builder.Services.AddHttpContextAccessor();
+
             // Feature Services
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();

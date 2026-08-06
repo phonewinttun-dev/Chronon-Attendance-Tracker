@@ -22,29 +22,20 @@ namespace ACST.Domain.Features.Auth
             _configuration = configuration;
         }
 
-        public async Task<Result<UserAccountResponse>> RegisterAsync(RegisterRequest request)
+        public async Task<Result<LoginResponse>> RegisterAsync(RegisterRequest request)
         {
             if (await _context.TblUsers.AnyAsync(u => u.Email == request.Email && u.DeleteFlag != true))
             {
-                return Result<UserAccountResponse>.Failure("Email is already registered.");
+                return Result<LoginResponse>.Failure("Email is already registered.");
             }
 
-            // Default to "User" Role if invalid/unspecified role provided
-            TblRole? role = null;
-            if (request.RoleId > 0)
-            {
-                role = await _context.TblRoles.FirstOrDefaultAsync(r => r.RoleId == request.RoleId && r.DeleteFlag != true);
-            }
+            // Always assign default "User" Role on public registration
+            var role = await _context.TblRoles.FirstOrDefaultAsync(r => r.RoleName == "User" && r.DeleteFlag != true)
+                   ?? await _context.TblRoles.FirstOrDefaultAsync(r => r.DeleteFlag != true);
 
             if (role == null)
             {
-                role = await _context.TblRoles.FirstOrDefaultAsync(r => r.RoleName == "User" && r.DeleteFlag != true)
-                       ?? await _context.TblRoles.FirstOrDefaultAsync(r => r.DeleteFlag != true);
-            }
-
-            if (role == null)
-            {
-                return Result<UserAccountResponse>.Failure("Default role 'User' could not be found.");
+                return Result<LoginResponse>.Failure("Default role 'User' could not be found.");
             }
 
             var passwordHash = HashPassword(request.Password);
@@ -64,18 +55,13 @@ namespace ACST.Domain.Features.Auth
             _context.TblUsers.Add(user);
             await _context.SaveChangesAsync();
 
-            var response = new UserAccountResponse
+            // Auto-login newly registered user
+            user.Role = role;
+            return await LoginAsync(new LoginRequest
             {
-                UserId = user.UserId,
-                FullName = user.FullName,
-                Email = user.Email,
-                MobileNum = user.MobileNum,
-                RoleId = user.RoleId,
-                RoleName = role.RoleName,
-                CreatedAt = user.CreatedAt
-            };
-
-            return Result<UserAccountResponse>.Success(response, "Account registered successfully.");
+                Email = request.Email,
+                Password = request.Password
+            });
         }
 
         public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
