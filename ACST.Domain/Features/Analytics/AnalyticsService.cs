@@ -8,15 +8,29 @@ using ACST.Domain.DTOs.Analytics;
 using ACST.Shared;
 using Microsoft.EntityFrameworkCore;
 
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+
 namespace ACST.Domain.Features.Analytics;
 
 public class AnalyticsService : IAnalyticsService
 {
     private readonly AppDbContext _context;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
-    public AnalyticsService(AppDbContext context)
+    public AnalyticsService(AppDbContext context, IHttpContextAccessor? httpContextAccessor = null)
     {
         _context = context;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private int? CurrentUserId
+    {
+        get
+        {
+            var claim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(claim, out var userId) ? userId : null;
+        }
     }
 
     #region Get Overall Analytics for attendance 

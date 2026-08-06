@@ -9,6 +9,9 @@ using Hangfire;
 using ACST.Domain.Features.ClassSessions;
 using ACST.Domain.DTOs.ClassSession;
 
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+
 namespace ACST.Domain.Features.Modules;
 
 public class ModuleService : IModuleService
@@ -17,23 +20,44 @@ public class ModuleService : IModuleService
     private readonly IGoogleCalendarService _googleCalendarService;
     private readonly IClassSessionService _classSessionService;
     private readonly IBackgroundJobClient? _backgroundJobClient;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
     public ModuleService(
         AppDbContext context,
         IGoogleCalendarService googleCalendarService,
         IClassSessionService classSessionService,
-        IBackgroundJobClient? backgroundJobClient = null)
+        IBackgroundJobClient? backgroundJobClient = null,
+        IHttpContextAccessor? httpContextAccessor = null)
     {
         _context = context;
         _googleCalendarService = googleCalendarService;
         _classSessionService = classSessionService;
         _backgroundJobClient = backgroundJobClient;
+        _httpContextAccessor = httpContextAccessor;
     }
 
-    private IQueryable<TblModule> ActiveModuleQuery => _context.TblModules
-            .AsNoTracking()
-            .Include(m => m.Semester)
-            .Where(m => !m.IsDeleted);
+    private int? CurrentUserId
+    {
+        get
+        {
+            var claim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(claim, out var userId) ? userId : null;
+        }
+    }
+
+    private IQueryable<TblModule> ActiveModuleQuery
+    {
+        get
+        {
+            var userId = CurrentUserId;
+            var query = _context.TblModules.AsNoTracking().Include(m => m.Semester).Where(m => !m.IsDeleted);
+            if (userId.HasValue)
+            {
+                query = query.Where(m => m.UserId == userId.Value);
+            }
+            return query;
+        }
+    }
 
     #region Get All Modules
     public async Task<PagedResult<ModuleDto>> GetAllModulesAsync(PaginationRequest request, long? semesterId = null)
@@ -233,6 +257,7 @@ public class ModuleService : IModuleService
                 ModuleCode = request.ModuleCode,
                 TeacherName = request.TeacherName,
                 SemesterId = request.SemesterId,
+                UserId = CurrentUserId,
                 IsDeleted = false
             };
 

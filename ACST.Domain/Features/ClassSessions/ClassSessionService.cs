@@ -14,6 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+
 namespace ACST.Domain.Features.ClassSessions;
 
 public class ClassSessionService : IClassSessionService
@@ -23,6 +26,7 @@ public class ClassSessionService : IClassSessionService
     private readonly IConfiguration? _configuration;
     private readonly IBackgroundJobClient? _backgroundJobClient;
     private readonly IServiceProvider? _serviceProvider;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
     private static readonly TimeSpan MyanmarOffset = TimeSpan.FromHours(6.5);
 
     public ClassSessionService(
@@ -30,20 +34,44 @@ public class ClassSessionService : IClassSessionService
         IGoogleCalendarService googleCalendarService,
         IConfiguration? configuration = null,
         IBackgroundJobClient? backgroundJobClient = null,
-        IServiceProvider? serviceProvider = null)
+        IServiceProvider? serviceProvider = null,
+        IHttpContextAccessor? httpContextAccessor = null)
     {
         _context = context;
         _googleCalendarService = googleCalendarService;
         _configuration = configuration;
         _backgroundJobClient = backgroundJobClient;
         _serviceProvider = serviceProvider;
+        _httpContextAccessor = httpContextAccessor;
     }
 
-    private IQueryable<TblSession> activeSession => _context.TblSessions
-        .Include(s => s.Module)
-        .Include(s => s.Semester)
-        .AsNoTracking()
-        .Where(s => !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
+    private int? CurrentUserId
+    {
+        get
+        {
+            var claim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(claim, out var userId) ? userId : null;
+        }
+    }
+
+    private IQueryable<TblSession> activeSession
+    {
+        get
+        {
+            var userId = CurrentUserId;
+            var query = _context.TblSessions
+                .Include(s => s.Module)
+                .Include(s => s.Semester)
+                .AsNoTracking()
+                .Where(s => !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
+
+            if (userId.HasValue)
+            {
+                query = query.Where(s => s.UserId == userId.Value);
+            }
+            return query;
+        }
+    }
 
     #region Get All Sessions
     public async Task<PagedResult<ClassSessionDto>> GetSessionsAsync(GetClassSessionsRequest request)
@@ -217,6 +245,7 @@ public class ClassSessionService : IClassSessionService
                             Status = status,
                             MagicLinkToken = sessionToken,
                             GoogleEventId = null,
+                            UserId = CurrentUserId,
                             IsDeleted = false
                         };
                         newSessions.Add(session);

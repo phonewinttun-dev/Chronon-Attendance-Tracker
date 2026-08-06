@@ -3,6 +3,8 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
+@inject AuthStateService AuthState
+
 <PageTitle>Register Account - Chronon Tracker</PageTitle>
 
 <div class="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -174,15 +176,16 @@
         try
         {
             var response = await Http.PostAsJsonAsync("api/Auth/register", _registerModel);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult<UserAccountDto>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResult<LoginResponseDto>>();
 
-            if (response.IsSuccessStatusCode && result?.IsSuccess == true)
+            if (response.IsSuccessStatusCode && result?.IsSuccess == true && result.Data != null)
             {
-                _message = "Account registered successfully! Redirecting...";
+                _message = "Account registered successfully! Redirecting to Dashboard...";
                 _isError = false;
                 
-                await Task.Delay(1200);
-                Navigation.NavigateTo("login");
+                await AuthState.SetSessionAsync(result.Data);
+                await Task.Delay(800);
+                Navigation.NavigateTo("");
             }
             else
             {

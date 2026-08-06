@@ -12,6 +12,9 @@ using ACST.Domain.Features.ClassSessions;
 using ACST.Domain.Features.GoogleCalendar;
 using ACST.Domain.DTOs.ClassSession;
 
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+
 namespace ACST.Domain.Features.RecurringSchedules;
 
 public class RecurringScheduleService : IRecurringScheduleService
@@ -20,17 +23,29 @@ public class RecurringScheduleService : IRecurringScheduleService
     private readonly IClassSessionService _classSessionService;
     private readonly IGoogleCalendarService _googleCalendarService;
     private readonly IBackgroundJobClient? _backgroundJobClient;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
     public RecurringScheduleService(
         AppDbContext context, 
         IClassSessionService classSessionService, 
         IGoogleCalendarService googleCalendarService,
-        IBackgroundJobClient? backgroundJobClient = null)
+        IBackgroundJobClient? backgroundJobClient = null,
+        IHttpContextAccessor? httpContextAccessor = null)
     {
         _context = context;
         _classSessionService = classSessionService;
         _googleCalendarService = googleCalendarService;
         _backgroundJobClient = backgroundJobClient;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private int? CurrentUserId
+    {
+        get
+        {
+            var claim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(claim, out var userId) ? userId : null;
+        }
     }
 
     #region Get schedules by module
@@ -38,11 +53,18 @@ public class RecurringScheduleService : IRecurringScheduleService
     {
         try
         {
-            var schedules = await _context.TblRecurringSchedules
+            var query = _context.TblRecurringSchedules
                 .Include(r => r.Module)
                 .Include(r => r.Semester)
                 .AsNoTracking()
-                .Where(r => r.ModuleId == moduleId && !r.IsDeleted)
+                .Where(r => r.ModuleId == moduleId && !r.IsDeleted);
+
+            if (CurrentUserId.HasValue)
+            {
+                query = query.Where(r => r.UserId == CurrentUserId.Value);
+            }
+
+            var schedules = await query
                 .Select(r => new RecurringScheduleDto
                 {
                     Id = r.Id,
@@ -98,6 +120,7 @@ public class RecurringScheduleService : IRecurringScheduleService
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
                 IsActive = true,
+                UserId = CurrentUserId,
                 IsDeleted = false
             };
 

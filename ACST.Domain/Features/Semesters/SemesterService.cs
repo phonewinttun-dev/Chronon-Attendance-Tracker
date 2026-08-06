@@ -10,6 +10,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
 
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+
 namespace ACST.Domain.Features.Semesters;
 
 public class SemesterService : ISemesterService
@@ -17,20 +20,42 @@ public class SemesterService : ISemesterService
     private readonly AppDbContext _context;
     private readonly IGoogleCalendarService _googleCalendarService;
     private readonly IBackgroundJobClient? _backgroundJobClient;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
     public SemesterService(
         AppDbContext context, 
         IGoogleCalendarService googleCalendarService,
-        IBackgroundJobClient? backgroundJobClient = null)
+        IBackgroundJobClient? backgroundJobClient = null,
+        IHttpContextAccessor? httpContextAccessor = null)
     {
         _context = context;
         _googleCalendarService = googleCalendarService;
         _backgroundJobClient = backgroundJobClient;
+        _httpContextAccessor = httpContextAccessor;
     }
 
-    private IQueryable<TblSemester> ActiveSemesterQuery => _context.TblSemesters
-                .AsNoTracking()
-                .Where(s => !s.IsDeleted);
+    private int? CurrentUserId
+    {
+        get
+        {
+            var claim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(claim, out var userId) ? userId : null;
+        }
+    }
+
+    private IQueryable<TblSemester> ActiveSemesterQuery
+    {
+        get
+        {
+            var userId = CurrentUserId;
+            var query = _context.TblSemesters.AsNoTracking().Where(s => !s.IsDeleted);
+            if (userId.HasValue)
+            {
+                query = query.Where(s => s.UserId == userId.Value);
+            }
+            return query;
+        }
+    }
 
     #region Get All Semesters
     public async Task<PagedResult<SemesterDto>> GetAllSemestersAsync(PaginationRequest request)
@@ -119,6 +144,7 @@ public class SemesterService : ISemesterService
                 Name = request.Name,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
+                UserId = CurrentUserId,
                 IsDeleted = false
             };
 

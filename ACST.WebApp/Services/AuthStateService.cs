@@ -20,6 +20,7 @@ namespace ACST.WebApp.Services
 
         public bool IsLoggedIn => CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.AccessToken);
         public bool IsAdmin => string.Equals(ActiveRole, "Admin", StringComparison.OrdinalIgnoreCase);
+        public bool IsActualAdmin => CurrentUser != null && string.Equals(CurrentUser.RoleName, "Admin", StringComparison.OrdinalIgnoreCase);
 
         public AuthStateService(IJSRuntime js)
         {
@@ -30,8 +31,8 @@ namespace ACST.WebApp.Services
         {
             try
             {
-                var json = await _js.InvokeAsync<string?>("sessionStorage.getItem", SessionKey);
-                var roleOverride = await _js.InvokeAsync<string?>("sessionStorage.getItem", RoleOverrideKey);
+                var json = await GetStorageItemAsync(SessionKey);
+                var roleOverride = await GetStorageItemAsync(RoleOverrideKey);
 
                 if (!string.IsNullOrEmpty(json))
                 {
@@ -63,8 +64,8 @@ namespace ACST.WebApp.Services
             try
             {
                 var json = JsonSerializer.Serialize(session);
-                await _js.InvokeVoidAsync("sessionStorage.setItem", SessionKey, json);
-                await _js.InvokeVoidAsync("sessionStorage.removeItem", RoleOverrideKey);
+                await SetStorageItemAsync(SessionKey, json);
+                await RemoveStorageItemAsync(RoleOverrideKey);
             }
             catch { }
 
@@ -76,7 +77,7 @@ namespace ACST.WebApp.Services
             ActiveRole = newRole;
             try
             {
-                await _js.InvokeVoidAsync("sessionStorage.setItem", RoleOverrideKey, newRole);
+                await SetStorageItemAsync(RoleOverrideKey, newRole);
             }
             catch { }
 
@@ -90,12 +91,42 @@ namespace ACST.WebApp.Services
 
             try
             {
-                await _js.InvokeVoidAsync("sessionStorage.removeItem", SessionKey);
-                await _js.InvokeVoidAsync("sessionStorage.removeItem", RoleOverrideKey);
+                await RemoveStorageItemAsync(SessionKey);
+                await RemoveStorageItemAsync(RoleOverrideKey);
             }
             catch { }
 
             NotifyStateChanged();
+        }
+
+        private async Task<string?> GetStorageItemAsync(string key)
+        {
+            try
+            {
+                var val = await _js.InvokeAsync<string?>("localStorage.getItem", key);
+                if (!string.IsNullOrEmpty(val)) return val;
+            }
+            catch { }
+
+            try
+            {
+                return await _js.InvokeAsync<string?>("sessionStorage.getItem", key);
+            }
+            catch { }
+
+            return null;
+        }
+
+        private async Task SetStorageItemAsync(string key, string value)
+        {
+            try { await _js.InvokeVoidAsync("localStorage.setItem", key, value); } catch { }
+            try { await _js.InvokeVoidAsync("sessionStorage.setItem", key, value); } catch { }
+        }
+
+        private async Task RemoveStorageItemAsync(string key)
+        {
+            try { await _js.InvokeVoidAsync("localStorage.removeItem", key); } catch { }
+            try { await _js.InvokeVoidAsync("sessionStorage.removeItem", key); } catch { }
         }
 
         private void NotifyStateChanged() => OnChange?.Invoke();
