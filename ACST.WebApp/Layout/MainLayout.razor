@@ -184,6 +184,29 @@ else
     </div>
 }
 
+@if (_showSignOutDialog)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200" @onclick="() => _showSignOutDialog = false">
+        <div class="bg-card border border-border rounded-xl p-6 max-w-sm w-full shadow-2xl text-center animate-in zoom-in-95 duration-200" @onclick:stopPropagation="true">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-foreground mb-1.5">Sign Out</h3>
+            <p class="text-xs text-muted-foreground mb-6 leading-relaxed">Are you sure you want to sign out of your account?</p>
+            <div class="flex items-center gap-3">
+                <button class="flex-1 py-2.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-xs font-semibold transition-all shadow-sm focus:outline-none cursor-pointer"
+                        @onclick="ConfirmLogout">
+                    Sign Out
+                </button>
+                <button class="flex-1 py-2.5 bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-input rounded-lg text-xs font-semibold transition-all focus:outline-none cursor-pointer"
+                        @onclick="() => _showSignOutDialog = false">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 <div id="blazor-error-ui">
     An unhandled error has occurred.
     <a href="" class="reload text-primary ml-2 hover:underline">Reload</a>
@@ -194,6 +217,7 @@ else
     private bool _isCollapsed = false;
     private bool _isMobileMenuOpen = false;
     private bool _initialized = false;
+    private bool _showSignOutDialog = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -234,8 +258,14 @@ else
         await AuthState.SwitchRoleAsync(role);
     }
 
-    private async Task HandleLogout()
+    private void HandleLogout()
     {
+        _showSignOutDialog = true;
+    }
+
+    private async Task ConfirmLogout()
+    {
+        _showSignOutDialog = false;
         await AuthState.LogoutAsync();
         Navigation.NavigateTo("login");
     }
