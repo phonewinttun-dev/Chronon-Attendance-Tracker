@@ -51,7 +51,9 @@ public class GoogleCalendarService : IGoogleCalendarService
             DataStore = new FileDataStore("ChrononGoogleAuthStore")
         });
 
-        var token = await flow.LoadTokenAsync("user", CancellationToken.None);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        var token = await flow.LoadTokenAsync("user", cts.Token);
         if (token == null)
         {
             throw new InvalidOperationException("User is not connected to Google Calendar. Please authorize first.");
@@ -63,7 +65,7 @@ public class GoogleCalendarService : IGoogleCalendarService
         if (credential.Token.IsStale)
         {
             _logger.LogInformation("Google Calendar access token is expired/stale. Refreshing token.");
-            bool refreshed = await credential.RefreshTokenAsync(CancellationToken.None);
+            bool refreshed = await credential.RefreshTokenAsync(cts.Token);
             if (!refreshed)
             {
                 throw new InvalidOperationException("Failed to refresh Google Calendar token. Please reconnect.");
@@ -196,7 +198,8 @@ public class GoogleCalendarService : IGoogleCalendarService
                 DataStore = new FileDataStore("ChrononGoogleAuthStore")
             });
 
-            await flow.ExchangeCodeForTokenAsync("user", code, redirectUri, CancellationToken.None);
+            using var exchangeCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await flow.ExchangeCodeForTokenAsync("user", code, redirectUri, exchangeCts.Token);
 
             _calendarService = null;
 
@@ -232,7 +235,8 @@ public class GoogleCalendarService : IGoogleCalendarService
                 DataStore = new FileDataStore("ChrononGoogleAuthStore")
             });
 
-            await flow.DeleteTokenAsync("user", CancellationToken.None);
+            using var deleteCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await flow.DeleteTokenAsync("user", deleteCts.Token);
             _calendarService = null;
 
             return Result.Success("Disconnected successfully.");

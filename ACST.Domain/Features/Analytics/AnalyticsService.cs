@@ -38,24 +38,35 @@ public class AnalyticsService : IAnalyticsService
     {
         try
         {
-            var sessions = await _context.TblSessions
+            var stats = await _context.TblSessions
                 .AsNoTracking()
                 .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted))
-                .ToListAsync();
+                .GroupBy(s => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    Present = g.Count(s => s.Status == "Present"),
+                    Absent = g.Count(s => s.Status == "Absent"),
+                    Cancelled = g.Count(s => s.Status == "Cancelled"),
+                    Holiday = g.Count(s => s.Status == "Holiday"),
+                    NotMarked = g.Count(s => s.Status == "Not Marked")
+                })
+                .FirstOrDefaultAsync();
 
-            if (!sessions.Any())
+            if (stats == null || stats.Total == 0)
             {
                 return Result<OverallAnalyticsDto>.Failure("No sessions found for this semester.");
             }
 
-            var stats = CalculateStats(sessions);
+            int valid = stats.Total - (stats.Cancelled + stats.Holiday + stats.NotMarked);
+            double attendanceRate = valid > 0 ? (double)stats.Present / valid * 100 : 0;
 
             return Result<OverallAnalyticsDto>.Success(new OverallAnalyticsDto
             {
-                OverallRate = Math.Round(stats.AttendanceRate, 2),
+                OverallRate = Math.Round(attendanceRate, 2),
                 TotalPresent = stats.Present,
                 TotalAbsent = stats.Absent,
-                TotalSessions = stats.Valid,
+                TotalSessions = valid,
                 ExcludedHolidaysCount = stats.Holiday,
                 ExcludedCancelledCount = stats.Cancelled
             });
@@ -75,24 +86,42 @@ public class AnalyticsService : IAnalyticsService
             var module = await _context.TblModules.FindAsync(moduleId);
             if (module == null) return Result<ModuleAnalyticsDto>.Failure("Module not found.");
 
-            var sessions = await _context.TblSessions
+            var stats = await _context.TblSessions
                 .AsNoTracking()
                 .Where(s => s.ModuleId == moduleId && s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted))
-                .ToListAsync();
+                .GroupBy(s => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    Present = g.Count(s => s.Status == "Present"),
+                    Absent = g.Count(s => s.Status == "Absent"),
+                    Cancelled = g.Count(s => s.Status == "Cancelled"),
+                    Holiday = g.Count(s => s.Status == "Holiday"),
+                    NotMarked = g.Count(s => s.Status == "Not Marked")
+                })
+                .FirstOrDefaultAsync();
 
-            var stats = CalculateStats(sessions);
+            int total = stats?.Total ?? 0;
+            int present = stats?.Present ?? 0;
+            int absent = stats?.Absent ?? 0;
+            int cancelled = stats?.Cancelled ?? 0;
+            int holiday = stats?.Holiday ?? 0;
+            int notMarked = stats?.NotMarked ?? 0;
+
+            int valid = total - (cancelled + holiday + notMarked);
+            double rate = valid > 0 ? (double)present / valid * 100 : 0;
 
             return Result<ModuleAnalyticsDto>.Success(new ModuleAnalyticsDto
             {
                 ModuleId = moduleId,
                 ModuleName = module.Name,
-                AttendanceRate = Math.Round(stats.AttendanceRate, 2),
-                TotalPresent = stats.Present,
-                TotalAbsent = stats.Absent,
-                TotalSessions = stats.Total,
-                NotMarked = stats.NotMarked,
-                Cancelled = stats.Cancelled,
-                Holiday = stats.Holiday
+                AttendanceRate = Math.Round(rate, 2),
+                TotalPresent = present,
+                TotalAbsent = absent,
+                TotalSessions = total,
+                NotMarked = notMarked,
+                Cancelled = cancelled,
+                Holiday = holiday
             });
         }
         catch (Exception ex)
@@ -169,6 +198,25 @@ public class AnalyticsService : IAnalyticsService
         }
     }
 
+    private record SessionDateAggregate(DateOnly Date, int Total, int Present, int Absent, int Cancelled, int Holiday, int NotMarked);
+
+    private static (int Total, int Present, int Absent, int Cancelled, int Holiday, int NotMarked, int Valid, double AttendanceRate) CombineAggregates(IEnumerable<SessionDateAggregate> aggs)
+    {
+        int total = 0, present = 0, absent = 0, cancelled = 0, holiday = 0, notMarked = 0;
+        foreach (var a in aggs)
+        {
+            total += a.Total;
+            present += a.Present;
+            absent += a.Absent;
+            cancelled += a.Cancelled;
+            holiday += a.Holiday;
+            notMarked += a.NotMarked;
+        }
+        int valid = total - (cancelled + holiday + notMarked);
+        double rate = valid > 0 ? (double)present / valid * 100 : 0;
+        return (total, present, absent, cancelled, holiday, notMarked, valid, rate);
+    }
+
     public async Task<Result<DashboardDailyWeeklyDto>> GetDashboardDailyWeeklyAsync(long semesterId, int? month = null)
     {
         try
@@ -182,17 +230,28 @@ public class AnalyticsService : IAnalyticsService
                 query = query.Where(s => s.SessionDate.Month == month.Value);
             }
 
-            var sessions = await query.ToListAsync();
+            var dateAggregates = await query
+                .GroupBy(s => s.SessionDate)
+                .Select(g => new SessionDateAggregate(
+                    g.Key,
+                    g.Count(),
+                    g.Count(s => s.Status == "Present"),
+                    g.Count(s => s.Status == "Absent"),
+                    g.Count(s => s.Status == "Cancelled"),
+                    g.Count(s => s.Status == "Holiday"),
+                    g.Count(s => s.Status == "Not Marked")
+                ))
+                .ToListAsync();
 
             // Group by Day of Week
             var dailyBreakdown = new List<DailyAttendanceDto>();
             var daysOfWeek = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
             foreach (var day in daysOfWeek)
             {
-                var daySessions = sessions.Where(s => s.SessionDate.DayOfWeek == day).ToList();
-                if (daySessions.Any())
+                var dayAggs = dateAggregates.Where(a => a.Date.DayOfWeek == day).ToList();
+                if (dayAggs.Any())
                 {
-                    var dStats = CalculateStats(daySessions);
+                    var dStats = CombineAggregates(dayAggs);
 
                     dailyBreakdown.Add(new DailyAttendanceDto
                     {
@@ -217,20 +276,18 @@ public class AnalyticsService : IAnalyticsService
                 return date.AddDays(-diff);
             }
 
-            var sessionsByWeek = sessions
-                .GroupBy(s => GetMondayOfWeek(s.SessionDate))
+            var aggsByWeek = dateAggregates
+                .GroupBy(a => GetMondayOfWeek(a.Date))
                 .OrderBy(g => g.Key)
                 .ToList();
 
             var weeklyBreakdown = new List<WeeklyAttendanceDto>();
             int weekNum = 1;
-            foreach (var group in sessionsByWeek)
+            foreach (var group in aggsByWeek)
             {
                 var wStart = group.Key;
                 var wEnd = wStart.AddDays(6);
-                var wSessions = group.ToList();
-
-                var wStats = CalculateStats(wSessions);
+                var wStats = CombineAggregates(group);
 
                 weeklyBreakdown.Add(new WeeklyAttendanceDto
                 {
@@ -250,17 +307,15 @@ public class AnalyticsService : IAnalyticsService
             }
 
             // Group by Monthly
-            var sessionsByMonth = sessions
-                .GroupBy(s => new { s.SessionDate.Year, s.SessionDate.Month })
+            var aggsByMonth = dateAggregates
+                .GroupBy(a => new { a.Date.Year, a.Date.Month })
                 .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
                 .ToList();
 
             var monthlyBreakdown = new List<MonthlyAttendanceDto>();
-            foreach (var group in sessionsByMonth)
+            foreach (var group in aggsByMonth)
             {
-                var mSessions = group.ToList();
-                var mStats = CalculateStats(mSessions);
-
+                var mStats = CombineAggregates(group);
                 var monthName = new DateTime(group.Key.Year, group.Key.Month, 1).ToString("MMMM yyyy");
 
                 monthlyBreakdown.Add(new MonthlyAttendanceDto
@@ -297,6 +352,11 @@ public class AnalyticsService : IAnalyticsService
     {
         try
         {
+            var modules = await _context.TblModules
+                .AsNoTracking()
+                .Where(m => m.SemesterId == semesterId && !m.IsDeleted)
+                .ToListAsync();
+
             var query = _context.TblSessions
                 .AsNoTracking()
                 .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
@@ -306,31 +366,47 @@ public class AnalyticsService : IAnalyticsService
                 query = query.Where(s => s.SessionDate.Month == month.Value);
             }
 
-            var sessions = await query.ToListAsync();
-
-            var modules = await _context.TblModules
-                .AsNoTracking()
-                .Where(m => m.SemesterId == semesterId && !m.IsDeleted)
-                .ToListAsync();
+            var moduleAggregates = await query
+                .GroupBy(s => s.ModuleId)
+                .Select(g => new
+                {
+                    ModuleId = g.Key,
+                    Total = g.Count(),
+                    Present = g.Count(s => s.Status == "Present"),
+                    Absent = g.Count(s => s.Status == "Absent"),
+                    Cancelled = g.Count(s => s.Status == "Cancelled"),
+                    Holiday = g.Count(s => s.Status == "Holiday"),
+                    NotMarked = g.Count(s => s.Status == "Not Marked")
+                })
+                .ToDictionaryAsync(x => x.ModuleId);
 
             var moduleBreakdown = new List<ModuleAnalyticsDto>();
             foreach (var mod in modules)
             {
-                var modSessions = sessions.Where(s => s.ModuleId == mod.Id).ToList();
-                var mStats = CalculateStats(modSessions);
+                moduleAggregates.TryGetValue(mod.Id, out var mStats);
+
+                int total = mStats?.Total ?? 0;
+                int present = mStats?.Present ?? 0;
+                int absent = mStats?.Absent ?? 0;
+                int cancelled = mStats?.Cancelled ?? 0;
+                int holiday = mStats?.Holiday ?? 0;
+                int notMarked = mStats?.NotMarked ?? 0;
+
+                int valid = total - (cancelled + holiday + notMarked);
+                double rate = valid > 0 ? (double)present / valid * 100 : 0;
 
                 moduleBreakdown.Add(new ModuleAnalyticsDto
                 {
                     ModuleId = mod.Id,
                     ModuleName = mod.Name,
-                    AttendanceRate = Math.Round(mStats.AttendanceRate, 2),
-                    TotalPresent = mStats.Present,
-                    TotalAbsent = mStats.Absent,
+                    AttendanceRate = Math.Round(rate, 2),
+                    TotalPresent = present,
+                    TotalAbsent = absent,
                     TotalLate = 0,
-                    TotalSessions = mStats.Total,
-                    NotMarked = mStats.NotMarked,
-                    Cancelled = mStats.Cancelled,
-                    Holiday = mStats.Holiday
+                    TotalSessions = total,
+                    NotMarked = notMarked,
+                    Cancelled = cancelled,
+                    Holiday = holiday
                 });
             }
 
@@ -351,29 +427,62 @@ public class AnalyticsService : IAnalyticsService
 
         if (semester == null) return;
 
-        var sessions = await _context.TblSessions
+        var baseQuery = _context.TblSessions
             .AsNoTracking()
-            .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted))
-            .ToListAsync();
+            .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
+
+        var overallStats = await baseQuery
+            .GroupBy(s => 1)
+            .Select(g => new
+            {
+                Total = g.Count(),
+                Present = g.Count(s => s.Status == "Present"),
+                Absent = g.Count(s => s.Status == "Absent"),
+                Cancelled = g.Count(s => s.Status == "Cancelled"),
+                Holiday = g.Count(s => s.Status == "Holiday"),
+                NotMarked = g.Count(s => s.Status == "Not Marked")
+            })
+            .FirstOrDefaultAsync();
+
+        int total = overallStats?.Total ?? 0;
+        int present = overallStats?.Present ?? 0;
+        int absent = overallStats?.Absent ?? 0;
+        int cancelled = overallStats?.Cancelled ?? 0;
+        int holiday = overallStats?.Holiday ?? 0;
+        int notMarked = overallStats?.NotMarked ?? 0;
+
+        int valid = total - (cancelled + holiday + notMarked);
+        double healthRate = valid > 0 ? Math.Round((double)present / valid * 100, 2) : 0;
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(6.5)); // Myanmar Time
 
-        int todaySessions = sessions.Count(s => s.SessionDate == today);
-        int upcomingSessions = sessions.Count(s => s.SessionDate > today && s.SessionDate <= today.AddDays(7));
-
-        var todaySessionsList = sessions.Where(s => s.SessionDate == today).ToList();
-        double? todayAttendanceRate = null;
-        if (todaySessionsList.Any())
-        {
-            var todayStats = CalculateStats(todaySessionsList);
-            if (todayStats.Valid > 0)
+        var todayStats = await baseQuery
+            .Where(s => s.SessionDate == today)
+            .GroupBy(s => 1)
+            .Select(g => new
             {
-                todayAttendanceRate = Math.Round(todayStats.AttendanceRate, 2);
+                Total = g.Count(),
+                Present = g.Count(s => s.Status == "Present"),
+                Absent = g.Count(s => s.Status == "Absent"),
+                Cancelled = g.Count(s => s.Status == "Cancelled"),
+                Holiday = g.Count(s => s.Status == "Holiday"),
+                NotMarked = g.Count(s => s.Status == "Not Marked")
+            })
+            .FirstOrDefaultAsync();
+
+        int todaySessionsCount = todayStats?.Total ?? 0;
+        double? todayAttendanceRate = null;
+        if (todayStats != null)
+        {
+            int todayValid = todayStats.Total - (todayStats.Cancelled + todayStats.Holiday + todayStats.NotMarked);
+            if (todayValid > 0)
+            {
+                todayAttendanceRate = Math.Round((double)todayStats.Present / todayValid * 100, 2);
             }
         }
 
-        var overallStats = CalculateStats(sessions);
-        double healthRate = Math.Round(overallStats.AttendanceRate, 2);
+        int upcomingSessionsCount = await baseQuery
+            .CountAsync(s => s.SessionDate > today && s.SessionDate <= today.AddDays(7));
 
         var warnings = new List<string>();
         if (healthRate < 60)
@@ -398,16 +507,16 @@ public class AnalyticsService : IAnalyticsService
         summary.StartDate = semester.StartDate;
         summary.EndDate = semester.EndDate;
         summary.SemesterHealthRate = healthRate;
-        summary.TodaySessionsCount = todaySessions;
-        summary.UpcomingSessionsCount = upcomingSessions;
+        summary.TodaySessionsCount = todaySessionsCount;
+        summary.UpcomingSessionsCount = upcomingSessionsCount;
         summary.TodayAttendanceRate = todayAttendanceRate;
-        summary.TotalSessions = overallStats.Total;
-        summary.PresentSessions = overallStats.Present;
-        summary.AbsentSessions = overallStats.Absent;
+        summary.TotalSessions = total;
+        summary.PresentSessions = present;
+        summary.AbsentSessions = absent;
         summary.LateSessions = 0;
-        summary.CancelledSessions = overallStats.Cancelled;
-        summary.HolidaySessions = overallStats.Holiday;
-        summary.ValidSessions = overallStats.Valid;
+        summary.CancelledSessions = cancelled;
+        summary.HolidaySessions = holiday;
+        summary.ValidSessions = valid;
         summary.CalculatedRate = healthRate;
         summary.WarningsJson = JsonSerializer.Serialize(warnings);
         summary.UpdatedAt = DateTime.UtcNow;

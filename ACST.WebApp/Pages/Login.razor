@@ -1,3 +1,4 @@
+@page "/"
 @page "/login"
 @using ACST.WebApp.Models
 @using ACST.WebApp.Services
@@ -105,6 +106,15 @@
     private string? _message;
     private bool _isError = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthState.InitializeAsync();
+        if (AuthState.IsLoggedIn)
+        {
+            Navigation.NavigateTo("dashboard");
+        }
+    }
+
     private async Task HandleLogin()
     {
         _isSubmitting = true;
@@ -122,7 +132,7 @@
                 
                 await AuthState.SetSessionAsync(result.Data);
                 await Task.Delay(800);
-                Navigation.NavigateTo("");
+                Navigation.NavigateTo("dashboard");
             }
             else
             {
