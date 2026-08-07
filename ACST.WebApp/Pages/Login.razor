@@ -113,6 +113,14 @@
         {
             Navigation.NavigateTo("dashboard");
         }
+        else
+        {
+            var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri).Trim('/');
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                Navigation.NavigateTo("login");
+            }
+        }
     }
 
     private async Task HandleLogin()
