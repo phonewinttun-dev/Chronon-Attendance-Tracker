@@ -1,6 +1,7 @@
 @page "/holidays"
 @using ACST.WebApp.Models
 @inject HttpClient Http
+@inject AuthStateService AuthState
 
 <PageTitle>Holidays</PageTitle>
 
@@ -78,6 +79,10 @@
                     <tr class="border-b border-border bg-muted/50">
                         <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
                         <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
+                        @if (AuthState.IsAdmin)
+                        {
+                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider w-28">Actions</th>
+                        }
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -108,6 +113,10 @@
                     <tr class="border-b border-border bg-muted/40">
                         <th class="px-4 py-3.5 font-semibold text-muted-foreground">Name</th>
                         <th class="px-4 py-3.5 font-semibold text-muted-foreground">Date</th>
+                        @if (AuthState.IsAdmin)
+                        {
+                            <th class="px-4 py-3.5 font-semibold text-muted-foreground w-28">Actions</th>
+                        }
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -116,6 +125,12 @@
                         <tr class="hover:bg-muted/40 transition-colors">
                             <td class="px-4 py-3.5 text-foreground font-medium">@holiday.Name</td>
                             <td class="px-4 py-3.5 font-mono text-muted-foreground">@holiday.HolidayDate.ToString("dd-MM-yyyy")</td>
+                            @if (AuthState.IsAdmin)
+                            {
+                                <td class="px-4 py-3.5">
+                                    <button class="text-destructive border border-destructive/30 hover:bg-destructive hover:text-destructive-foreground px-3 py-1 rounded transition-colors text-xs font-semibold w-20" @onclick="() => DeleteHoliday(holiday.Id)">Delete</button>
+                                </td>
+                            }
                         </tr>
                     }
                 </tbody>
