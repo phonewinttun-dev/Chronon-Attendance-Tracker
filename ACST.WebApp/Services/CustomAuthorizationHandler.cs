@@ -1,6 +1,8 @@
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,8 +49,21 @@ namespace ACST.WebApp.Services
             {
                 return await base.SendAsync(request, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                if (cancellationToken.IsCancellationRequested || ex is TaskCanceledException || ex is OperationCanceledException)
+                {
+                    throw;
+                }
+
+                bool isConnectionFailure = ex is HttpRequestException httpEx &&
+                    (httpEx.InnerException is SocketException || httpEx.InnerException is IOException);
+
+                if (!isConnectionFailure)
+                {
+                    throw;
+                }
+
                 // Attempt fallback port if primary port is unreachable (e.g. 7019 <-> 5211)
                 var originalUri = request.RequestUri;
                 if (originalUri != null)
@@ -65,21 +80,65 @@ namespace ACST.WebApp.Services
 
                     if (fallbackUri != null)
                     {
+                        HttpRequestMessage? fallbackRequest = null;
                         try
                         {
                             Console.WriteLine($"[CustomAuthorizationHandler] Connection failed to {originalUri}. Retrying with fallback: {fallbackUri}");
-                            request.RequestUri = fallbackUri;
-                            return await base.SendAsync(request, cancellationToken);
+                            fallbackRequest = await CloneHttpRequestMessageAsync(request);
+                            fallbackRequest.RequestUri = fallbackUri;
+
+                            return await base.SendAsync(fallbackRequest, cancellationToken);
                         }
                         catch (Exception fallbackEx)
                         {
                             Console.WriteLine($"[CustomAuthorizationHandler] Fallback connection to {fallbackUri} also failed: {fallbackEx.Message}");
+                            if (fallbackRequest != null && fallbackRequest != request)
+                            {
+                                fallbackRequest.Dispose();
+                            }
+                        }
+                        finally
+                        {
+                            request.RequestUri = originalUri;
                         }
                     }
                 }
 
                 throw;
             }
+        }
+
+        private static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage request)
+        {
+            var clone = new HttpRequestMessage(request.Method, request.RequestUri)
+            {
+                Version = request.Version
+            };
+
+            if (request.Content != null)
+            {
+                var ms = new MemoryStream();
+                await request.Content.CopyToAsync(ms);
+                ms.Position = 0;
+                clone.Content = new StreamContent(ms);
+
+                foreach (var header in request.Content.Headers)
+                {
+                    clone.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+            }
+
+            foreach (var header in request.Headers)
+            {
+                clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+
+            foreach (var prop in request.Options)
+            {
+                clone.Options.Set(new HttpRequestOptionsKey<object?>(prop.Key), prop.Value);
+            }
+
+            return clone;
         }
     }
 }

@@ -32,7 +32,8 @@ builder.Services.AddScoped(sp =>
     };
     return new HttpClient(handler)
     {
-        BaseAddress = new Uri(apiBaseUrl)
+        BaseAddress = new Uri(apiBaseUrl),
+        Timeout = TimeSpan.FromSeconds(30)
     };
 });
 

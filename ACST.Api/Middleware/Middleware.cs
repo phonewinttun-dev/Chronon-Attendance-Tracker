@@ -28,45 +28,10 @@ namespace ACST.Api.Middleware
 
             var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
             var token = authHeader?.Split(" ").Last();
-            bool isTokenValid = false;
 
             if (!string.IsNullOrEmpty(token))
             {
-                isTokenValid = ValidateToken(token, context);
-            }
-            if (!isTokenValid)
-            {
-                var refreshToken = context.Request.Cookies["refreshToken"];
-                if (!string.IsNullOrEmpty(refreshToken))
-                {
-                    try
-                    {
-                        var authService = context.RequestServices.GetRequiredService<IAuthService>();
-                        var result = await authService.RefreshTokenAsync(new RefreshTokenRequest { RefreshToken = refreshToken });
-
-                        if (result.Data != null)
-                        {
-                            var tokenResponse = result.Data;
-
-                            ValidateToken(tokenResponse.AccessToken, context);
-
-                            context.Response.Headers.Append("X-Access-Token", tokenResponse.AccessToken);
-
-                            var cookieOptions = new CookieOptions
-                            {
-                                HttpOnly = true,
-                                Secure = true,
-                                SameSite = SameSiteMode.Strict,
-                                Expires = DateTime.UtcNow.AddDays(7)
-                            };
-                            context.Response.Cookies.Append("refreshToken", tokenResponse.RefreshToken, cookieOptions);
-                        }
-                    }
-                    catch
-                    {
-                        // Refresh failed or service unavailable - continue unauthenticated
-                    }
-                }
+                ValidateToken(token, context);
             }
 
             await _next(context);
