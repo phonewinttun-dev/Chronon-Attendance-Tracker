@@ -39,7 +39,17 @@ namespace ACST.WebApp.Services
                     CurrentUser = JsonSerializer.Deserialize<LoginResponseDto>(json);
                     if (CurrentUser != null)
                     {
-                        ActiveRole = !string.IsNullOrEmpty(roleOverride) ? roleOverride : CurrentUser.RoleName;
+                        if (IsAccessTokenExpired(CurrentUser.AccessToken))
+                        {
+                            CurrentUser = null;
+                            ActiveRole = "User";
+                            await RemoveStorageItemAsync(SessionKey);
+                            await RemoveStorageItemAsync(RoleOverrideKey);
+                        }
+                        else
+                        {
+                            ActiveRole = !string.IsNullOrEmpty(roleOverride) ? roleOverride : CurrentUser.RoleName;
+                        }
                     }
                 }
                 else
@@ -97,6 +107,48 @@ namespace ACST.WebApp.Services
             catch { }
 
             NotifyStateChanged();
+        }
+
+        private bool IsAccessTokenExpired(string? accessToken)
+        {
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                return true;
+            }
+
+            try
+            {
+                var parts = accessToken.Split('.');
+                if (parts.Length != 3)
+                {
+                    return true;
+                }
+
+                var payload = parts[1]
+                    .Replace('-', '+')
+                    .Replace('_', '/');
+                var padding = (payload.Length % 4) switch
+                {
+                    2 => "==",
+                    3 => "=",
+                    _ => string.Empty
+                };
+                payload += padding;
+
+                var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(payload));
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                if (!doc.RootElement.TryGetProperty("exp", out var expElement) || !expElement.TryGetInt64(out var expSeconds))
+                {
+                    return true;
+                }
+
+                var expiration = DateTimeOffset.FromUnixTimeSeconds(expSeconds).UtcDateTime;
+                return expiration <= DateTime.UtcNow;
+            }
+            catch
+            {
+                return true;
+            }
         }
 
         private async Task<string?> GetStorageItemAsync(string key)
