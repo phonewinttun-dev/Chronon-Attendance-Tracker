@@ -55,8 +55,9 @@ else
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div class="relative w-full md:max-w-xs">
             <input type="text" 
-                   class="w-full pl-9 pr-8 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
+                   class="w-full pl-9 pr-8 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary text-xs transition-all placeholder:text-muted-foreground" 
                    placeholder="Search name, email, or role..." 
+                   aria-label="Search users by name, email, or role"
                    @bind="_searchTerm" 
                    @bind:event="oninput" />
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
@@ -64,7 +65,7 @@ else
             </div>
             @if (!string.IsNullOrEmpty(_searchTerm))
             {
-                <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-muted-foreground hover:text-foreground text-sm" @onclick="() => _searchTerm = string.Empty">×</button>
+                <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-muted-foreground hover:text-foreground text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded" @onclick="() => _searchTerm = string.Empty" title="Clear search" aria-label="Clear search">×</button>
             }
         </div>
     </div>
