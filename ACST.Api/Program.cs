@@ -1,3 +1,4 @@
+using ACST.Api.Extensions;
 using ACST.Domain.Features;
 using ACST.Domain.Features.Analytics;
 using ACST.Domain.Features.Notifications;
@@ -26,6 +27,9 @@ try
 
     // Add Domain feature services and DB Context
     builder.AddDomain();
+
+    // Add Database & Supabase Health Checks
+    builder.Services.AddDatabaseHealthChecks();
 
     // Configure Hangfire Background Jobs
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -153,6 +157,9 @@ try
             service => service.PurgeOldNotificationsAsync(),
             "0 2 * * *");
     }
+
+    // Health Checks Endpoint
+    app.MapAppHealthChecks();
 
     app.MapControllers();
 
