@@ -1,9 +1,11 @@
-<div class="flex items-center justify-center gap-1.5 py-4 select-none">
+<nav aria-label="Pagination Navigation" class="flex items-center justify-center gap-1.5 py-4 select-none">
     <!-- Previous Button -->
     <button type="button" 
-            class="flex items-center px-3 py-1.5 text-sm font-medium transition-all rounded-md focus:outline-none 
+            class="flex items-center px-3 py-1.5 text-sm font-medium transition-all rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
                    @(HasPrevious ? "text-foreground hover:bg-accent/40 cursor-pointer" : "text-muted-foreground/50 cursor-not-allowed")"
             disabled="@(!HasPrevious)"
+            aria-disabled="@(!HasPrevious)"
+            aria-label="Go to previous page"
             @onclick="GoToPrevious">
         <!-- SVG Left Arrow -->
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -17,17 +19,19 @@
     {
         if (pageNum == null)
         {
-            <span class="px-2 text-sm text-muted-foreground font-medium select-none">...</span>
+            <span class="px-2 text-sm text-muted-foreground font-medium select-none" aria-hidden="true">...</span>
         }
         else
         {
             var p = pageNum.Value;
             var isActive = p == PageNumber;
             <button type="button"
-                    class="w-9 h-9 flex items-center justify-center text-sm font-medium rounded-full transition-all focus:outline-none
+                    class="w-9 h-9 flex items-center justify-center text-sm font-medium rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
                            @(isActive 
                                ? "bg-primary/15 text-primary font-semibold cursor-default" 
                                : "text-muted-foreground hover:text-foreground hover:bg-accent/40 cursor-pointer")"
+                    aria-label="Page @p"
+                    aria-current="@(isActive ? "page" : null)"
                     @onclick="() => SelectPage(p)">
                 @p
             </button>
@@ -36,9 +40,11 @@
 
     <!-- Next Button -->
     <button type="button" 
-            class="flex items-center px-3 py-1.5 text-sm font-medium transition-all rounded-md focus:outline-none 
+            class="flex items-center px-3 py-1.5 text-sm font-medium transition-all rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
                    @(HasNext ? "text-foreground hover:bg-accent/40 cursor-pointer" : "text-muted-foreground/50 cursor-not-allowed")"
             disabled="@(!HasNext)"
+            aria-disabled="@(!HasNext)"
+            aria-label="Go to next page"
             @onclick="GoToNext">
         Next
         <!-- SVG Right Arrow -->
@@ -46,7 +52,7 @@
             <line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/>
         </svg>
     </button>
-</div>
+</nav>
 
 @code {
     [Parameter]

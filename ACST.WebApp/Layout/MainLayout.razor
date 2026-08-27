@@ -18,11 +18,16 @@
 }
 else
 {
-    <div class="flex flex-col md:flex-row min-h-screen bg-background text-foreground">
+    <div class="flex flex-col md:flex-row min-h-screen bg-background text-foreground relative">
+        <!-- Skip to main content link for accessibility -->
+        <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-3 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring">
+            Skip to main content
+        </a>
+
         <!-- Mobile Header -->
         <header class="h-16 bg-card border-b border-border flex items-center justify-between px-6 md:hidden shrink-0">
             <div class="flex items-center gap-3">
-                <button @onclick="ToggleMobileMenu" class="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors focus:outline-none" aria-label="Toggle Menu">
+                <button @onclick="ToggleMobileMenu" class="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Toggle Menu" aria-expanded="@_isMobileMenuOpen">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
                         <line x1="4" x2="20" y1="12" y2="12"/>
                         <line x1="4" x2="20" y1="6" y2="6"/>
@@ -39,11 +44,11 @@ else
         <!-- Mobile Drawer Backdrop -->
         @if (_isMobileMenuOpen)
         {
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden" @onclick="ToggleMobileMenu"></div>
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden" @onclick="ToggleMobileMenu" aria-hidden="true"></div>
         }
 
         <!-- Sidebar Navigation -->
-        <nav class="@GetSidebarClass()">
+        <nav class="@GetSidebarClass()" aria-label="Sidebar Navigation">
             <!-- Sidebar Header -->
             <div class="@GetSidebarHeaderClass()">
                 <div class="@GetSidebarTitleClass()">
@@ -178,7 +183,7 @@ else
             </header>
 
             <!-- Main Content -->
-            <main class="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+            <main id="main-content" tabindex="-1" class="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full focus:outline-none">
                 @Body
             </main>
         </div>

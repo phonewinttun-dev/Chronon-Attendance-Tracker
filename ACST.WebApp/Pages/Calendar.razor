@@ -13,23 +13,27 @@
         <h1 class="text-2xl font-bold tracking-tight text-foreground">Schedule Calendar</h1>
         <p class="text-muted-foreground text-sm mt-1">View monthly schedules, class sessions, and holidays.</p>
     </div>
-    
-    <!-- Google Calendar Integration UI Removed -->v>
 </div>
 
 <!-- Controls Panel -->
 <div class="bg-card border border-border p-4 rounded-lg shadow-sm mb-6 flex flex-wrap justify-between items-center gap-4">
     <!-- Month Navigation -->
     <div class="flex items-center gap-3">
-        <button class="bg-secondary hover:bg-secondary/80 text-foreground p-2 border border-border rounded-md transition-colors" @onclick="PrevMonth">
+        <button class="bg-secondary hover:bg-secondary/80 text-foreground p-2 border border-border rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" 
+                aria-label="Previous month"
+                @onclick="PrevMonth">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <span class="text-lg font-bold font-mono text-foreground min-w-[160px] text-center">@_viewDate.ToString("MMMM yyyy")</span>
-        <button class="bg-secondary hover:bg-secondary/80 text-foreground p-2 border border-border rounded-md transition-colors" @onclick="NextMonth">
+        <span class="text-lg font-bold font-mono text-foreground min-w-[160px] text-center" aria-live="polite">@_viewDate.ToString("MMMM yyyy")</span>
+        <button class="bg-secondary hover:bg-secondary/80 text-foreground p-2 border border-border rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" 
+                aria-label="Next month"
+                @onclick="NextMonth">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
         </button>
         
-        <button class="bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2 border border-border rounded-md transition-colors text-sm font-semibold" @onclick="GoToToday">
+        <button class="bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2 border border-border rounded-md transition-colors text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" 
+                aria-label="Jump to current month"
+                @onclick="GoToToday">
             Today
         </button>
     </div>

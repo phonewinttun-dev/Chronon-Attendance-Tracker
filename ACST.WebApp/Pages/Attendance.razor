@@ -185,20 +185,11 @@ else
         <!-- Pagination -->
         @if (_totalPages > 1)
         {
-            <div class="flex items-center justify-between border-t border-border px-4 py-3 bg-accent/10">
-                <span class="text-xs text-muted-foreground font-mono">
+            <div class="flex flex-col sm:flex-row items-center justify-between border-t border-border px-4 py-2 bg-accent/10">
+                <span class="text-xs text-muted-foreground font-mono mb-2 sm:mb-0">
                     Page @_pageNumber of @_totalPages (@_totalCount sessions)
                 </span>
-                <div class="flex items-center gap-1.5">
-                    <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all border border-border bg-card text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
-                            disabled="@(!_hasPrevious)" @onclick="GoToPreviousPage">
-                        ← Prev
-                    </button>
-                    <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all border border-border bg-card text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
-                            disabled="@(!_hasNext)" @onclick="GoToNextPage">
-                        Next →
-                    </button>
-                </div>
+                <PaginationControl PageNumber="_pageNumber" TotalPages="_totalPages" PageChanged="OnPageChanged" />
             </div>
         }
     </div>
@@ -730,6 +721,15 @@ else
     }
 
     // --- Pagination ---
+
+    private async Task OnPageChanged(int newPage)
+    {
+        if (newPage >= 1 && newPage <= _totalPages && newPage != _pageNumber)
+        {
+            _pageNumber = newPage;
+            await LoadSessions();
+        }
+    }
 
     private async Task GoToPreviousPage()
     {

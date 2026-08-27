@@ -139,3 +139,13 @@ This document lists all of the HTTP endpoints defined within the project, detail
 | `GET` | `api/semesters/{id}/dashboard/summary` | `GetDashboardSummary` | `Permissions.Analytics.View` | Retrieves dashboard summary for current semester & warnings. |
 | `GET` | `api/semesters/{id}/dashboard/daily-weekly` | `GetDashboardDailyWeekly` | `Permissions.Analytics.View` | Retrieves day/week chart data (supports optional `month` query parameter). |
 | `GET` | `api/semesters/{id}/dashboard/modules` | `GetDashboardModules` | `Permissions.Analytics.View` | Retrieves module breakdown chart data (supports optional `month` query parameter). |
+
+---
+
+## 11. System & Diagnostics
+* **Base Route:** `/health`
+
+| HTTP Verb | Route | Method | Required Permission | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/health` | `HealthCheck` | *None (Public)* | Checks status and connectivity of the Supabase PostgreSQL database (`AppDbContext`). Returns HTTP 200 (Healthy) or HTTP 503 (Unhealthy) with diagnostic JSON. |
+
