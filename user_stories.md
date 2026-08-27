@@ -194,3 +194,36 @@
 - The reminder is displayed only for classes which are not marked as present or absent.
 
 ---
+
+#### Search & Discovery
+
+**US-23:** As a user, I want to search across Modules, Semesters, and Class Sessions so that I can quickly find specific academic records.
+**Acceptance Criteria:**
+
+- I can perform paged search queries for Modules (with optional Semester filtering).
+- I can search for Semesters by keyword.
+- I can search for Class Sessions filtering by keyword, Semester, and Module.
+- Search results return matching entities with pagination metadata.
+
+---
+
+#### Class Session Management
+
+**US-24:** As a user, I want to edit details or delete individual Class Sessions to accommodate one-off schedule adjustments.
+**Acceptance Criteria:**
+
+- I can edit the start time, end time, topic, or date of an existing individual Class Session.
+- I can delete an individual Class Session if it is no longer relevant.
+- Edits or deletions update the database and reflect immediately across attendance views and analytics.
+- If Google Calendar integration is enabled, updates or deletions are synchronized with the corresponding calendar event.
+
+---
+
+#### User Profile & Account Management
+
+**US-25:** As a user, I want to manage my account profile, and as an Admin, view all user accounts.
+**Acceptance Criteria:**
+
+- A user can update their profile information (such as display name or credentials).
+- An Admin can retrieve a list of all registered user accounts with their associated roles and statuses.
+
