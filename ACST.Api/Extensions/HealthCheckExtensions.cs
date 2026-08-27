@@ -36,8 +36,8 @@ public static class HealthCheckExtensions
                         {
                             status = entry.Value.Status.ToString(),
                             description = entry.Value.Description ?? (entry.Value.Status == HealthStatus.Healthy 
-                                ? "Supabase PostgreSQL Database is healthy and responsive." 
-                                : "Supabase PostgreSQL Database check failed."),
+                                ? "Database is healthy and responsive." 
+                                : "Database check failed."),
                             duration = entry.Value.Duration.ToString(),
                             tags = entry.Value.Tags,
                             error = entry.Value.Exception?.Message
