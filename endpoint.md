@@ -15,6 +15,7 @@ This document lists all of the HTTP endpoints defined within the project, detail
 | `POST` | `api/Auth/register` | `Register` | *None (Public)* | Registers a new user account. |
 | `POST` | `api/Auth/login` | `Login` | *None (Public)* | Authenticates user credentials and issues JWT access token & refresh token. |
 | `POST` | `api/Auth/refresh-token` | `RefreshToken` | *None (Public)* | Rotates expired access token using a valid refresh token. |
+| `GET` | `api/Auth/users` | `GetUsers` | *None (Authenticated/Admin)* | Retrieves all registered system user accounts. |
 
 ---
 

@@ -21,9 +21,15 @@ namespace ACST.Domain.Features
     {
         public static void AddDomain(this WebApplicationBuilder builder)
         {
-            // Database
+            // Database with transient fault resilience
             builder.Services.AddDbContextPool<AppDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), npgsqlOptions =>
+                {
+                    npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(5),
+                        errorCodesToAdd: null);
+                }));
 
             // HttpContextAccessor for ClaimsPrincipal access
             builder.Services.AddHttpContextAccessor();

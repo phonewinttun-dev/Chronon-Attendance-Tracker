@@ -23,9 +23,28 @@
         <!-- Alert Message -->
         @if (!string.IsNullOrEmpty(_message))
         {
-            <div class="p-3.5 rounded-lg border text-xs font-medium flex items-center gap-2.5 @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-primary/10 border-primary/30 text-primary")">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span>@_message</span>
+            <div role="@(_isError ? "alert" : "status")" 
+                 aria-live="polite" 
+                 class="p-3.5 rounded-lg border text-xs font-medium flex items-center justify-between gap-2.5 @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-primary/10 border-primary/30 text-primary")">
+                <div class="flex items-center gap-2.5">
+                    @if (_isError)
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
+                    }
+                    <span>@_message</span>
+                </div>
+                @if (_canManualRetry && !_isSubmitting)
+                {
+                    <button type="button" 
+                            class="px-2.5 py-1 text-[11px] font-semibold rounded bg-destructive/20 hover:bg-destructive/30 text-destructive transition-colors shrink-0 cursor-pointer" 
+                            @onclick="HandleLogin">
+                        Retry Now
+                    </button>
+                }
             </div>
         }
 
@@ -75,11 +94,18 @@
 
             <button type="submit" 
                     disabled="@_isSubmitting" 
-                    class="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2.5 rounded-lg text-xs font-bold transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2">
+                    class="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2.5 rounded-lg text-xs font-bold transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer">
                 @if (_isSubmitting)
                 {
                     <svg class="animate-spin h-4 w-4 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    <span>Signing In...</span>
+                    @if (_isRetrying)
+                    {
+                        <span>Retrying (Attempt @_retryAttempt of @_maxRetryAttempts)...</span>
+                    }
+                    else
+                    {
+                        <span>Signing In...</span>
+                    }
                 }
                 else
                 {
@@ -102,6 +128,10 @@
 @code {
     private LoginRequestDto _loginModel = new();
     private bool _isSubmitting = false;
+    private bool _isRetrying = false;
+    private int _retryAttempt = 1;
+    private int _maxRetryAttempts = 3;
+    private bool _canManualRetry = false;
     private bool _showPassword = false;
     private string? _message;
     private bool _isError = false;
@@ -126,17 +156,56 @@
     private async Task HandleLogin()
     {
         _isSubmitting = true;
+        _isRetrying = false;
+        _retryAttempt = 1;
+        _canManualRetry = false;
         _message = null;
 
         try
         {
-            var response = await Http.PostAsJsonAsync("api/Auth/login", _loginModel);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult<LoginResponseDto>>();
-
-            if (response.IsSuccessStatusCode && result?.IsSuccess == true && result.Data != null)
+            var retryOptions = new RetryOptions
             {
-                _message = $"Login successful! Welcome {result.Data.FullName} ({result.Data.RoleName}).";
+                MaxRetries = 3,
+                InitialDelay = TimeSpan.FromSeconds(1),
+                BackoffMultiplier = 2.0
+            };
+
+            var result = await RetryHelper.ExecuteWithRetryAsync(
+                async ct =>
+                {
+                    var response = await Http.PostAsJsonAsync("api/Auth/login", _loginModel, ct);
+
+                    // Check for transient server status codes (5xx, 408, 429) to trigger automatic retry
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var code = (int)response.StatusCode;
+                        if (code is 500 or 502 or 503 or 504 or 408 or 429)
+                        {
+                            throw new HttpRequestException($"Transient server error: {response.StatusCode}", null, response.StatusCode);
+                        }
+                    }
+
+                    return await response.Content.ReadFromJsonAsync<ApiResult<LoginResponseDto>>(cancellationToken: ct);
+                },
+                options: retryOptions,
+                onRetry: async (attempt, maxAttempts, delay, ex) =>
+                {
+                    _isRetrying = true;
+                    _retryAttempt = attempt + 1;
+                    _maxRetryAttempts = maxAttempts;
+                    var delaySec = (int)Math.Ceiling(delay.TotalSeconds);
+                    _message = $"Connection issue detected. Retrying in {delaySec}s (Attempt {_retryAttempt} of {maxAttempts})...";
+                    _isError = true;
+                    StateHasChanged();
+                    await Task.CompletedTask;
+                }
+            );
+
+            if (result?.IsSuccess == true && result.Data != null)
+            {
+                _message = $"Login successful! Welcome {result.Data.FullName} ({result.Data.RoleName}). Redirecting...";
                 _isError = false;
+                _canManualRetry = false;
                 
                 await AuthState.SetSessionAsync(result.Data);
                 await Task.Delay(800);
@@ -146,24 +215,28 @@
             {
                 _message = result?.Message ?? "Invalid email or password.";
                 _isError = true;
+                _canManualRetry = false;
             }
         }
         catch (Exception ex)
         {
-            if (ex.Message.Contains("Failed to fetch", StringComparison.OrdinalIgnoreCase) || ex is HttpRequestException)
+            if (ex.Message.Contains("Failed to fetch", StringComparison.OrdinalIgnoreCase) || ex is HttpRequestException || ex is TimeoutException)
             {
-                _message = "Unable to connect to the server.";
+                _message = "Unable to connect to the server after multiple attempts. Please check your connection.";
             }
             else
             {
                 _message = $"Error: {ex.Message}";
             }
             _isError = true;
+            _canManualRetry = true;
         }
         finally
         {
             _isSubmitting = false;
+            _isRetrying = false;
         }
     }
 }
+
 
