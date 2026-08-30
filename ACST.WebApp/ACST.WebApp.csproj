@@ -17,6 +17,10 @@
     <ServiceWorkerInclude Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ACST.Shared\ACST.Shared.csproj" />
+  </ItemGroup>
+
   <Target Name="Tailwind" BeforeTargets="Build">
     <Exec Command="npm install" />
     <Exec Command="npm run build:css" />

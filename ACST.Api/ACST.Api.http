@@ -1,6 +1,34 @@
-@ACST.Api_HostAddress = http://localhost:5211
+@baseUrl = http://localhost:5211
 
-GET {{ACST.Api_HostAddress}}/weatherforecast/
+### Register Account
+POST {{baseUrl}}/api/Auth/register
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "Password123!",
+  "fullName": "Test User",
+  "mobileNum": "+95912345678"
+}
+
+### Login
+# @name loginRequest
+POST {{baseUrl}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "Password123!"
+}
+
+### Refresh Token
+POST {{baseUrl}}/api/Auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "your_refresh_token_here"
+}
+
+### Get All Users
+GET {{baseUrl}}/api/Auth/users
 Accept: application/json
-
-###

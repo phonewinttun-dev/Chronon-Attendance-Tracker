@@ -22,16 +22,16 @@ namespace ACST.Domain.Features.Auth
             _configuration = configuration;
         }
 
-        public async Task<Result<LoginResponse>> RegisterAsync(RegisterRequest request)
+        public async Task<Result<LoginResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
         {
-            if (await _context.TblUsers.AnyAsync(u => u.Email == request.Email && u.DeleteFlag != true))
+            if (await _context.TblUsers.AnyAsync(u => u.Email == request.Email && u.DeleteFlag != true, cancellationToken))
             {
                 return Result<LoginResponse>.Failure("Email is already registered.");
             }
 
             // Always assign default "User" Role on public registration
-            var role = await _context.TblRoles.FirstOrDefaultAsync(r => r.RoleName == "User" && r.DeleteFlag != true)
-                   ?? await _context.TblRoles.FirstOrDefaultAsync(r => r.DeleteFlag != true);
+            var role = await _context.TblRoles.FirstOrDefaultAsync(r => r.RoleName == "User" && r.DeleteFlag != true, cancellationToken)
+                   ?? await _context.TblRoles.FirstOrDefaultAsync(r => r.DeleteFlag != true, cancellationToken);
 
             if (role == null)
             {
@@ -53,7 +53,7 @@ namespace ACST.Domain.Features.Auth
             };
 
             _context.TblUsers.Add(user);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             // Auto-login newly registered user
             user.Role = role;
@@ -61,14 +61,14 @@ namespace ACST.Domain.Features.Auth
             {
                 Email = request.Email,
                 Password = request.Password
-            });
+            }, cancellationToken);
         }
 
-        public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
+        public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
             var user = await _context.TblUsers
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Email == request.Email && u.DeleteFlag != true);
+                .FirstOrDefaultAsync(u => u.Email == request.Email && u.DeleteFlag != true, cancellationToken);
 
             if (user == null || !VerifyPassword(request.Password, user.PasswordHash ?? ""))
             {
@@ -79,7 +79,7 @@ namespace ACST.Domain.Features.Auth
             var permissions = await _context.TblRolepermissions
                 .Where(rp => rp.RoleId == user.RoleId && rp.DeleteFlag != true && rp.Permission != null && rp.Permission.PermissionName != null)
                 .Select(rp => rp.Permission!.PermissionName!)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             var accessToken = _tokenService.GenerateAccessToken(user, permissions);
             var refreshTokenString = _tokenService.GenerateRefreshToken();
@@ -99,7 +99,7 @@ namespace ACST.Domain.Features.Auth
 
             _context.TblUsertokens.Add(userToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             var response = new LoginResponse
             {
@@ -114,14 +114,14 @@ namespace ACST.Domain.Features.Auth
             return Result<LoginResponse>.Success(response, "Login successful.");
         }
 
-        public async Task<Result<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request)
+        public async Task<Result<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default)
         {
             var hashedIncomingToken = HashToken(request.RefreshToken);
 
             var userToken = await _context.TblUsertokens
                 .Include(ut => ut.User)
                 .ThenInclude(u => u.Role!)
-                .FirstOrDefaultAsync(ut => (ut.RefreshToken == hashedIncomingToken || ut.RefreshToken == request.RefreshToken) && ut.DeleteFlag != true);
+                .FirstOrDefaultAsync(ut => (ut.RefreshToken == hashedIncomingToken || ut.RefreshToken == request.RefreshToken) && ut.DeleteFlag != true, cancellationToken);
 
             if (userToken == null || userToken.IsRevoked == true || userToken.ExpiresAt < DateTime.UtcNow || userToken.User == null || userToken.User.DeleteFlag == true)
             {
@@ -134,7 +134,7 @@ namespace ACST.Domain.Features.Auth
             var permissions = await _context.TblRolepermissions
                 .Where(rp => rp.RoleId == user.RoleId && rp.DeleteFlag != true && rp.Permission != null && rp.Permission.PermissionName != null)
                 .Select(rp => rp.Permission!.PermissionName!)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             var newAccessToken = _tokenService.GenerateAccessToken(user, permissions);
             var newRefreshTokenString = _tokenService.GenerateRefreshToken();
@@ -157,7 +157,7 @@ namespace ACST.Domain.Features.Auth
             };
 
             _context.TblUsertokens.Add(newUsertoken);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             var response = new LoginResponse
             {
@@ -172,9 +172,9 @@ namespace ACST.Domain.Features.Auth
             return Result<LoginResponse>.Success(response, "Tokens refreshed successfully.");
         }
 
-        public async Task<Result> UpdateProfileAsync(int userId, UpdateProfileRequest request)
+        public async Task<Result> UpdateProfileAsync(int userId, UpdateProfileRequest request, CancellationToken cancellationToken = default)
         {
-            var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId && u.DeleteFlag != true);
+            var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId && u.DeleteFlag != true, cancellationToken);
             if (user == null)
             {
                 return Result.Failure("User account not found.");
@@ -183,12 +183,12 @@ namespace ACST.Domain.Features.Auth
             user.FullName = request.FullName;
             user.MobileNum = request.MobileNum;
             user.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             return Result.Success("Profile updated successfully.");
         }
 
-        public async Task<Result<List<UserAccountResponse>>> GetAllUsersAsync()
+        public async Task<Result<List<UserAccountResponse>>> GetAllUsersAsync(CancellationToken cancellationToken = default)
         {
             var users = await _context.TblUsers
                 .Where(u => u.DeleteFlag != true)
@@ -203,7 +203,7 @@ namespace ACST.Domain.Features.Auth
                     RoleName = u.Role != null ? u.Role.RoleName : "",
                     CreatedAt = u.CreatedAt
                 })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return Result<List<UserAccountResponse>>.Success(users);
         }
