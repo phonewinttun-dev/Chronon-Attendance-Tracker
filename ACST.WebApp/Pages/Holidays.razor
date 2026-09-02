@@ -7,13 +7,13 @@
 
 <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
-        <h1 class="text-2xl font-bold tracking-tight text-foreground">Holidays</h1>
-        <p class="text-muted-foreground text-sm mt-1">Manage public holidays which are excluded from attendance tracking.</p>
+        <h1 class="text-3xl font-black tracking-tight text-foreground font-sans">Holidays</h1>
+        <p class="text-muted-foreground text-xs font-mono mt-1">Manage public holidays which are excluded from attendance tracking.</p>
     </div>
     @if (_googleCalendarEnabled)
     {
         <div class="flex items-center gap-3">
-            <button class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium px-4 py-2 rounded-md text-sm transition-colors" @onclick="ToggleFetchPanel">
+            <button class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer" @onclick="ToggleFetchPanel">
                 Fetch from Google Calendar
             </button>
         </div>
@@ -22,30 +22,30 @@
 
 @if (_showFetchPanel)
 {
-    <div class="bg-card border border-border p-6 rounded-lg shadow-sm mb-8">
-        <h2 class="text-base font-bold mb-4 text-foreground tracking-tight">Fetch Holidays from Google Calendar</h2>
+    <div class="bg-card border-2 border-black dark:border-zinc-700 p-6 rounded-xl shadow-neo mb-8 font-mono">
+        <h2 class="text-base font-black mb-4 text-foreground tracking-tight font-sans">Fetch Holidays from Google Calendar</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
-                <label class="block text-sm font-semibold text-muted-foreground mb-1">Google Calendar ID</label>
-                <input type="text" class="w-full p-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring text-sm h-9" @bind="_calendarId" placeholder="e.g. en.mm#holiday@group.v.calendar.google.com" />
-                <p class="text-[11px] text-muted-foreground mt-1">Use <code>en.mm#holiday@group.v.calendar.google.com</code> for Myanmar, <code>en.usa#holiday@group.v.calendar.google.com</code> for US.</p>
+                <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Google Calendar ID</label>
+                <input type="text" class="w-full p-2 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53] h-9" @bind="_calendarId" placeholder="e.g. en.mm#holiday@group.v.calendar.google.com" />
+                <p class="text-[10px] text-muted-foreground mt-1">Use <code>en.mm#holiday@group.v.calendar.google.com</code> for Myanmar, <code>en.usa#holiday@group.v.calendar.google.com</code> for US.</p>
             </div>
             <div>
-                <label class="block text-sm font-semibold text-muted-foreground mb-1">Start Date</label>
+                <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Start Date</label>
                 <DatePicker @bind-Value="_startDate" />
             </div>
             <div>
-                <label class="block text-sm font-semibold text-muted-foreground mb-1">End Date</label>
+                <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">End Date</label>
                 <DatePicker @bind-Value="_endDate" />
             </div>
         </div>
         
         <div class="flex items-center gap-3">
-            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="FetchGoogleHolidays" disabled="@_isFetching">
+            <button class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer disabled:opacity-50" @onclick="FetchGoogleHolidays" disabled="@_isFetching">
                 @(_isFetching ? "Fetching..." : "Fetch & Save")
             </button>
-            <button class="bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-input px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="ToggleFetchPanel" disabled="@_isFetching">
+            <button class="neo-btn bg-card text-foreground border-2 border-border px-4 py-2 rounded-xl text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer" @onclick="ToggleFetchPanel" disabled="@_isFetching">
                 Cancel
             </button>
         </div>
@@ -54,11 +54,11 @@
 
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="border p-4 rounded-lg mb-6 text-sm font-semibold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
+    <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-[#FF6B6B]/20 text-[#FF6B6B]" : "bg-[#A6FA53]/20 text-[#A6FA53]")">
         <div class="flex items-center gap-2.5">
             @if (_isError)
             {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12"/><line x1="12" y1="8" x2="12.01" y2="16"/></svg>
             }
             else
             {
@@ -66,26 +66,26 @@
             }
             <span>@_message</span>
         </div>
-        <button class="hover:opacity-80 focus:outline-none text-base font-bold px-1.5 py-0.5 rounded hover:bg-foreground/5 transition-all" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
+        <button class="hover:opacity-80 focus:outline-none text-base font-black px-1.5 py-0.5 rounded cursor-pointer" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
     </div>
 }
 
-<div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+<div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl shadow-neo-lg overflow-hidden font-mono">
     @if (_isLoading)
     {
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs animate-pulse">
                 <thead>
-                    <tr class="border-b border-border bg-muted/50">
-                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
-                        <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
+                    <tr class="border-b-2 border-black dark:border-zinc-700 bg-muted/40">
+                        <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-foreground">Name</th>
+                        <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-foreground">Date</th>
                         @if (AuthState.IsAdmin)
                         {
-                            <th class="px-6 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider w-28">Actions</th>
+                            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-foreground w-28">Actions</th>
                         }
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-border">
+                <tbody class="divide-y-2 divide-border/60">
                     @for (int i = 0; i < 5; i++)
                     {
                         <tr>
@@ -103,32 +103,32 @@
     }
     else if (_holidays == null || !_holidays.Any())
     {
-        <div class="p-6 text-muted-foreground text-sm">No holidays found.</div>
+        <div class="p-8 text-center text-muted-foreground text-xs font-mono font-bold">No holidays found.</div>
     }
     else
     {
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-sm">
+            <table class="w-full text-left border-collapse text-xs">
                 <thead>
-                    <tr class="border-b border-border bg-muted/40">
-                        <th class="px-4 py-3.5 font-semibold text-muted-foreground">Name</th>
-                        <th class="px-4 py-3.5 font-semibold text-muted-foreground">Date</th>
+                    <tr class="border-b-2 border-black dark:border-zinc-700 bg-muted/40">
+                        <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-foreground">Name</th>
+                        <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-foreground">Date</th>
                         @if (AuthState.IsAdmin)
                         {
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground w-28">Actions</th>
+                            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-foreground w-28">Actions</th>
                         }
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-border">
+                <tbody class="divide-y-2 divide-border/60">
                     @foreach (var holiday in _holidays)
                     {
-                        <tr class="hover:bg-muted/40 transition-colors">
-                            <td class="px-4 py-3.5 text-foreground font-medium">@holiday.Name</td>
-                            <td class="px-4 py-3.5 font-mono text-muted-foreground">@holiday.HolidayDate.ToString("dd-MM-yyyy")</td>
+                        <tr class="hover:bg-[#A6FA53]/10 transition-colors">
+                            <td class="px-6 py-3.5 text-foreground font-bold font-sans">@holiday.Name</td>
+                            <td class="px-6 py-3.5 font-mono text-muted-foreground font-bold">@holiday.HolidayDate.ToString("dd-MM-yyyy")</td>
                             @if (AuthState.IsAdmin)
                             {
-                                <td class="px-4 py-3.5">
-                                    <button class="text-destructive border border-destructive/30 hover:bg-destructive hover:text-destructive-foreground px-3 py-1 rounded transition-colors text-xs font-semibold w-20" @onclick="() => DeleteHoliday(holiday.Id)">Delete</button>
+                                <td class="px-6 py-3.5">
+                                    <button class="neo-btn-destructive px-3 py-1 rounded-lg text-xs font-bold shadow-neo-sm cursor-pointer w-20" @onclick="() => DeleteHoliday(holiday.Id)">Delete</button>
                                 </td>
                             }
                         </tr>
@@ -136,7 +136,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="border-t border-border bg-card">
+        <div class="border-t-2 border-black dark:border-zinc-700 bg-card">
             <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
         </div>
     }

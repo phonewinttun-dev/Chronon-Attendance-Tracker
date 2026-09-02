@@ -6,6 +6,7 @@ module.exports = {
     "./Layout/**/*.razor",
     "./wwwroot/index.html"
   ],
+  darkMode: 'class',
   theme: {
     container: {
       center: true,
@@ -53,6 +54,33 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Neobrutalism palette with Night Light warm tones
+        neo: {
+          lime: "#A6FA53",
+          cyan: "#00E5FF",
+          yellow: "#FFD026",
+          coral: "#FF6B6B",
+          lavender: "#C084FC",
+          bgLight: "#F7F4EB",
+          cardLight: "#FAF8F5",
+          bgDark: "#181716",
+          cardDark: "#201E1C",
+          innerDark: "#2B2826",
+          borderDark: "#3F3B37"
+        }
+      },
+      boxShadow: {
+        'neo-sm': '2px 2px 0px 0px #000000',
+        'neo': '4px 4px 0px 0px #000000',
+        'neo-lg': '6px 6px 0px 0px #000000',
+        'neo-xl': '8px 8px 0px 0px #000000',
+        'neo-lime': '4px 4px 0px 0px #A6FA53',
+        'neo-yellow': '4px 4px 0px 0px #FFD026',
+        'neo-cyan': '4px 4px 0px 0px #00E5FF',
+        'neo-coral': '4px 4px 0px 0px #FF6B6B',
+      },
+      borderWidth: {
+        '3': '3px',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -60,10 +88,11 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['Roboto Mono', 'monospace'],
-        mono: ['Roboto Mono', 'monospace']
+        sans: ['Space Grotesk', 'Hanken Grotesk', 'Roboto Mono', 'sans-serif'],
+        mono: ['Space Mono', 'Roboto Mono', 'monospace']
       }
     },
   },
   plugins: [],
 }
+

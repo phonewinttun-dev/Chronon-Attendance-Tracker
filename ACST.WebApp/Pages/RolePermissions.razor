@@ -10,21 +10,21 @@
 
 @if (!AuthState.IsAdmin)
 {
-    <div class="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center bg-card border border-border/80 rounded-2xl shadow-xl max-w-xl mx-auto my-12 animate-in zoom-in-95 duration-200">
-        <div class="w-16 h-16 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mb-4 border border-destructive/20 shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-8 h-8"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    <div class="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center bg-card border-2 border-black dark:border-zinc-700 rounded-2xl shadow-neo-xl max-w-xl mx-auto my-12 animate-in zoom-in-95 duration-200 font-mono">
+        <div class="w-16 h-16 rounded-xl bg-[#FF6B6B]/20 text-[#FF6B6B] flex items-center justify-center mb-4 border-2 border-black shadow-neo-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-8 h-8"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
-        <span class="px-3 py-1 text-[11px] font-semibold tracking-wider uppercase rounded-full bg-destructive/10 text-destructive border border-destructive/20 mb-3">
+        <span class="px-3 py-1 text-xs font-black font-mono tracking-wider uppercase rounded-md bg-[#FF6B6B] text-black border-2 border-black shadow-neo-sm mb-3">
             Admin Access Required
         </span>
-        <h2 class="text-2xl font-bold tracking-tight text-foreground font-sans mb-2">Access Restricted</h2>
-        <p class="text-xs text-muted-foreground max-w-md mb-6 leading-relaxed">
+        <h2 class="text-2xl font-black tracking-tight text-foreground font-sans mb-2">Access Restricted</h2>
+        <p class="text-xs text-muted-foreground max-w-md mb-6 leading-relaxed font-mono">
             Role & Permission Management is restricted exclusively to system <strong>Administrators</strong>. Your current active account role (<strong>@AuthState.ActiveRole</strong>) does not have authorization to view or configure security roles.
         </p>
         <div class="flex items-center gap-3">
-            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2.5 rounded-lg text-xs font-semibold transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+            <button class="neo-btn-primary px-5 py-2.5 rounded-xl text-xs font-black shadow-neo flex items-center gap-2 cursor-pointer uppercase tracking-wider"
                     @onclick='() => Navigation.NavigateTo("dashboard")'>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 Return to Dashboard
             </button>
         </div>
@@ -33,64 +33,64 @@
 else
 {
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 font-mono">
         <div>
             <div class="flex items-center gap-2 mb-1">
-                <span class="px-2.5 py-0.5 text-[11px] font-semibold tracking-wider uppercase rounded-full bg-primary/10 text-primary border border-primary/20">
+                <span class="px-2.5 py-0.5 text-xs font-black tracking-wider uppercase rounded-md bg-[#FFD026] text-black border-2 border-black shadow-neo-sm">
                     Access Control
                 </span>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight text-foreground font-sans">Role & Permission Management</h1>
-            <p class="text-xs text-muted-foreground mt-1">Configure role-based access control (RBAC), define custom system roles, and assign granular permissions.</p>
+            <h1 class="text-3xl font-black tracking-tight text-foreground font-sans">Role & Permission Management</h1>
+            <p class="text-xs text-muted-foreground font-mono mt-1">Configure role-based access control (RBAC), define custom system roles, and assign granular permissions.</p>
         </div>
         <div class="flex items-center gap-3">
-            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg text-xs font-semibold transition-all shadow-sm flex items-center gap-2 cursor-pointer" 
+            <button class="neo-btn-primary px-4 py-2.5 rounded-xl text-xs font-black shadow-neo flex items-center gap-2 cursor-pointer uppercase tracking-wider" 
                     @onclick="ToggleCreateRoleModal">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Create New Role
             </button>
         </div>
     </div>
 
     <!-- Stats Summary Overview Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-card border border-border/70 p-4 rounded-xl shadow-sm flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 font-mono">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 p-4 rounded-xl shadow-neo flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-lg bg-[#A6FA53] text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </div>
             <div>
-                <div class="text-[11px] font-medium text-muted-foreground">Total Roles</div>
-                <div class="text-xl font-bold text-foreground font-mono">@(_roles?.Count ?? 0)</div>
+                <div class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Roles</div>
+                <div class="text-2xl font-black text-foreground font-mono">@(_roles?.Count ?? 0)</div>
             </div>
         </div>
 
-        <div class="bg-card border border-border/70 p-4 rounded-xl shadow-sm flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        <div class="bg-card border-2 border-black dark:border-zinc-700 p-4 rounded-xl shadow-neo flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-lg bg-[#00E5FF] text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
             </div>
             <div>
-                <div class="text-[11px] font-medium text-muted-foreground">Total Permissions</div>
-                <div class="text-xl font-bold text-foreground font-mono">@(_allPermissions?.Count ?? 0)</div>
+                <div class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Permissions</div>
+                <div class="text-2xl font-black text-foreground font-mono">@(_allPermissions?.Count ?? 0)</div>
             </div>
         </div>
 
-        <div class="bg-card border border-border/70 p-4 rounded-xl shadow-sm flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <div class="bg-card border-2 border-black dark:border-zinc-700 p-4 rounded-xl shadow-neo flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-lg bg-[#FFD026] text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             </div>
             <div>
-                <div class="text-[11px] font-medium text-muted-foreground">System Admin</div>
-                <div class="text-xl font-bold text-foreground font-mono">@(_roles?.Count(r => r.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase)) ?? 0)</div>
+                <div class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">System Admin</div>
+                <div class="text-2xl font-black text-foreground font-mono">@(_roles?.Count(r => r.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase)) ?? 0)</div>
             </div>
         </div>
 
-        <div class="bg-card border border-border/70 p-4 rounded-xl shadow-sm flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <div class="bg-card border-2 border-black dark:border-zinc-700 p-4 rounded-xl shadow-neo flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-lg bg-[#C084FC] text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
             </div>
             <div>
-                <div class="text-[11px] font-medium text-muted-foreground">Custom Roles</div>
-                <div class="text-xl font-bold text-foreground font-mono">@(_roles?.Count(r => !r.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase)) ?? 0)</div>
+                <div class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Custom Roles</div>
+                <div class="text-2xl font-black text-foreground font-mono">@(_roles?.Count(r => !r.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase)) ?? 0)</div>
             </div>
         </div>
     </div>
@@ -98,59 +98,58 @@ else
     <!-- Alert / Toast Banner -->
     @if (!string.IsNullOrEmpty(_message))
     {
-        <div class="border p-4 rounded-xl mb-6 text-xs font-medium flex items-center justify-between gap-3 transition-all animate-in fade-in duration-150 @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-primary/10 border-primary/30 text-primary")">
+        <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all animate-in fade-in duration-150 @(_isError ? "bg-[#FF6B6B]/20 text-[#FF6B6B]" : "bg-[#A6FA53]/20 text-[#A6FA53]")">
             <div class="flex items-center gap-2.5">
                 @if (_isError)
                 {
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 }
                 else
                 {
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
                 }
                 <span>@_message</span>
             </div>
-            <button class="text-muted-foreground hover:text-foreground text-sm cursor-pointer" @onclick="() => _message = null">×</button>
+            <button class="text-muted-foreground hover:text-foreground text-sm font-black cursor-pointer" @onclick="() => _message = null">×</button>
         </div>
     }
 
     <!-- Create Role Modal -->
     @if (_showCreateRoleModal)
     {
-        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="create-role-title" aria-describedby="create-role-desc">
-            <div class="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-150">
-                <div class="flex items-center justify-between border-b border-border/60 pb-4 mb-4">
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 font-mono" role="dialog" aria-modal="true" aria-labelledby="create-role-title" aria-describedby="create-role-desc">
+            <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl shadow-neo-xl max-w-md w-full p-6 animate-in zoom-in-95 duration-150">
+                <div class="flex items-center justify-between border-b-2 border-border/60 pb-4 mb-4">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <div class="w-8 h-8 rounded-lg bg-[#FFD026] text-black border-2 border-black flex items-center justify-center shadow-neo-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         </div>
                         <div>
-                            <h3 id="create-role-title" class="text-sm font-bold text-foreground">Create Custom Role</h3>
-                            <p id="create-role-desc" class="text-[11px] text-muted-foreground">Define a new access role for system users.</p>
+                            <h3 id="create-role-title" class="text-base font-black text-foreground font-sans">Create Custom Role</h3>
+                            <p id="create-role-desc" class="text-xs text-muted-foreground font-mono">Define a new access role for system users.</p>
                         </div>
                     </div>
-                    <button @onclick="ToggleCreateRoleModal" aria-label="Close modal" class="text-muted-foreground hover:text-foreground text-lg cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">×</button>
+                    <button @onclick="ToggleCreateRoleModal" aria-label="Close modal" class="text-muted-foreground hover:text-foreground text-xl font-black cursor-pointer rounded">×</button>
                 </div>
                 
                 <div class="space-y-4">
                     <div>
-                        <label for="new-role-name-input" class="block text-xs font-semibold text-foreground mb-1.5">Role Name <span class="text-destructive">*</span></label>
+                        <label for="new-role-name-input" class="block text-xs font-bold uppercase tracking-wider text-foreground mb-1.5">Role Name <span class="text-[#FF6B6B]">*</span></label>
                         <input id="new-role-name-input"
-                               type="text" 
-                               class="w-full px-3.5 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-xs transition-all placeholder:text-muted-foreground" 
-                               placeholder="e.g. Department Head, Registrar, TA" 
-                               @bind="_newRoleName" />
+                                type="text" 
+                                class="w-full px-3.5 py-2 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]" 
+                                placeholder="e.g. Department Head, Registrar, TA" 
+                                @bind="_newRoleName" />
                     </div>
                 </div>
 
-                <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border/60">
-                    <button type="button" class="px-4 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" @onclick="ToggleCreateRoleModal">Cancel</button>
-                    <button type="button" class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" 
+                <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t-2 border-border/60">
+                    <button type="button" class="neo-btn bg-card text-foreground border-2 border-border px-4 py-2 rounded-xl text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer" @onclick="ToggleCreateRoleModal">Cancel</button>
+                    <button type="button" class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer disabled:opacity-50" 
                             disabled="@_isSubmittingRole" 
                             @onclick="CreateRole">
                         @if (_isSubmittingRole)
                         {
-                            <svg class="animate-spin h-3.5 w-3.5 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                             <span>Creating...</span>
                         }
                         else
@@ -167,11 +166,11 @@ else
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         <!-- Left Column: Roles List (4 cols) -->
-        <div class="lg:col-span-4 space-y-4">
-            <div class="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
+        <div class="lg:col-span-4 space-y-4 font-mono">
+            <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-5 shadow-neo space-y-4">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-sm font-bold text-foreground tracking-tight">System Roles</h2>
-                    <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border/40">
+                    <h2 class="text-sm font-black text-foreground tracking-tight font-sans">System Roles</h2>
+                    <span class="text-xs font-mono font-black px-2 py-0.5 rounded-md bg-[#FFD026] text-black border-2 border-black shadow-neo-sm">
                         @GetFilteredRoles().Count Roles
                     </span>
                 </div>
@@ -179,36 +178,36 @@ else
                 <!-- Role Search Filter -->
                 <div class="relative">
                     <input type="text" 
-                           class="w-full pl-9 pr-7 py-1.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
+                           class="w-full pl-9 pr-7 py-2 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-bold shadow-neo-sm transition-all placeholder:text-muted-foreground" 
                            placeholder="Filter roles..." 
                            @bind="_roleSearchTerm" 
                            @bind:event="oninput" />
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                     </div>
                     @if (!string.IsNullOrEmpty(_roleSearchTerm))
                     {
-                        <button class="absolute inset-y-0 right-0 pr-2 flex items-center text-muted-foreground hover:text-foreground text-xs cursor-pointer" @onclick="() => _roleSearchTerm = string.Empty">×</button>
+                        <button class="absolute inset-y-0 right-0 pr-2 flex items-center text-muted-foreground hover:text-foreground text-xs font-black cursor-pointer" @onclick="() => _roleSearchTerm = string.Empty">×</button>
                     }
                 </div>
 
                 @if (_isLoadingRoles)
                 {
                     <div class="py-12 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-                        <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <div class="w-4 h-4 border-2 border-[#A6FA53] border-t-transparent rounded-full animate-spin"></div>
                         Loading roles...
                     </div>
                 }
                 else if (_roles == null || !_roles.Any())
                 {
-                    <div class="py-8 text-center text-xs text-muted-foreground">No roles found.</div>
+                    <div class="py-8 text-center text-xs text-muted-foreground font-bold">No roles found.</div>
                 }
                 else
                 {
                     var filteredRoles = GetFilteredRoles();
                     if (!filteredRoles.Any())
                     {
-                        <div class="py-8 text-center text-xs text-muted-foreground">No roles match filter.</div>
+                        <div class="py-8 text-center text-xs text-muted-foreground font-bold">No roles match filter.</div>
                     }
                     else
                     {
@@ -219,25 +218,25 @@ else
                                 var isAdmin = role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase);
 
                                 <div @onclick="() => SelectRole(role.RoleId)" 
-                                     class="p-3.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between group @(isSelected ? "bg-primary/10 border-primary/40 text-foreground font-semibold shadow-sm" : "bg-background/50 border-border/60 hover:bg-accent/40 text-muted-foreground hover:text-foreground")">
+                                     class="p-3.5 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group @(isSelected ? "bg-[#A6FA53] text-black font-black border-black shadow-neo-sm" : "bg-card border-border text-foreground hover:bg-muted font-bold shadow-neo-sm")">
                                     <div class="flex items-center gap-3 min-w-0">
-                                        <div class="w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold shrink-0 @(isSelected ? "bg-primary text-primary-foreground" : (isAdmin ? "bg-amber-500/15 text-amber-500" : "bg-muted text-muted-foreground group-hover:bg-accent"))">
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shrink-0 border-2 border-black @(isSelected ? "bg-black text-white" : (isAdmin ? "bg-[#FFD026] text-black shadow-neo-sm" : "bg-muted text-foreground"))">
                                             @role.RoleName.Substring(0, Math.Min(2, role.RoleName.Length)).ToUpper()
                                         </div>
                                         <div class="truncate">
-                                            <h3 class="text-xs font-medium text-foreground truncate">@role.RoleName</h3>
+                                            <h3 class="text-xs font-black truncate font-sans">@role.RoleName</h3>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0">
                                         @if (isAdmin)
                                         {
-                                            <span class="px-2 py-0.5 text-[10px] font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full">
+                                            <span class="px-2 py-0.5 text-[10px] font-black bg-[#FFD026] text-black border-2 border-black shadow-neo-sm rounded-md">
                                                 Super Admin
                                             </span>
                                         }
                                         else if (isSelected)
                                         {
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-primary shrink-0"><path d="m9 18 6-6-6-6"/></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="w-4 h-4 text-black shrink-0"><path d="m9 18 6-6-6-6"/></svg>
                                         }
                                     </div>
                                 </div>
@@ -249,44 +248,44 @@ else
         </div>
 
         <!-- Right Column: Categorized Permission Matrix (8 cols) -->
-        <div class="lg:col-span-8 space-y-4">
+        <div class="lg:col-span-8 space-y-4 font-mono">
             @if (_selectedRoleId > 0)
             {
                 var selectedRole = _roles?.FirstOrDefault(r => r.RoleId == _selectedRoleId);
                 var isAdminRole = selectedRole?.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
                 var hasUnsavedChanges = HasUnsavedChanges();
 
-                <div class="bg-card border border-border rounded-xl p-5 shadow-sm space-y-5">
+                <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-5 shadow-neo-lg space-y-5">
                     <!-- Selected Role Header -->
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-border/60 pb-4">
                         <div>
                             <div class="flex items-center gap-2.5 flex-wrap">
-                                <h2 class="text-base font-bold text-foreground">Permissions for @selectedRole?.RoleName</h2>
-                                <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">
+                                <h2 class="text-base font-black text-foreground font-sans">Permissions for @selectedRole?.RoleName</h2>
+                                <span class="text-xs font-mono font-black px-2.5 py-0.5 rounded-md bg-[#A6FA53] text-black border-2 border-black shadow-neo-sm">
                                     @(_selectedPermissionIds.Count) / @(_allPermissions?.Count ?? 0) Active
                                 </span>
                                 @if (hasUnsavedChanges)
                                 {
-                                    <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/30 animate-pulse">
+                                    <span class="text-[10px] font-black px-2.5 py-0.5 rounded-md bg-[#FFD026] text-black border-2 border-black shadow-neo-sm animate-pulse">
                                         Unsaved Changes
                                     </span>
                                 }
                             </div>
-                            <p class="text-xs text-muted-foreground mt-0.5">Toggle permissions below to configure system access levels for this role.</p>
+                            <p class="text-xs text-muted-foreground mt-0.5 font-mono">Toggle permissions below to configure system access levels for this role.</p>
                         </div>
 
                         <div class="flex items-center gap-2 shrink-0">
-                            <button class="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted rounded-md transition-colors cursor-pointer"
+                            <button class="neo-btn bg-card text-foreground border-2 border-border px-3 py-1.5 rounded-lg text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer"
                                     @onclick="SelectAllPermissions">
                                 Select All
                             </button>
-                            <button class="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted rounded-md transition-colors cursor-pointer"
+                            <button class="neo-btn bg-card text-foreground border-2 border-border px-3 py-1.5 rounded-lg text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer"
                                     @onclick="DeselectAllPermissions">
                                 Clear All
                             </button>
                             @if (hasUnsavedChanges)
                             {
-                                <button class="px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 rounded-md transition-colors cursor-pointer"
+                                <button class="neo-btn-destructive px-3 py-1.5 rounded-lg text-xs font-bold shadow-neo-sm cursor-pointer"
                                         @onclick="ResetPermissions">
                                     Reset
                                 </button>
@@ -294,20 +293,19 @@ else
                         </div>
                     </div>
 
-
                     <!-- Search Input -->
                     <div class="relative max-w-xs">
                         <input type="text" 
-                               class="w-full pl-9 pr-7 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
+                               class="w-full pl-9 pr-7 py-2 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-bold shadow-neo-sm transition-all placeholder:text-muted-foreground" 
                                placeholder="Filter permissions..." 
                                @bind="_permissionSearchTerm" 
                                @bind:event="oninput" />
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                         </div>
                         @if (!string.IsNullOrEmpty(_permissionSearchTerm))
                         {
-                            <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-muted-foreground hover:text-foreground text-xs cursor-pointer" @onclick="() => _permissionSearchTerm = string.Empty">×</button>
+                            <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-muted-foreground hover:text-foreground text-xs font-black cursor-pointer" @onclick="() => _permissionSearchTerm = string.Empty">×</button>
                         }
                     </div>
 
@@ -315,7 +313,7 @@ else
                     @if (_isLoadingPermissions)
                     {
                         <div class="py-12 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-                            <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <div class="w-4 h-4 border-2 border-[#A6FA53] border-t-transparent rounded-full animate-spin"></div>
                             Loading permissions...
                         </div>
                     }
@@ -325,7 +323,7 @@ else
 
                         @if (!groupedPermissions.Any())
                         {
-                            <div class="py-8 text-center text-xs text-muted-foreground">No permissions match filter.</div>
+                            <div class="py-8 text-center text-xs text-muted-foreground font-bold">No permissions match filter.</div>
                         }
                         else
                         {
@@ -336,20 +334,20 @@ else
                                     var activeInGroup = groupPermIds.Count(id => _selectedPermissionIds.Contains(id));
                                     var isAllGroupSelected = groupPermIds.All(id => _selectedPermissionIds.Contains(id));
 
-                                    <div class="border border-border/70 rounded-xl p-4 bg-background/30 space-y-3">
+                                    <div class="border-2 border-black dark:border-zinc-700 rounded-xl p-4 bg-muted/20 shadow-neo-sm space-y-3">
                                         <!-- Category Header -->
-                                        <div class="flex items-center justify-between border-b border-border/40 pb-2.5">
+                                        <div class="flex items-center justify-between border-b-2 border-border/40 pb-2.5">
                                             <div class="flex items-center gap-2.5">
                                                 <div>
-                                                    <h3 class="text-xs font-bold text-foreground">@group.CategoryName</h3>
-                                                    <p class="text-[10px] text-muted-foreground">@group.Description</p>
+                                                    <h3 class="text-xs font-black text-foreground font-sans">@group.CategoryName</h3>
+                                                    <p class="text-[10px] text-muted-foreground font-mono">@group.Description</p>
                                                 </div>
                                             </div>
                                             <div class="flex items-center gap-2">
-                                                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                                                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-card border border-border text-foreground">
                                                     @activeInGroup / @group.Permissions.Count active
                                                 </span>
-                                                <button class="text-[11px] font-medium text-primary hover:underline cursor-pointer"
+                                                <button class="text-xs font-black text-foreground hover:underline cursor-pointer"
                                                         @onclick="() => ToggleGroupPermissions(groupPermIds, !isAllGroupSelected)">
                                                     @(isAllGroupSelected ? "Deselect Group" : "Select Group")
                                                 </button>
@@ -361,15 +359,15 @@ else
                                             @foreach (var perm in group.Permissions)
                                             {
                                                 var isChecked = _selectedPermissionIds.Contains(perm.PermissionId);
-                                                <label class="p-3 rounded-lg border transition-all cursor-pointer flex items-center justify-between select-none @(isChecked ? "bg-primary/10 border-primary/40 text-foreground shadow-xs" : "bg-card border-border/50 text-muted-foreground hover:bg-accent/40")">
+                                                <label class="p-3 rounded-lg border-2 transition-all cursor-pointer flex items-center justify-between select-none @(isChecked ? "bg-[#A6FA53]/25 border-black text-foreground font-bold shadow-neo-sm" : "bg-card border-border text-foreground hover:bg-muted font-medium shadow-xs")">
                                                     <div class="flex items-center gap-3 min-w-0">
                                                         <input type="checkbox" 
-                                                               class="w-4 h-4 rounded border-border text-primary focus:ring-primary/20 accent-primary cursor-pointer shrink-0" 
+                                                               class="w-4 h-4 rounded-sm border-2 border-black accent-[#A6FA53] cursor-pointer shrink-0 shadow-neo-sm" 
                                                                checked="@isChecked" 
                                                                @onchange="(e) => TogglePermission(perm.PermissionId, (bool)(e.Value ?? false))" />
                                                         <div class="truncate">
-                                                            <div class="text-xs font-semibold text-foreground">@GetHumanizedPermissionName(perm.PermissionName)</div>
-                                                            <div class="text-[10px] font-mono text-muted-foreground/70 truncate">@perm.PermissionName</div>
+                                                            <div class="text-xs font-bold text-foreground font-sans">@GetHumanizedPermissionName(perm.PermissionName)</div>
+                                                            <div class="text-[10px] font-mono text-muted-foreground truncate">@perm.PermissionName</div>
                                                         </div>
                                                     </div>
                                                 </label>
@@ -382,12 +380,12 @@ else
                     }
 
                     <!-- Save Action Footer -->
-                    <div class="flex items-center justify-between border-t border-border/60 pt-4 mt-6">
-                        <div class="text-xs text-muted-foreground">
+                    <div class="flex items-center justify-between border-t-2 border-border/60 pt-4 mt-6">
+                        <div class="text-xs text-muted-foreground font-bold">
                             @if (hasUnsavedChanges)
                             {
-                                <span class="text-amber-500 font-medium flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                                <span class="text-[#FFD026] flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-[#FFD026] animate-ping"></span>
                                     You have unsaved permission changes.
                                 </span>
                             }
@@ -397,17 +395,16 @@ else
                             }
                         </div>
 
-                        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-lg text-xs font-semibold transition-all shadow-sm disabled:opacity-50 flex items-center gap-2 cursor-pointer" 
+                        <button class="neo-btn-primary px-6 py-2.5 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider flex items-center gap-2 cursor-pointer disabled:opacity-50" 
                                 disabled="@(_isSavingPermissions || !hasUnsavedChanges)" 
                                 @onclick="SaveRolePermissions">
                             @if (_isSavingPermissions)
                             {
-                                <svg class="animate-spin h-3.5 w-3.5 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                 <span>Saving...</span>
                             }
                             else
                             {
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                                 <span>Save Permissions</span>
                             }
                         </button>
@@ -416,12 +413,12 @@ else
             }
             else
             {
-                <div class="bg-card border border-border rounded-xl p-16 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-6 h-6"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+                <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-16 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-3 shadow-neo">
+                    <div class="w-12 h-12 rounded-xl bg-card border-2 border-black flex items-center justify-center text-foreground shadow-neo-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
                     </div>
-                    <h3 class="text-sm font-semibold text-foreground">No Role Selected</h3>
-                    <p class="max-w-xs text-muted-foreground">Select a role from the left panel to review, configure, and manage its system permissions.</p>
+                    <h3 class="text-sm font-black text-foreground font-sans">No Role Selected</h3>
+                    <p class="max-w-xs text-muted-foreground font-mono">Select a role from the left panel to review, configure, and manage its system permissions.</p>
                 </div>
             }
         </div>

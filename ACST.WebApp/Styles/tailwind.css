@@ -4,38 +4,73 @@
 
 @layer base {
   :root {
-    --background: 96 14% 6.9%;
-    --foreground: 75 10% 87.5%;
+    /* Eye-comfort warm light mode (warm linen/cream paper canvas) */
+    --background: 40 33% 96%;
+    --foreground: 24 10% 10%;
 
-    --card: 100 10% 11.8%;
-    --card-foreground: 75 10% 87.5%;
+    --card: 45 29% 98%;
+    --card-foreground: 24 10% 10%;
 
-    --popover: 100 10% 11.8%;
-    --popover-foreground: 75 10% 87.5%;
+    --popover: 45 29% 98%;
+    --popover-foreground: 24 10% 10%;
 
-    --primary: 110 49% 69.2%;
-    --primary-foreground: 124 100% 11.4%;
+    --primary: 89 94% 45%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 106 23% 25.3%;
-    --secondary-foreground: 103 22% 68.2%;
+    --secondary: 186 100% 45%;
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 100 6% 20%;
-    --muted-foreground: 92 13% 75.9%;
+    --muted: 36 20% 90%;
+    --muted-foreground: 25 6% 45%;
 
-    --accent: 90 8% 15.7%;
-    --accent-foreground: 75 10% 87.5%;
+    --accent: 47 100% 50%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 6 100% 83.5%;
-    --destructive-foreground: 357 100% 20.6%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 0%;
 
-    --error: 6 100% 83.5%;
-    --error-foreground: 357 100% 20.6%;
+    --error: 0 85% 60%;
+    --error-foreground: 0 0% 0%;
 
-    --border: 104 8% 26.5%;
-    --input: 104 8% 26.5%;
-    --ring: 110 49% 69.2%;
+    --border: 24 10% 10%;
+    --input: 36 20% 88%;
+    --ring: 89 94% 45%;
 
     --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Eye-comfort warm dark mode (deep warm charcoal/espresso canvas) */
+    --background: 30 6% 9%;
+    --foreground: 40 25% 94%;
+
+    --card: 30 7% 12%;
+    --card-foreground: 40 25% 94%;
+
+    --popover: 30 7% 12%;
+    --popover-foreground: 40 25% 94%;
+
+    --primary: 89 94% 65%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 186 100% 50%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 30 6% 16%;
+    --muted-foreground: 30 5% 65%;
+
+    --accent: 47 100% 57%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 100% 71%;
+    --destructive-foreground: 0 0% 0%;
+
+    --error: 0 100% 71%;
+    --error-foreground: 0 0% 0%;
+
+    --border: 30 6% 24%;
+    --input: 30 6% 24%;
+    --ring: 89 94% 65%;
   }
 }
 
@@ -44,28 +79,60 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased selection:bg-[#A6FA53] selection:text-black;
   }
   input[type="time"],
   input[type="date"] {
-    color-scheme: dark !important;
+    color-scheme: light;
+  }
+  .dark input[type="time"],
+  .dark input[type="date"] {
+    color-scheme: dark;
   }
   input[type="time"]::-webkit-calendar-picker-indicator,
   input[type="date"]::-webkit-calendar-picker-indicator {
     display: none !important;
   }
   input[type="time"] {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2396d68a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E") !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23A6FA53' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
     background-position: right 10px center !important;
     background-size: 16px !important;
     padding-right: 32px !important;
   }
   input[type="date"] {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2396d68a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='4' rx='2'/%3E%3Cpath d='M16 2v4'/%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M3 10h18'/%3E%3C/svg%3E") !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23A6FA53' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='4' rx='2'/%3E%3Cpath d='M16 2v4'/%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M3 10h18'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
     background-position: right 10px center !important;
     background-size: 16px !important;
     padding-right: 32px !important;
   }
 }
+
+@layer utilities {
+  .neo-box {
+    @apply border-2 border-black dark:border-zinc-700 shadow-neo rounded-xl bg-card transition-all;
+  }
+  .neo-btn {
+    @apply border-2 border-black dark:border-zinc-700 shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm cursor-pointer;
+  }
+  .neo-btn-primary {
+    @apply bg-[#A6FA53] text-black border-2 border-black shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm cursor-pointer;
+  }
+  .neo-btn-secondary {
+    @apply bg-[#00E5FF] text-black border-2 border-black shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm cursor-pointer;
+  }
+  .neo-btn-accent {
+    @apply bg-[#FFD026] text-black border-2 border-black shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm cursor-pointer;
+  }
+  .neo-btn-destructive {
+    @apply bg-[#FF6B6B] text-black border-2 border-black shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm cursor-pointer;
+  }
+  .neo-input {
+    @apply border-2 border-border shadow-neo-sm font-bold bg-card text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A6FA53] focus:shadow-neo transition-all;
+  }
+  .neo-badge {
+    @apply border-2 border-black dark:border-zinc-700 font-bold uppercase text-[11px] px-2.5 py-0.5 rounded-full shadow-neo-sm;
+  }
+}
+
