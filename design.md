@@ -1,197 +1,188 @@
 ---
-name: Obsidian Attendance
-colors:
-  surface: "#11140f"
-  surface-dim: "#11140f"
-  surface-bright: "#373a34"
-  surface-container-lowest: "#0c0f0a"
-  surface-container-low: "#191c17"
-  surface-container: "#1d211b"
-  surface-container-high: "#282b25"
-  surface-container-highest: "#323630"
-  on-surface: "#e1e3db"
-  on-surface-variant: "#c1c9ba"
-  inverse-surface: "#e1e3db"
-  inverse-on-surface: "#2e312c"
-  outline: "#8b9386"
-  outline-variant: "#41493e"
-  surface-tint: "#98d68b"
-  primary: "#98d68b"
-  on-primary: "#003a04"
-  primary-container: "#4b8443"
-  on-primary-container: "#000700"
-  inverse-primary: "#326a2d"
-  secondary: "#b4cea9"
-  on-secondary: "#20361c"
-  secondary-container: "#394f32"
-  on-secondary-container: "#a6c09c"
-  tertiary: "#d6c3b2"
-  on-tertiary: "#3a2e22"
-  tertiary-container: "#837466"
-  on-tertiary-container: "#090400"
-  error: "#690005"
-  on-error: "#690005"
-  error-container: "#93000a"
-  on-error-container: "#ffdad6"
-  primary-fixed: "#b3f3a5"
-  primary-fixed-dim: "#98d68b"
-  on-primary-fixed: "#002201"
-  on-primary-fixed-variant: "#195217"
-  secondary-fixed: "#cfeac4"
-  secondary-fixed-dim: "#b4cea9"
-  on-secondary-fixed: "#0b2008"
-  on-secondary-fixed-variant: "#364c30"
-  tertiary-fixed: "#f3dfcd"
-  tertiary-fixed-dim: "#d6c3b2"
-  on-tertiary-fixed: "#231a0f"
-  on-tertiary-fixed-variant: "#514538"
-  background: "#11140f"
-  on-background: "#e1e3db"
-  surface-variant: "#323630"
+name: Chronon Neobrutalism (Eye-Comfort & Night-Light Enhanced)
+modes:
+  light:
+    surface: "#F7F4EB"
+    surface-card: "#FAF8F5"
+    surface-inner: "#EBE6DC"
+    on-surface: "#1C1917"
+    on-surface-muted: "#78716C"
+    border: "#1C1917"
+    shadow: "#000000"
+    primary: "#A6FA53"
+    on-primary: "#000000"
+    secondary: "#00E5FF"
+    on-secondary: "#000000"
+    tertiary: "#FFD026"
+    on-tertiary: "#000000"
+    error: "#FF6B6B"
+    on-error: "#000000"
+    warning: "#FFD026"
+    on-warning: "#000000"
+  dark:
+    surface: "#181716"
+    surface-card: "#201E1C"
+    surface-inner: "#2B2826"
+    on-surface: "#F5F2EB"
+    on-surface-muted: "#A8A29E"
+    border: "#3F3B37"
+    shadow: "#000000"
+    primary: "#A6FA53"
+    on-primary: "#000000"
+    secondary: "#00E5FF"
+    on-secondary: "#000000"
+    tertiary: "#FFD026"
+    on-tertiary: "#000000"
+    error: "#FF6B6B"
+    on-error: "#000000"
+    warning: "#FFD026"
+    on-warning: "#000000"
+shadows:
+  neo-sm: "2px 2px 0px #000000"
+  neo: "4px 4px 0px #000000"
+  neo-lg: "6px 6px 0px #000000"
+  neo-xl: "8px 8px 0px #000000"
 typography:
   display-lg:
-    fontFamily: Hanken Grotesk
-    fontSize: 48px
-    fontWeight: "700"
-    lineHeight: 56px
-    letterSpacing: -0.02em
+    fontFamily: Space Grotesk
+    fontSize: 36px
+    fontWeight: "900"
+    lineHeight: 44px
+    letterSpacing: -0.03em
   headline-md:
-    fontFamily: Hanken Grotesk
+    fontFamily: Space Grotesk
     fontSize: 24px
-    fontWeight: "600"
+    fontWeight: "800"
     lineHeight: 32px
   headline-sm:
-    fontFamily: Hanken Grotesk
+    fontFamily: Space Grotesk
     fontSize: 18px
-    fontWeight: "600"
+    fontWeight: "700"
     lineHeight: 24px
   body-md:
-    fontFamily: Hanken Grotesk
-    fontSize: 16px
-    fontWeight: "400"
-    lineHeight: 24px
+    fontFamily: Space Grotesk
+    fontSize: 15px
+    fontWeight: "500"
+    lineHeight: 22px
   body-sm:
-    fontFamily: Hanken Grotesk
-    fontSize: 14px
-    fontWeight: "400"
-    lineHeight: 20px
+    fontFamily: Space Grotesk
+    fontSize: 13px
+    fontWeight: "500"
+    lineHeight: 18px
   label-caps:
-    fontFamily: Geist
+    fontFamily: Space Mono
     fontSize: 12px
-    fontWeight: "600"
+    fontWeight: "700"
     lineHeight: 16px
     letterSpacing: 0.05em
   stats-num:
-    fontFamily: Geist
+    fontFamily: Space Mono
     fontSize: 32px
     fontWeight: "700"
-    lineHeight: 40px
+    lineHeight: 38px
 rounded:
-  sm: 0.25rem
+  sm: 0.375rem
   DEFAULT: 0.5rem
   md: 0.75rem
   lg: 1rem
-  xl: 1.5rem
+  xl: 1.25rem
   full: 9999px
 spacing:
   container-margin: 2rem
   gutter: 1rem
   section-gap: 1.5rem
-  card-padding: 1.25rem
-  element-gap: 0.5rem
+  card-padding: 1.5rem
+  element-gap: 0.75rem
 ---
 
-## Brand & Style
+# Chronon Neobrutalism Design System
 
-The design system embodies an **Organic Professional** aesthetic, tailored for a personal dashboard that feels like a calm productivity hub. It leverages a high-density, dark-mode-first approach to minimize eye strain while highlighting critical data points through muted forest greens and sophisticated earth tones.
+The Chronon Attendance Tracker design system embodies a **High-Energy Neobrutalism** aesthetic (inspired by [neobrutalism.dev](https://www.neobrutalism.dev/)), combining crisp solid borders, bold geometric typography, tactile offset drop shadows, and vibrant functional color blocking with strict WCAG 2.2 Level AA accessibility compliance.
 
-The style focuses on:
+---
 
-- **Professional Precision:** High-information density with a clean, grid-based structure.
-- **Organic Minimalism:** Deep olive-charcoal surfaces with razor-thin borders to create a sophisticated, tech-forward yet grounded environment.
-- **Actionable Visuals:** A "Refined Status" philosophy where color is used intentionally for health indicators and primary actions, ensuring the user's attention is directed toward performance without visual fatigue.
+## 1. Core Principles
 
-## Colors
+- **Bold Contrast & Clarity:** Heavy outlines (`border-2 border-black` / `border-[#3F3F46]`) delineate all interactive components, cards, tables, and modal dialogs.
+- **Tactile Micro-Interactions:** Buttons and clickable cards employ hard offset drop shadows (`4px 4px 0px #000`) and physically respond to user interaction (`hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5`).
+- **High-Density Data Presentation:** Clean, grid-based layouts ensure attendance metrics, weekly breakdowns, and scheduling details are immediately readable.
+- **Full Theme Flexibility:** Engineered with dual support for **Light Mode** (warm retro canvas `#F4F0EA`, pure white cards) and **Dark Mode** (deep charcoal `#121214`, dark containers `#1C1C21`).
 
-The palette is rooted in an "Earthy Dark" foundation. The background utilizes a muted olive-toned charcoal (#121212) to provide a soft contrast for the forest green accents.
+---
 
-**Functional Color Strategy:**
+## 2. Color Palette & Functional Semantics
 
-- **Primary:** A deep forest green (#4b8443) serves as both the brand's primary action color and the "Healthy" status indicator.
-- **Tertiary Accent:** A warm peach-cream (#ffebd9) is used for high-contrast highlights and specialized labels.
-- **Attendance Health:**
-  - **Green (>=75%):** Uses the primary forest green for a grounded, positive reinforcement.
-  - **Yellow (<75%):** A muted ochre to signal caution.
-  - **Red (<60%):** A desaturated terracotta to demand attention while maintaining the organic palette.
-- **Neutral Hierarchy:** Surfaces are layered using subtle variations of olive-gray, separated by low-contrast borders (#3c3e3a) rather than heavy shadows.
+### Functional Color Strategy:
+- **Primary (Electric Lime - `#A6FA53`):** Main brand color, primary CTA buttons (Save, Submit, Check-in), and healthy attendance indicators (>= 75%).
+- **Secondary (Cyber Cyan - `#00E5FF`):** Informational actions, calendar filters, module tags, and secondary action triggers.
+- **Tertiary / Warning (Sunny Yellow - `#FFD026`):** Table header accents, caution status badges (< 75%), active navigation tabs, and highlighted notes.
+- **Destructive / Error (Coral Red - `#FF6B6B`):** Critical alerts, absent indicators (< 60%), delete actions, and logout dialogs.
+- **Neutral Canvas:**
+  - *Light Mode:* Canvas `#F4F0EA`, Cards `#FFFFFF`, Inner Tiles `#FFFDF5`, Text `#121212`.
+  - *Dark Mode:* Canvas `#121214`, Cards `#1C1C21`, Inner Tiles `#24242B`, Text `#F4F4F5`.
 
-## Typography
+### Attendance Health Semantics:
+- **Healthy (>= 75%):** Lime Green `#A6FA53` pill badge with solid black border.
+- **Caution (60% ~ 74%):** Sunny Yellow `#FFD026` pill badge with solid black border.
+- **Critical / Danger (< 60%):** Coral Red `#FF6B6B` pill badge with solid black border.
+- **Holiday / Cancelled:** Subdued gray background with dashed border.
 
-This design system utilizes **Hanken Grotesk** for its clean, sharp, and contemporary geometry, making it highly legible in dark environments. For technical data and UI labels, **Geist** is used to provide a monospaced, developer-centric feel that suits a tracking application.
+---
 
-- **Scale:** Large display sizes are used for attendance percentages to make the "Health" of the semester immediately obvious.
-- **Formatting:** Dates and times follow the `dd-mm-yyyy` and `12-hour (am/pm)` format as specified, using Geist for tabular alignment in lists.
-- **Mobile:** Headlines scale down significantly (e.g., Display 48px to 32px) to maintain a single-column dashboard view on mobile devices.
+## 3. Elevation, Shadows & Borders
 
-## Layout & Spacing
+Depth is achieved strictly through **Hard Offset Drop Shadows (zero blur)** and **Thick Solid Borders**:
 
-The layout follows a **Fixed Grid** approach for desktop, centering the dashboard within a 1280px max-width container to maintain focus.
+- **Borders:**
+  - Standard components: `2px solid #000000` (Light) / `2px solid #3F3F46` (Dark).
+  - Prominent cards & hero banners: `3px solid #000000` or `3px solid #A6FA53`.
+- **Shadow Tokens:**
+  - `neo-sm`: `2px 2px 0px #000000` (Badges, small inputs, chips).
+  - `neo`: `4px 4px 0px #000000` (Buttons, cards, data tables).
+  - `neo-lg`: `6px 6px 0px #000000` (Large widgets, modal headers).
+  - `neo-xl`: `8px 8px 0px #000000` (Modal dialogs, auth cards).
 
-- **Grid Model:** A 12-column system is used.
-  - **Analytics Cards:** Span 3 or 4 columns.
-  - **Main Schedule/Session List:** Spans 8 columns.
-  - **Sidebar/Stats:** Spans 4 columns.
-- **Responsive Behavior:**
-  - **Desktop (1024px+):** Full multi-column dashboard.
-  - **Tablet (768px - 1023px):** 2-column reflow for cards; sidebars move to the bottom.
-  - **Mobile (<768px):** Strict 1-column stack. Margins reduce from 32px to 16px to maximize screen real estate.
-- **Rhythm:** A 4px/8px base scaling system ensures consistent alignment across all components.
+---
 
-## Elevation & Depth
+## 4. Typography & Formatting
 
-In this organic SaaS environment, depth is achieved through **Tonal Layering** rather than traditional shadows.
+- **Headings & Primary UI:** **Space Grotesk** for modern geometric character, tight tracking, and heavy font weights (700/800/900).
+- **Numbers, Data & Code:** **Space Mono** / **Roboto Mono** for tabular numbers, counters, timestamps, and badges.
+- **Date & Time Formats:**
+  - Date format: `dd-MM-yyyy` (e.g. `02-09-2026`).
+  - Time format: `12-hour AM/PM` (e.g. `09:30 AM`).
 
-- **Tier 1 (Base):** #121212 (The background canvas).
-- **Tier 2 (Containers/Cards):** Slightly lighter variants of the neutral olive to create separation.
-- **Tier 3 (Active/Hover):** Subtly more saturated green-grays for interactive states.
-- **Outlines:** All containers use a 1px solid border (#3c3e3a). This "Low-Contrast Outline" technique replaces shadows to keep the UI looking crisp and architectural.
+---
 
-## Shapes
+## 5. UI Components
 
-The shape language is modern and approachable, utilizing a **Rounded** corner radius (0.5rem / 8px base) that scales up for larger containers.
+### 5.1 Buttons
+- **Primary:** Electric Lime `#A6FA53` background, pure black text `#000000`, `border-2 border-black`, `shadow-neo`.
+- **Secondary:** Cyber Cyan `#00E5FF` background, pure black text `#000000`, `border-2 border-black`, `shadow-neo`.
+- **Accent:** Sunny Yellow `#FFD026` background, pure black text `#000000`, `border-2 border-black`, `shadow-neo`.
+- **Destructive:** Coral Red `#FF6B6B` background, pure black text `#000000`, `border-2 border-black`, `shadow-neo`.
+- **Ghost / Outline:** Surface background, `border-2 border-black`, `shadow-neo-sm`.
 
-- **Standard Elements:** 8px radius (Buttons, Input fields, Chips).
-- **Cards & Containers:** 12px to 16px radius to create a distinct "SaaS Card" look.
-- **Status Indicators:** Small status dots or "Magic Link" buttons use a Pill-shape (full rounding) to differentiate them from structural elements.
+### 5.2 Input Controls & Date Pickers
+- High-contrast border `border-2 border-black` / `border-[#3F3F46]`, `shadow-neo-sm`.
+- Focus state: `focus:outline-none focus:ring-2 focus:ring-[#A6FA53] focus:shadow-neo`.
+- Date picker calendar popup: Container with `border-2 border-black shadow-neo-lg`, date tiles with bold active selection.
 
-## Components
+### 5.3 Data Tables
+- Bold header row: `#FFD026` (Light) / `#272730` (Dark) with solid dividing line.
+- High contrast cell borders, bold font weights, and pill-shaped status badges.
+- **No Database ID columns** displayed in any user-facing table or grid.
 
-### Buttons
+### 5.4 State Representation
+- **Loading State:** Neobrutalist skeleton placeholders with thick borders and rhythmic pulse animations.
+- **Empty State:** Dashed border container with descriptive guidance and bold action button.
+- **Error State:** High-contrast alert banner with retry trigger.
+- **Success State:** High-contrast green toast/banner with checkmark icon.
 
-- **Primary (Action):** Forest Green background, white or peach-cream text. High contrast, no shadow.
-- **Secondary (Outline):** Transparent background, 1px border (#757871), olive-gray text.
-- **Magic Link Button:** Pill-shaped, deep forest green with a link icon. Specifically designed for the "Mark as Present" action.
+---
 
-### Cards (Analytics & Modules)
+## 6. Accessibility (WCAG 2.2 Level AA) & Rules
 
-- Background: Tonal olive-gray.
-- Border: 1px solid #3c3e3a.
-- Padding: 20px.
-- Includes a top-border accent of the "Health Color" (Green/Yellow/Red) if representing an attendance metric.
-
-### Status Chips
-
-- Used for Session Status (Present, Absent, Cancelled, Holiday).
-- **Holiday/Cancelled:** Subdued gray text with a dashed border.
-- **Present:** Solid forest green text with a low-opacity green background.
-
-### Progress Bars (Attendance Health)
-
-- Thick, 8px height bars.
-- Segmented appearance or smooth fill, colored based on the percentage thresholds (75/60).
-- Background track is a dark, low-opacity version of the status color.
-
-### Input Fields
-
-- Dark backgrounds with 1px borders (#757871).
-- Focused state: Border changes to forest green with a subtle 2px outer glow.
+- **Zero Emojis:** Strictly no emojis in UI copy, microcopy, or buttons; clean geometric SVG icons (Lucide) are used exclusively.
+- **High Contrast Ratios:** All text-on-background combinations exceed 4.5:1 for normal text and 3:1 for large text / graphical controls.
+- **Keyboard Navigation:** Full Tab, Shift+Tab, Enter, Space, and Escape navigation with high-visibility `:focus-visible` focus rings.
