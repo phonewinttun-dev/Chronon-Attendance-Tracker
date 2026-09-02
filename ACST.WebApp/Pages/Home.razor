@@ -34,16 +34,16 @@ else if (_isError)
     </div>
     @RenderDashboardSkeletons
 
-    <div class="fixed inset-0 bg-background/30 backdrop-blur-md flex items-center justify-center z-50">
-        <div class="bg-card border border-border rounded-xl p-8 max-w-sm w-full shadow-2xl text-center animate-in zoom-in duration-200">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-50">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-8 max-w-sm w-full shadow-neo-xl text-center animate-in zoom-in duration-200">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-xl bg-[#FF6B6B] text-black border-2 border-black shadow-neo-sm mb-4">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
             </div>
-            <h3 class="text-lg font-bold text-foreground mb-2">Unexpected Error Occurred</h3>
-            <p class="text-xs text-muted-foreground mb-6 leading-relaxed">Failed to connect to the server or load required data. Please check your connection and try again.</p>
-            <button class="w-full py-2 bg-error text-error-foreground hover:bg-error/90 rounded-md text-xs font-semibold transition-all shadow-md focus:outline-none"
+            <h3 class="text-lg font-black text-foreground mb-2 font-sans">Unexpected Error Occurred</h3>
+            <p class="text-xs text-muted-foreground mb-6 leading-relaxed font-mono">Failed to connect to the server or load required data. Please check your connection and try again.</p>
+            <button class="neo-btn-destructive w-full py-2.5 rounded-xl text-xs font-black shadow-neo"
                     @onclick="LoadInitialData">
                 Refresh
             </button>
@@ -53,17 +53,17 @@ else if (_isError)
 else if (_semesters == null || !_semesters.Any())
 {
     <div class="flex justify-between items-center mb-8">
-        <h1 class="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+        <h1 class="text-2xl font-black tracking-tight text-foreground font-sans">Dashboard</h1>
     </div>
-    <div class="bg-surface-container border border-border/40 p-8 rounded-xl text-center max-w-md mx-auto my-12 bg-card">
-        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary mb-4">
+    <div class="border-2 border-black dark:border-zinc-700 p-8 rounded-2xl text-center max-w-md mx-auto my-12 bg-card shadow-neo">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-xl bg-[#A6FA53] text-black border-2 border-black shadow-neo-sm mb-4">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
         </div>
-        <h3 class="font-bold text-lg mb-2 text-foreground">No Semesters Found</h3>
-        <p class="text-muted-foreground text-sm mb-6">Please create a semester first to view dashboard analytics.</p>
-        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-md focus:outline-none"
+        <h3 class="font-black text-lg mb-2 text-foreground font-sans">No Semesters Found</h3>
+        <p class="text-muted-foreground text-xs font-mono mb-6">Please create a semester first to view dashboard analytics.</p>
+        <button class="neo-btn-primary px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-neo"
                 @onclick='() => Navigation.NavigateTo("/semesters")'>
             Create A Semester
         </button>
@@ -74,26 +74,26 @@ else
     <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+                <h1 class="text-3xl font-black tracking-tight text-foreground font-sans">Dashboard</h1>
                 @if (_selectedSemesterId == _currentSemesterId)
                 {
-                    <span class="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2.5 py-0.5 rounded-full text-xs font-medium">Current Semester</span>
+                    <span class="bg-[#A6FA53] text-black border-2 border-black px-3 py-0.5 rounded-md text-xs font-mono font-bold shadow-neo-sm">Current Semester</span>
                 }
                 else
                 {
-                    <span class="bg-muted text-muted-foreground border border-border px-2.5 py-0.5 rounded-full text-xs font-medium">Previous Semester</span>
+                    <span class="bg-[#FFD026] text-black border-2 border-black px-3 py-0.5 rounded-md text-xs font-mono font-bold shadow-neo-sm">Previous Semester</span>
                 }
             </div>
             @if (_summary != null)
             {
-                <p class="text-muted-foreground text-sm mt-1">
-                    Academic Period: <span class="font-mono text-foreground">@_summary.StartDate.ToString("dd-MM-yyyy")</span> to <span class="font-mono text-foreground">@_summary.EndDate.ToString("dd-MM-yyyy")</span>
+                <p class="text-muted-foreground text-xs font-mono mt-1">
+                    Academic Period: <span class="font-bold text-foreground">@_summary.StartDate.ToString("dd-MM-yyyy")</span> to <span class="font-bold text-foreground">@_summary.EndDate.ToString("dd-MM-yyyy")</span>
                 </p>
             }
         </div>
         <div class="flex items-center gap-3">
-            <label class="text-muted-foreground font-semibold text-sm whitespace-nowrap">Semester:</label>
-            <select class="p-2 bg-card border border-border rounded-md text-foreground font-sans text-sm focus:outline-none focus:ring-1 focus:ring-ring min-w-[220px]"
+            <label class="text-muted-foreground font-mono font-bold text-xs uppercase whitespace-nowrap">Semester:</label>
+            <select class="p-2 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[220px]"
                     value="@_selectedSemesterId" @onchange="OnSemesterChanged">
                 @foreach (var sem in _semesters)
                 {
@@ -117,33 +117,33 @@ else
     {
         <!-- Metrics Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-card border border-border p-6 rounded-lg shadow-sm">
-                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Today's Classes</h3>
-                <div class="text-3xl font-bold text-foreground font-mono">
+            <div class="bg-card border-2 border-black dark:border-zinc-700 p-6 rounded-xl shadow-neo hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg transition-all">
+                <h3 class="text-muted-foreground text-xs font-mono font-bold uppercase tracking-wider mb-2">Today's Classes</h3>
+                <div class="text-4xl font-black text-foreground font-mono">
                     @_summary.TodaySessionsCount
                 </div>
             </div>
 
-            <div class="bg-card border border-border p-6 rounded-lg shadow-sm hover:border-primary/50 transition-all cursor-pointer" @onclick='() => Navigation.NavigateTo("/calendar")'>
-                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Upcoming Classes (7 days)</h3>
-                <div class="text-3xl font-bold text-foreground font-mono">
+            <div class="bg-card border-2 border-black dark:border-zinc-700 p-6 rounded-xl shadow-neo hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg transition-all cursor-pointer" @onclick='() => Navigation.NavigateTo("/calendar")'>
+                <h3 class="text-muted-foreground text-xs font-mono font-bold uppercase tracking-wider mb-2">Upcoming (7 days)</h3>
+                <div class="text-4xl font-black text-foreground font-mono">
                     @_summary.UpcomingSessionsCount
                 </div>
             </div>
 
-            <div class="bg-card border border-border p-6 rounded-lg shadow-sm relative overflow-hidden hover:border-primary/50 transition-all cursor-pointer" @onclick="() => SetActiveTab(Tab.Module)">
-                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Semester Attendance</h3>
-                <div class="text-3xl font-bold font-mono @GetHealthColorClass(_summary.SemesterHealthRate)">
+            <div class="bg-card border-2 border-black dark:border-zinc-700 p-6 rounded-xl shadow-neo hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg transition-all cursor-pointer relative overflow-hidden" @onclick="() => SetActiveTab(Tab.Module)">
+                <h3 class="text-muted-foreground text-xs font-mono font-bold uppercase tracking-wider mb-2">Semester Attendance</h3>
+                <div class="text-4xl font-black font-mono @GetHealthColorClass(_summary.SemesterHealthRate)">
                     @_summary.SemesterHealthRate%
                 </div>
-                <div class="text-xs text-muted-foreground mt-1.5 font-sans">
-                    Total Semester Sessions: <span class="font-bold text-foreground">@_summary.TotalSessions</span>
+                <div class="text-xs text-muted-foreground mt-2 font-mono">
+                    Total Classes: <span class="font-bold text-foreground">@_summary.TotalSessions</span>
                 </div>
             </div>
 
-            <div class="bg-card border border-border p-6 rounded-lg shadow-sm relative overflow-hidden hover:border-primary/50 transition-all cursor-pointer" @onclick="() => SetActiveTab(Tab.Daily)">
-                <h3 class="text-muted-foreground text-sm font-medium tracking-tight mb-1">Today's Attendance</h3>
-                <div class="text-3xl font-bold font-mono @GetHealthColorClass(_summary.TodayAttendanceRate ?? 0)">
+            <div class="bg-card border-2 border-black dark:border-zinc-700 p-6 rounded-xl shadow-neo hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg transition-all cursor-pointer relative overflow-hidden" @onclick="() => SetActiveTab(Tab.Daily)">
+                <h3 class="text-muted-foreground text-xs font-mono font-bold uppercase tracking-wider mb-2">Today's Attendance</h3>
+                <div class="text-4xl font-black font-mono @GetHealthColorClass(_summary.TodayAttendanceRate ?? 0)">
                     @(_summary.TodayAttendanceRate ?? 0)%
                 </div>
             </div>
@@ -151,19 +151,19 @@ else
 
         @if (_summary.Warnings.Any())
         {
-            <div class="bg-card border border-destructive/40 p-5 rounded-lg shadow-sm mb-8">
-                <h3 class="text-destructive font-semibold text-sm mb-2 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-destructive shrink-0 lucide lucide-triangle-alert">
+            <div class="bg-card border-2 border-black dark:border-[#FF6B6B] p-5 rounded-xl shadow-neo mb-8">
+                <h3 class="text-[#FF6B6B] font-black text-sm mb-2 flex items-center gap-2 font-sans">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#FF6B6B] shrink-0 lucide lucide-triangle-alert">
                         <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
                         <line x1="12" y1="9" x2="12" y2="13"/>
                         <line x1="12" y1="17" x2="12.01" y2="17"/>
                     </svg>
                     Alerts
                 </h3>
-                <ul class="list-disc pl-5 text-muted-foreground text-xs space-y-0.5">
+                <ul class="list-disc pl-5 text-foreground text-xs space-y-1 font-mono font-bold">
                     @foreach (var warning in _summary.Warnings)
                     {
-                        <li class="mb-1">@warning</li>
+                        <li>@warning</li>
                     }
                 </ul>
             </div>
@@ -171,32 +171,32 @@ else
 
 
         <!-- Daily, Weekly, Monthly Tabs -->
-        <div id="attendance-breakdown" class="bg-card border border-border rounded-lg shadow-sm overflow-hidden mb-8">
-            <div class="border-b border-border bg-accent/20 flex flex-col md:flex-row md:items-center justify-between p-2 gap-3">
-                <div class="flex flex-wrap gap-1">
-                    <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Daily ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
+        <div id="attendance-breakdown" class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl shadow-neo-lg overflow-hidden mb-8">
+            <div class="border-b-2 border-border bg-muted/40 flex flex-col md:flex-row md:items-center justify-between p-3 gap-3">
+                <div class="flex flex-wrap gap-1.5 font-mono">
+                    <button class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer @(_activeTab == Tab.Daily ? "bg-[#A6FA53] text-black border-2 border-black shadow-neo-sm font-black" : "border-2 border-transparent text-muted-foreground hover:bg-[#FFD026] hover:text-black hover:border-black")"
                             @onclick="() => SetActiveTab(Tab.Daily)">
-                        Daily Attendance
+                        Daily
                     </button>
-                    <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Weekly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
+                    <button class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer @(_activeTab == Tab.Weekly ? "bg-[#A6FA53] text-black border-2 border-black shadow-neo-sm font-black" : "border-2 border-transparent text-muted-foreground hover:bg-[#FFD026] hover:text-black hover:border-black")"
                             @onclick="() => SetActiveTab(Tab.Weekly)">
-                        Weekly Attendance
+                        Weekly
                     </button>
-                    <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Monthly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
+                    <button class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer @(_activeTab == Tab.Monthly ? "bg-[#A6FA53] text-black border-2 border-black shadow-neo-sm font-black" : "border-2 border-transparent text-muted-foreground hover:bg-[#FFD026] hover:text-black hover:border-black")"
                             @onclick="() => SetActiveTab(Tab.Monthly)">
-                        Monthly Attendance
+                        Monthly
                     </button>
-                    <button class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all @(_activeTab == Tab.Module ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")"
+                    <button class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer @(_activeTab == Tab.Module ? "bg-[#A6FA53] text-black border-2 border-black shadow-neo-sm font-black" : "border-2 border-transparent text-muted-foreground hover:bg-[#FFD026] hover:text-black hover:border-black")"
                             @onclick="() => SetActiveTab(Tab.Module)">
-                        Module Attendance
+                        By Module
                     </button>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2.5 mr-1">
+                <div class="flex flex-wrap items-center gap-2.5 mr-1 font-mono">
                     <!-- Semester dropdown in card header -->
                     <div class="flex items-center gap-1.5">
-                        <span class="text-muted-foreground text-xs font-semibold whitespace-nowrap">Semester:</span>
-                        <select class="p-1 bg-card border border-border rounded text-foreground font-sans text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[120px]"
+                        <span class="text-muted-foreground text-xs font-bold uppercase whitespace-nowrap">Sem:</span>
+                        <select class="p-1.5 bg-card border-2 border-border rounded-lg text-foreground font-mono text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[120px]"
                                 value="@_selectedSemesterId" @onchange="OnSemesterChanged">
                             @foreach (var sem in _semesters)
                             {
@@ -207,8 +207,8 @@ else
 
                     <!-- Month dropdown in card header -->
                     <div class="flex items-center gap-1.5">
-                        <span class="text-muted-foreground text-xs font-semibold whitespace-nowrap">Month:</span>
-                        <select class="p-1 bg-card border border-border rounded text-foreground font-sans text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[120px]"
+                        <span class="text-muted-foreground text-xs font-bold uppercase whitespace-nowrap">Month:</span>
+                        <select class="p-1.5 bg-card border-2 border-border rounded-lg text-foreground font-mono text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[120px]"
                                 value="@_selectedMonthFilter" @onchange="OnMonthFilterChanged">
                             @foreach (var opt in _availableMonths)
                             {
@@ -217,16 +217,16 @@ else
                         </select>
                     </div>
 
-                    <div class="flex items-center gap-1 bg-muted border border-border p-1 rounded-md">
-                        <button class="p-1 rounded transition-all @(_breakdownViewMode == "table" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                    <div class="flex items-center gap-1 bg-card border-2 border-border p-0.5 rounded-lg shadow-neo-sm">
+                        <button class="p-1.5 rounded-md transition-all cursor-pointer @(_breakdownViewMode == "table" ? "bg-[#FFD026] text-black border border-black shadow-neo-sm" : "text-muted-foreground hover:text-foreground")" 
                                 @onclick='() => _breakdownViewMode = "table"' 
                                 title="Table View">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
                         </button>
-                        <button class="p-1 rounded transition-all @(_breakdownViewMode == "card" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                        <button class="p-1.5 rounded-md transition-all cursor-pointer @(_breakdownViewMode == "card" ? "bg-[#FFD026] text-black border border-black shadow-neo-sm" : "text-muted-foreground hover:text-foreground")" 
                                 @onclick='() => _breakdownViewMode = "card"' 
                                 title="Card View">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
                         </button>
                     </div>
                 </div>
@@ -276,32 +276,32 @@ else
                         @if (_breakdownViewMode == "table")
                         {
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse text-sm">
-                                    <thead>
-                                        <tr class="border-b border-outline-variant text-on-surface-variant">
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Day of Week</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Total</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Present</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Absent</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Not Marked</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Cancelled</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Holiday</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-right">Attendance Rate</th>
+                                <table class="w-full text-left border-collapse text-xs font-mono">
+                                    <thead class="bg-muted/40 border-b-2 border-black dark:border-zinc-700">
+                                        <tr>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-foreground">Day of Week</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-foreground">Total</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-[#A6FA53]">Present</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-[#FF6B6B]">Absent</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Not Marked</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Cancelled</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Holiday</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-right text-foreground">Attendance Rate</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-outline-variant/50 text-sm">
+                                    <tbody class="divide-y-2 divide-border/60">
                                         @foreach (var day in _summary.DailyAttendance)
                                         {
-                                            <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToDaily(day.DayOfWeek)">
-                                                <td class="px-4 py-3.5 font-sans text-sm font-semibold text-foreground">@day.DayOfWeek</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-foreground">@day.TotalSessions</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-primary font-bold">@day.Present</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-error font-semibold">@day.Absent</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@day.NotMarked</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@day.Cancelled</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@day.Holiday</td>
+                                            <tr class="hover:bg-[#A6FA53]/10 transition-colors cursor-pointer" @onclick="() => NavigateToDaily(day.DayOfWeek)">
+                                                <td class="px-4 py-3.5 font-sans text-sm font-bold text-foreground">@day.DayOfWeek</td>
+                                                <td class="px-4 py-3.5 text-center font-bold text-foreground">@day.TotalSessions</td>
+                                                <td class="px-4 py-3.5 text-center text-[#A6FA53] font-black">@day.Present</td>
+                                                <td class="px-4 py-3.5 text-center text-[#FF6B6B] font-black">@day.Absent</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@day.NotMarked</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@day.Cancelled</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@day.Holiday</td>
                                                 <td class="px-4 py-3.5 text-right">
-                                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(day.AttendanceRate)">
+                                                    <span class="px-3 py-1 rounded-md text-xs font-black font-mono border-2 @GetBadgeBorderAndBg(day.AttendanceRate)">
                                                         @day.AttendanceRate%
                                                     </span>
                                                 </td>
@@ -316,20 +316,20 @@ else
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 @foreach (var day in _summary.DailyAttendance)
                                 {
-                                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/30 transition-all shadow-sm cursor-pointer" @onclick="() => NavigateToDaily(day.DayOfWeek)">
+                                    <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-5 flex flex-col justify-between hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo transition-all shadow-neo-sm cursor-pointer" @onclick="() => NavigateToDaily(day.DayOfWeek)">
                                         <div class="flex items-center justify-between mb-3">
-                                            <h3 class="text-sm font-semibold text-foreground">@day.DayOfWeek</h3>
-                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(day.AttendanceRate)">
+                                            <h3 class="text-sm font-black text-foreground font-sans">@day.DayOfWeek</h3>
+                                            <span class="px-2.5 py-0.5 rounded-md text-[11px] font-black font-mono border-2 @GetBadgeBorderAndBg(day.AttendanceRate)">
                                                 @day.AttendanceRate%
                                             </span>
                                         </div>
-                                        <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t border-border/30 pt-3">
-                                            <div>Total: <span class="text-foreground font-semibold">@day.TotalSessions</span></div>
-                                            <div>Present: <span class="text-primary font-bold">@day.Present</span></div>
-                                            <div>Absent: <span class="text-error font-semibold">@day.Absent</span></div>
-                                            <div>Not Marked: <span class="text-foreground font-semibold">@day.NotMarked</span></div>
-                                            <div>Cancelled: <span class="text-foreground font-semibold">@day.Cancelled</span></div>
-                                            <div>Holiday: <span class="text-foreground font-semibold">@day.Holiday</span></div>
+                                        <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t-2 border-border/40 pt-3 font-bold">
+                                            <div>Total: <span class="text-foreground font-black">@day.TotalSessions</span></div>
+                                            <div>Present: <span class="text-[#A6FA53] font-black">@day.Present</span></div>
+                                            <div>Absent: <span class="text-[#FF6B6B] font-black">@day.Absent</span></div>
+                                            <div>Not Marked: <span class="text-foreground">@day.NotMarked</span></div>
+                                            <div>Cancelled: <span class="text-foreground">@day.Cancelled</span></div>
+                                            <div>Holiday: <span class="text-foreground">@day.Holiday</span></div>
                                         </div>
                                     </div>
                                 }
@@ -341,34 +341,34 @@ else
                         @if (_breakdownViewMode == "table")
                         {
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse text-sm">
-                                    <thead>
-                                        <tr class="border-b border-outline-variant text-on-surface-variant">
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Week</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Date Range</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Total</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Present</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Absent</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Not Marked</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Cancelled</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Holiday</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-right">Attendance Rate</th>
+                                <table class="w-full text-left border-collapse text-xs font-mono">
+                                    <thead class="bg-muted/40 border-b-2 border-black dark:border-zinc-700">
+                                        <tr>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-foreground">Week</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-foreground">Date Range</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-foreground">Total</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-[#A6FA53]">Present</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-[#FF6B6B]">Absent</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Not Marked</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Cancelled</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Holiday</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-right text-foreground">Attendance Rate</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-outline-variant/50 text-sm">
+                                    <tbody class="divide-y-2 divide-border/60">
                                         @foreach (var week in _summary.WeeklyAttendance.Skip((_weeklyPageNumber - 1) * _weeklyPageSize).Take(_weeklyPageSize))
                                         {
-                                            <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToWeekly(week.WeekStartDate, week.WeekEndDate)">
-                                                <td class="px-4 py-3.5 font-sans text-sm font-semibold text-foreground">Week @week.WeekNumber</td>
-                                                <td class="px-4 py-3.5 font-sans text-sm text-muted-foreground">@week.WeekStartDate.ToString("dd-MM-yyyy") ~ @week.WeekEndDate.ToString("dd-MM-yyyy")</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-foreground">@week.TotalSessions</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-primary font-bold">@week.Present</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-error font-semibold">@week.Absent</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@week.NotMarked</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@week.Cancelled</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@week.Holiday</td>
+                                            <tr class="hover:bg-[#A6FA53]/10 transition-colors cursor-pointer" @onclick="() => NavigateToWeekly(week.WeekStartDate, week.WeekEndDate)">
+                                                <td class="px-4 py-3.5 font-sans text-sm font-bold text-foreground">Week @week.WeekNumber</td>
+                                                <td class="px-4 py-3.5 font-mono text-xs text-muted-foreground font-bold">@week.WeekStartDate.ToString("dd-MM-yyyy") ~ @week.WeekEndDate.ToString("dd-MM-yyyy")</td>
+                                                <td class="px-4 py-3.5 text-center font-bold text-foreground">@week.TotalSessions</td>
+                                                <td class="px-4 py-3.5 text-center text-[#A6FA53] font-black">@week.Present</td>
+                                                <td class="px-4 py-3.5 text-center text-[#FF6B6B] font-black">@week.Absent</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@week.NotMarked</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@week.Cancelled</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@week.Holiday</td>
                                                 <td class="px-4 py-3.5 text-right">
-                                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(week.AttendanceRate)">
+                                                    <span class="px-3 py-1 rounded-md text-xs font-black font-mono border-2 @GetBadgeBorderAndBg(week.AttendanceRate)">
                                                         @week.AttendanceRate%
                                                     </span>
                                                 </td>
@@ -383,23 +383,23 @@ else
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 @foreach (var week in _summary.WeeklyAttendance.Skip((_weeklyPageNumber - 1) * _weeklyPageSize).Take(_weeklyPageSize))
                                 {
-                                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/30 transition-all shadow-sm cursor-pointer" @onclick="() => NavigateToWeekly(week.WeekStartDate, week.WeekEndDate)">
+                                    <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-5 flex flex-col justify-between hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo transition-all shadow-neo-sm cursor-pointer" @onclick="() => NavigateToWeekly(week.WeekStartDate, week.WeekEndDate)">
                                         <div class="flex items-start justify-between mb-3">
                                             <div>
-                                                <h3 class="text-sm font-semibold text-foreground">Week @week.WeekNumber</h3>
-                                                <p class="text-[10px] text-muted-foreground font-mono mt-0.5">@week.WeekStartDate.ToString("dd-MM-yyyy") ~ @week.WeekEndDate.ToString("dd-MM-yyyy")</p>
+                                                <h3 class="text-sm font-black text-foreground font-sans">Week @week.WeekNumber</h3>
+                                                <p class="text-[10px] text-muted-foreground font-mono font-bold mt-0.5">@week.WeekStartDate.ToString("dd-MM-yyyy") ~ @week.WeekEndDate.ToString("dd-MM-yyyy")</p>
                                             </div>
-                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(week.AttendanceRate)">
+                                            <span class="px-2.5 py-0.5 rounded-md text-[11px] font-black font-mono border-2 @GetBadgeBorderAndBg(week.AttendanceRate)">
                                                 @week.AttendanceRate%
                                             </span>
                                         </div>
-                                        <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t border-border/30 pt-3">
-                                            <div>Total: <span class="text-foreground font-semibold">@week.TotalSessions</span></div>
-                                            <div>Present: <span class="text-primary font-bold">@week.Present</span></div>
-                                            <div>Absent: <span class="text-error font-semibold">@week.Absent</span></div>
-                                            <div>Not Marked: <span class="text-foreground font-semibold">@week.NotMarked</span></div>
-                                            <div>Cancelled: <span class="text-foreground font-semibold">@week.Cancelled</span></div>
-                                            <div>Holiday: <span class="text-foreground font-semibold">@week.Holiday</span></div>
+                                        <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t-2 border-border/40 pt-3 font-bold">
+                                            <div>Total: <span class="text-foreground font-black">@week.TotalSessions</span></div>
+                                            <div>Present: <span class="text-[#A6FA53] font-black">@week.Present</span></div>
+                                            <div>Absent: <span class="text-[#FF6B6B] font-black">@week.Absent</span></div>
+                                            <div>Not Marked: <span class="text-foreground">@week.NotMarked</span></div>
+                                            <div>Cancelled: <span class="text-foreground">@week.Cancelled</span></div>
+                                            <div>Holiday: <span class="text-foreground">@week.Holiday</span></div>
                                         </div>
                                     </div>
                                 }
@@ -408,7 +408,7 @@ else
 
                         @if (GetWeeklyTotalPages() > 1)
                         {
-                            <div class="border-t border-border mt-6">
+                            <div class="border-t-2 border-border mt-6 pt-4">
                                 <PaginationControl PageNumber="@_weeklyPageNumber" TotalPages="@GetWeeklyTotalPages()" PageChanged="OnWeeklyPageChanged" />
                             </div>
                         }
@@ -418,32 +418,32 @@ else
                         @if (_breakdownViewMode == "table")
                         {
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse text-sm">
-                                    <thead>
-                                        <tr class="border-b border-outline-variant text-on-surface-variant">
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Month</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Total</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Present</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Absent</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Not Marked</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Cancelled</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Holiday</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-right">Attendance Rate</th>
+                                <table class="w-full text-left border-collapse text-xs font-mono">
+                                    <thead class="bg-muted/40 border-b-2 border-black dark:border-zinc-700">
+                                        <tr>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-foreground">Month</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-foreground">Total</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-[#A6FA53]">Present</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-[#FF6B6B]">Absent</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Not Marked</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Cancelled</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Holiday</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-right text-foreground">Attendance Rate</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-outline-variant/50 text-sm">
+                                    <tbody class="divide-y-2 divide-border/60">
                                         @foreach (var month in _summary.MonthlyAttendance)
                                         {
-                                            <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToMonthly(month.Year, month.Month)">
-                                                <td class="px-4 py-3.5 font-sans text-sm font-semibold text-foreground">@month.MonthName</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-foreground">@month.TotalSessions</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-primary font-bold">@month.Present</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-error font-semibold">@month.Absent</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@month.NotMarked</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@month.Cancelled</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@month.Holiday</td>
+                                            <tr class="hover:bg-[#A6FA53]/10 transition-colors cursor-pointer" @onclick="() => NavigateToMonthly(month.Year, month.Month)">
+                                                <td class="px-4 py-3.5 font-sans text-sm font-bold text-foreground">@month.MonthName</td>
+                                                <td class="px-4 py-3.5 text-center font-bold text-foreground">@month.TotalSessions</td>
+                                                <td class="px-4 py-3.5 text-center text-[#A6FA53] font-black">@month.Present</td>
+                                                <td class="px-4 py-3.5 text-center text-[#FF6B6B] font-black">@month.Absent</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@month.NotMarked</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@month.Cancelled</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@month.Holiday</td>
                                                 <td class="px-4 py-3.5 text-right">
-                                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(month.AttendanceRate)">
+                                                    <span class="px-3 py-1 rounded-md text-xs font-black font-mono border-2 @GetBadgeBorderAndBg(month.AttendanceRate)">
                                                         @month.AttendanceRate%
                                                     </span>
                                                 </td>
@@ -458,20 +458,20 @@ else
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 @foreach (var month in _summary.MonthlyAttendance)
                                 {
-                                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/30 transition-all shadow-sm cursor-pointer" @onclick="() => NavigateToMonthly(month.Year, month.Month)">
+                                    <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-5 flex flex-col justify-between hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo transition-all shadow-neo-sm cursor-pointer" @onclick="() => NavigateToMonthly(month.Year, month.Month)">
                                         <div class="flex items-center justify-between mb-3">
-                                            <h3 class="text-sm font-semibold text-foreground">@month.MonthName</h3>
-                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(month.AttendanceRate)">
+                                            <h3 class="text-sm font-black text-foreground font-sans">@month.MonthName</h3>
+                                            <span class="px-2.5 py-0.5 rounded-md text-[11px] font-black font-mono border-2 @GetBadgeBorderAndBg(month.AttendanceRate)">
                                                 @month.AttendanceRate%
                                             </span>
                                         </div>
-                                        <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t border-border/30 pt-3">
-                                            <div>Total: <span class="text-foreground font-semibold">@month.TotalSessions</span></div>
-                                            <div>Present: <span class="text-primary font-bold">@month.Present</span></div>
-                                            <div>Absent: <span class="text-error font-semibold">@month.Absent</span></div>
-                                            <div>Not Marked: <span class="text-foreground font-semibold">@month.NotMarked</span></div>
-                                            <div>Cancelled: <span class="text-foreground font-semibold">@month.Cancelled</span></div>
-                                            <div>Holiday: <span class="text-foreground font-semibold">@month.Holiday</span></div>
+                                        <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t-2 border-border/40 pt-3 font-bold">
+                                            <div>Total: <span class="text-foreground font-black">@month.TotalSessions</span></div>
+                                            <div>Present: <span class="text-[#A6FA53] font-black">@month.Present</span></div>
+                                            <div>Absent: <span class="text-[#FF6B6B] font-black">@month.Absent</span></div>
+                                            <div>Not Marked: <span class="text-foreground">@month.NotMarked</span></div>
+                                            <div>Cancelled: <span class="text-foreground">@month.Cancelled</span></div>
+                                            <div>Holiday: <span class="text-foreground">@month.Holiday</span></div>
                                         </div>
                                     </div>
                                 }
@@ -483,32 +483,32 @@ else
                         @if (_breakdownViewMode == "table")
                         {
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse text-sm">
-                                    <thead>
-                                        <tr class="border-b border-outline-variant text-on-surface-variant">
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Module</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Total Sessions</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Present</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Absent</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Not Marked</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Cancelled</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Holiday</th>
-                                            <th class="px-4 pb-3.5 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-right">Attendance Rate</th>
+                                <table class="w-full text-left border-collapse text-xs font-mono">
+                                    <thead class="bg-muted/40 border-b-2 border-black dark:border-zinc-700">
+                                        <tr>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-foreground">Module</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-foreground">Total Sessions</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-[#A6FA53]">Present</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-[#FF6B6B]">Absent</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Not Marked</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Cancelled</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-center text-muted-foreground">Holiday</th>
+                                            <th class="px-4 py-3 font-bold uppercase tracking-wider text-right text-foreground">Attendance Rate</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-outline-variant/50 text-sm">
+                                    <tbody class="divide-y-2 divide-border/60">
                                         @foreach (var mod in _summary.ModuleAttendance)
                                         {
-                                            <tr class="hover:bg-surface-variant/20 transition-colors text-on-surface-variant cursor-pointer" @onclick="() => NavigateToModule(mod.ModuleId)">
-                                                <td class="px-4 py-3.5 font-sans text-sm font-semibold text-primary hover:underline">@mod.ModuleName</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-foreground">@mod.TotalSessions</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-primary font-bold">@mod.TotalPresent</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-error font-semibold">@mod.TotalAbsent</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@mod.NotMarked</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@mod.Cancelled</td>
-                                                <td class="px-4 py-3.5 text-center font-mono text-sm text-muted-foreground">@mod.Holiday</td>
+                                            <tr class="hover:bg-[#A6FA53]/10 transition-colors cursor-pointer" @onclick="() => NavigateToModule(mod.ModuleId)">
+                                                <td class="px-4 py-3.5 font-sans text-sm font-black text-foreground hover:underline">@mod.ModuleName</td>
+                                                <td class="px-4 py-3.5 text-center font-bold text-foreground">@mod.TotalSessions</td>
+                                                <td class="px-4 py-3.5 text-center text-[#A6FA53] font-black">@mod.TotalPresent</td>
+                                                <td class="px-4 py-3.5 text-center text-[#FF6B6B] font-black">@mod.TotalAbsent</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@mod.NotMarked</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@mod.Cancelled</td>
+                                                <td class="px-4 py-3.5 text-center text-muted-foreground font-medium">@mod.Holiday</td>
                                                 <td class="px-4 py-3.5 text-right">
-                                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold font-sans border @GetBadgeBorderAndBg(mod.AttendanceRate)">
+                                                    <span class="px-3 py-1 rounded-md text-xs font-black font-mono border-2 @GetBadgeBorderAndBg(mod.AttendanceRate)">
                                                         @mod.AttendanceRate%
                                                     </span>
                                                 </td>
@@ -523,22 +523,22 @@ else
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 @foreach (var mod in _summary.ModuleAttendance)
                                 {
-                                    <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/30 transition-all shadow-sm cursor-pointer" @onclick="() => NavigateToModule(mod.ModuleId)">
+                                    <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-5 flex flex-col justify-between hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo transition-all shadow-neo-sm cursor-pointer" @onclick="() => NavigateToModule(mod.ModuleId)">
                                         <div class="flex items-start justify-between mb-3">
                                             <div>
-                                                <h3 class="text-sm font-semibold text-foreground hover:underline">@mod.ModuleName</h3>
+                                                <h3 class="text-sm font-black text-foreground hover:underline font-sans">@mod.ModuleName</h3>
                                             </div>
-                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-sans border @GetBadgeBorderAndBg(mod.AttendanceRate)">
+                                            <span class="px-2.5 py-0.5 rounded-md text-[11px] font-black font-mono border-2 @GetBadgeBorderAndBg(mod.AttendanceRate)">
                                                 @mod.AttendanceRate%
                                             </span>
                                         </div>
-                                        <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t border-border/30 pt-3">
-                                            <div>Total Classes: <span class="text-foreground font-semibold">@mod.TotalSessions</span></div>
-                                            <div>Present: <span class="text-primary font-bold">@mod.TotalPresent</span></div>
-                                            <div>Absent: <span class="text-error font-semibold">@mod.TotalAbsent</span></div>
-                                            <div>Not Marked: <span class="text-foreground font-semibold">@mod.NotMarked</span></div>
-                                            <div>Cancelled: <span class="text-foreground font-semibold">@mod.Cancelled</span></div>
-                                            <div>Holiday: <span class="text-foreground font-semibold">@mod.Holiday</span></div>
+                                        <div class="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs font-mono text-muted-foreground border-t-2 border-border/40 pt-3 font-bold">
+                                            <div>Total: <span class="text-foreground font-black">@mod.TotalSessions</span></div>
+                                            <div>Present: <span class="text-[#A6FA53] font-black">@mod.TotalPresent</span></div>
+                                            <div>Absent: <span class="text-[#FF6B6B] font-black">@mod.TotalAbsent</span></div>
+                                            <div>Not Marked: <span class="text-foreground">@mod.NotMarked</span></div>
+                                            <div>Cancelled: <span class="text-foreground">@mod.Cancelled</span></div>
+                                            <div>Holiday: <span class="text-foreground">@mod.Holiday</span></div>
                                         </div>
                                     </div>
                                 }
@@ -548,7 +548,6 @@ else
                 }
             </div>
         </div>
-    }
     }
 }
 
@@ -806,23 +805,23 @@ else
 
     private string GetHealthColorClass(double rate)
     {
-        if (rate >= 75) return "text-emerald-500";
-        if (rate >= 60) return "text-amber-500";
-        return "text-destructive";
+        if (rate >= 75) return "text-[#A6FA53]";
+        if (rate >= 60) return "text-[#FFD026]";
+        return "text-[#FF6B6B]";
     }
 
     private string GetHealthBgClass(double rate)
     {
-        if (rate >= 75) return "bg-emerald-500";
-        if (rate >= 60) return "bg-amber-500";
-        return "bg-destructive";
+        if (rate >= 75) return "bg-[#A6FA53]";
+        if (rate >= 60) return "bg-[#FFD026]";
+        return "bg-[#FF6B6B]";
     }
 
     private string GetBadgeBorderAndBg(double rate)
     {
-        if (rate >= 75) return "border-emerald-500/20 text-emerald-500 bg-emerald-500/10";
-        if (rate >= 60) return "border-amber-500/20 text-amber-500 bg-amber-500/10";
-        return "border-destructive/20 text-destructive bg-destructive/10";
+        if (rate >= 75) return "border-2 border-black bg-[#A6FA53] text-black font-black shadow-neo-sm";
+        if (rate >= 60) return "border-2 border-black bg-[#FFD026] text-black font-black shadow-neo-sm";
+        return "border-2 border-black bg-[#FF6B6B] text-black font-black shadow-neo-sm";
     }
 
     private RenderFragment RenderDashboardSkeletons => __builder =>

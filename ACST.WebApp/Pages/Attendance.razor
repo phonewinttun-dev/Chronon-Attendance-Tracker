@@ -9,15 +9,15 @@
 
 <!-- Header -->
 <div class="mb-6">
-    <h1 class="text-2xl font-bold tracking-tight text-foreground">Attendance</h1>
-    <p class="text-muted-foreground text-sm mt-1">Mark and manage attendance status for your class sessions.</p>
+    <h1 class="text-3xl font-black tracking-tight text-foreground font-sans">Attendance</h1>
+    <p class="text-muted-foreground text-xs font-mono mt-1">Mark and manage attendance status for your class sessions.</p>
 </div>
 
 <!-- Filters -->
-<div class="flex flex-wrap items-end gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm w-full">
-    <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
-        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Semester</label>
-        <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+<div class="flex flex-wrap items-end gap-3 mb-6 bg-card border-2 border-black dark:border-zinc-700 p-5 rounded-xl shadow-neo w-full">
+    <div class="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+        <label class="text-xs font-mono font-bold text-foreground uppercase tracking-wider">Semester</label>
+        <select class="w-full p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-mono font-bold shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]"
                 value="@_selectedSemesterId" @onchange="OnSemesterChanged">
             @if (_semesters != null)
             {
@@ -29,9 +29,9 @@
         </select>
     </div>
 
-    <div class="flex flex-col gap-1 flex-1 min-w-[180px]">
-        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Module</label>
-        <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+    <div class="flex flex-col gap-1.5 flex-1 min-w-[180px]">
+        <label class="text-xs font-mono font-bold text-foreground uppercase tracking-wider">Module</label>
+        <select class="w-full p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-mono font-bold shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]"
                 value="@_selectedModuleId" @onchange="OnModuleChanged">
             <option value="">All Modules</option>
             @if (_modules != null)
@@ -44,9 +44,9 @@
         </select>
     </div>
 
-    <div class="flex flex-col gap-1 flex-1 min-w-[130px]">
-        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Status</label>
-        <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+    <div class="flex flex-col gap-1.5 flex-1 min-w-[130px]">
+        <label class="text-xs font-mono font-bold text-foreground uppercase tracking-wider">Status</label>
+        <select class="w-full p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-mono font-bold shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]"
                 value="@_filterStatus" @onchange="OnStatusFilterChanged">
             <option value="">All Statuses</option>
             <option value="Not Marked">Not Marked</option>
@@ -57,13 +57,13 @@
         </select>
     </div>
 
-    <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
-        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">From</label>
+    <div class="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+        <label class="text-xs font-mono font-bold text-foreground uppercase tracking-wider">From</label>
         <DatePicker Value="_filterStartDate" ValueChanged="OnStartDateChanged" />
     </div>
 
-    <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
-        <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">To</label>
+    <div class="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+        <label class="text-xs font-mono font-bold text-foreground uppercase tracking-wider">To</label>
         <DatePicker Value="_filterEndDate" ValueChanged="OnEndDateChanged" AlignRight="true" />
     </div>
 </div>
@@ -71,27 +71,27 @@
 <!-- Toast Message -->
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium animate-in fade-in slide-in-from-top duration-300 @(_isError ? "bg-destructive/10 text-destructive border border-destructive/30" : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/30")">
+    <div class="mb-4 px-4 py-3 rounded-xl text-xs font-mono font-bold border-2 border-black shadow-neo-sm animate-in fade-in slide-in-from-top duration-300 @(_isError ? "bg-[#FF6B6B]/20 text-[#FF6B6B]" : "bg-[#A6FA53]/20 text-[#A6FA53]")">
         @_message
-        <button class="float-right text-current opacity-60 hover:opacity-100 transition-opacity ml-3 font-bold" @onclick='() => _message = ""'>×</button>
+        <button class="float-right text-current opacity-70 hover:opacity-100 transition-opacity ml-3 font-black cursor-pointer" @onclick='() => _message = ""'>×</button>
     </div>
 }
 
 <!-- Loading State -->
 @if (_isLoading)
 {
-    <div class="flex items-center justify-center py-20">
+    <div class="flex items-center justify-center py-20 font-mono">
         <div class="flex flex-col items-center gap-4">
-            <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-sm text-muted-foreground">Loading sessions...</p>
+            <div class="w-8 h-8 border-4 border-[#A6FA53] border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-xs text-muted-foreground font-bold">Loading sessions...</p>
         </div>
     </div>
 }
 else if (_sessions == null || !_sessions.Any())
 {
-    <div class="flex flex-col items-center justify-center py-20 text-center">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-muted-foreground/40 mb-4"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 11 3 3 5-5"/></svg>
-        <h3 class="text-sm font-semibold text-foreground mb-1">No sessions found</h3>
+    <div class="flex flex-col items-center justify-center py-20 text-center font-mono">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-muted-foreground/40 mb-4"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 11 3 3 5-5"/></svg>
+        <h3 class="text-sm font-black text-foreground mb-1 font-sans">No sessions found</h3>
         <p class="text-xs text-muted-foreground">Try adjusting your filters or generate sessions first.</p>
     </div>
 }
@@ -99,30 +99,30 @@ else
 {
     @if (_selectedIds.Any())
     {
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 mb-4 bg-card border border-border rounded-lg shadow-sm animate-in slide-in-from-top duration-200 gap-3">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 mb-4 bg-card border-2 border-black dark:border-zinc-700 rounded-xl shadow-neo animate-in slide-in-from-top duration-200 gap-3 font-mono">
             <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                <span class="w-3 h-3 rounded-full bg-[#A6FA53] border border-black shadow-neo-sm"></span>
                 <span class="text-xs font-bold text-foreground">@_selectedIds.Count session(s) selected</span>
             </div>
             <div class="flex items-center flex-wrap gap-2">
-                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/25"
+                <button class="px-3 py-1.5 rounded-lg text-xs font-black transition-all bg-[#A6FA53] text-black border-2 border-black shadow-neo-sm hover:-translate-x-0.5 hover:-translate-y-0.5 cursor-pointer"
                         @onclick='() => RequestBulkStatusChange("Present")'>
                     Present
                 </button>
-                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/25"
+                <button class="px-3 py-1.5 rounded-lg text-xs font-black transition-all bg-[#FF6B6B] text-black border-2 border-black shadow-neo-sm hover:-translate-x-0.5 hover:-translate-y-0.5 cursor-pointer"
                         @onclick='() => RequestBulkStatusChange("Absent")'>
                     Absent
                 </button>
-                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500/25"
+                <button class="px-3 py-1.5 rounded-lg text-xs font-black transition-all bg-[#FFD026] text-black border-2 border-black shadow-neo-sm hover:-translate-x-0.5 hover:-translate-y-0.5 cursor-pointer"
                         @onclick='() => RequestBulkStatusChange("Cancelled")'>
                     Cancelled
                 </button>
-                <button class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-muted text-muted-foreground border border-border hover:bg-accent"
+                <button class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-card text-foreground border-2 border-border shadow-neo-sm hover:bg-muted cursor-pointer"
                         @onclick='() => RequestBulkStatusChange("Not Marked")'>
                     Not Marked
                 </button>
                 <span class="h-4 w-px bg-border mx-1 hidden sm:inline"></span>
-                <button class="text-xs text-muted-foreground hover:text-foreground transition-colors underline" @onclick="ClearSelection">
+                <button class="text-xs text-muted-foreground hover:text-foreground font-bold transition-colors underline cursor-pointer" @onclick="ClearSelection">
                     Clear
                 </button>
             </div>
@@ -130,48 +130,48 @@ else
     }
 
     <!-- Sessions Table -->
-    <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+    <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl shadow-neo-lg overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-sm">
+            <table class="w-full text-left border-collapse text-xs font-mono">
                 <thead>
-                    <tr class="border-b border-border bg-accent/30">
-                        <th class="px-4 py-3 w-10">
-                            <input type="checkbox" class="rounded border-border accent-primary cursor-pointer"
+                    <tr class="border-b-2 border-black dark:border-zinc-700 bg-muted/40">
+                        <th class="px-4 py-3.5 w-10">
+                            <input type="checkbox" class="w-4 h-4 rounded-sm border-2 border-black accent-black cursor-pointer shadow-neo-sm"
                                    checked="@_isAllSelected" @onchange="ToggleSelectAll" />
                         </th>
-                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Date</th>
-                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Module</th>
-                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Time</th>
-                        <th class="px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-center">Current Status</th>
-                        <th class="px-4 py-3 w-12 text-center"></th>
+                        <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-center text-foreground">Date</th>
+                        <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Module</th>
+                        <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Time</th>
+                        <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-center text-foreground">Status</th>
+                        <th class="px-4 py-3.5 w-12 text-center"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-border">
+                <tbody class="divide-y-2 divide-border/60">
                     @foreach (var session in _sessions)
                     {
                         var isSelected = _selectedIds.Contains(session.Id);
-                        <tr class="transition-colors @(isSelected ? "bg-primary/5 border-l-2 border-l-primary" : "hover:bg-accent/30")">
-                            <td class="px-4 py-3">
-                                <input type="checkbox" class="rounded border-border accent-primary cursor-pointer"
+                        <tr class="transition-colors @(isSelected ? "bg-[#A6FA53]/15 border-l-4 border-l-[#A6FA53]" : "hover:bg-[#A6FA53]/10")">
+                            <td class="px-4 py-3.5">
+                                <input type="checkbox" class="w-4 h-4 rounded-sm border-2 border-black accent-black cursor-pointer shadow-neo-sm"
                                        checked="@isSelected" @onchange="() => ToggleSelection(session.Id)" />
                             </td>
-                            <td class="px-4 py-3">
-                                <span class="font-semibold text-foreground text-sm font-mono">@session.SessionDate.ToString("dd-MM-yy")</span>
+                            <td class="px-4 py-3.5 text-center">
+                                <span class="font-bold text-foreground text-xs font-mono">@session.SessionDate.ToString("dd-MM-yy")</span>
                             </td>
-                            <td class="px-4 py-3">
-                                <div class="font-semibold text-foreground text-sm">@session.ModuleName</div>
-                                <div class="text-[10px] text-muted-foreground font-mono mt-0.5">@session.ModuleCode</div>
+                            <td class="px-4 py-3.5">
+                                <div class="font-bold text-foreground text-sm font-sans">@session.ModuleName</div>
+                                <div class="text-[10px] text-muted-foreground font-mono font-bold mt-0.5">@session.ModuleCode</div>
                             </td>
-                            <td class="px-4 py-3 font-mono text-sm text-muted-foreground">
+                            <td class="px-4 py-3.5 font-mono text-xs text-muted-foreground font-bold">
                                 @((session.StartDatetime + MyanmarOffset).ToString("hh:mm tt")) – @((session.EndDatetime + MyanmarOffset).ToString("hh:mm tt"))
                             </td>
-                            <td class="px-4 py-3 text-center">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-bold border @GetBadgeClass(session.Status)">
+                            <td class="px-4 py-3.5 text-center">
+                                <span class="px-3 py-1 rounded-md text-xs font-black font-mono border-2 @GetBadgeClass(session.Status)">
                                     @session.Status
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-center">
-                                <button id="btn-@session.Id" class="p-1 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+                            <td class="px-4 py-3.5 text-center">
+                                <button id="btn-@session.Id" class="p-1.5 rounded-lg border-2 border-transparent hover:border-black hover:bg-[#FFD026] text-muted-foreground hover:text-black transition-all cursor-pointer focus:outline-none"
                                         @onclick="() => ToggleDropdown(session)" @onclick:stopPropagation>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-more-vertical"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                                 </button>
@@ -185,8 +185,8 @@ else
         <!-- Pagination -->
         @if (_totalPages > 1)
         {
-            <div class="flex flex-col sm:flex-row items-center justify-between border-t border-border px-4 py-2 bg-accent/10">
-                <span class="text-xs text-muted-foreground font-mono mb-2 sm:mb-0">
+            <div class="flex flex-col sm:flex-row items-center justify-between border-t-2 border-border px-4 py-3 bg-muted/20">
+                <span class="text-xs text-muted-foreground font-mono font-bold mb-2 sm:mb-0">
                     Page @_pageNumber of @_totalPages (@_totalCount sessions)
                 </span>
                 <PaginationControl PageNumber="_pageNumber" TotalPages="_totalPages" PageChanged="OnPageChanged" />
@@ -199,23 +199,23 @@ else
 @if (_openDropdownSessionId != null && _buttonRect != null)
 {
     <div class="fixed inset-0 z-40 bg-transparent" @onclick="CloseDropdown"></div>
-    <div class="fixed bg-card border border-border rounded-md shadow-lg z-50 py-1 text-left animate-in fade-in duration-100" 
+    <div class="fixed bg-card border-2 border-black dark:border-zinc-700 rounded-xl shadow-neo-xl z-50 py-1.5 text-left font-mono animate-in fade-in duration-100 min-w-[140px]" 
          style="@GetDropdownStyle()" @onclick:stopPropagation>
-        <button class="w-full px-3 py-1.5 text-xs font-semibold flex items-center gap-2 hover:bg-emerald-500/10 text-emerald-500 transition-colors"
+        <button class="w-full px-3 py-2 text-xs font-black flex items-center gap-2 hover:bg-[#A6FA53] hover:text-black text-[#A6FA53] transition-colors cursor-pointer"
                 @onclick='() => ChangeStatusDirectly("Present")'>
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Present
+            <span class="w-2.5 h-2.5 rounded-full bg-[#A6FA53] border border-black shadow-neo-sm"></span> Present
         </button>
-        <button class="w-full px-3 py-1.5 text-xs font-semibold flex items-center gap-2 hover:bg-destructive/10 text-destructive transition-colors"
+        <button class="w-full px-3 py-2 text-xs font-black flex items-center gap-2 hover:bg-[#FF6B6B] hover:text-black text-[#FF6B6B] transition-colors cursor-pointer"
                 @onclick='() => ChangeStatusDirectly("Absent")'>
-            <span class="w-2 h-2 rounded-full bg-destructive"></span> Absent
+            <span class="w-2.5 h-2.5 rounded-full bg-[#FF6B6B] border border-black shadow-neo-sm"></span> Absent
         </button>
-        <button class="w-full px-3 py-1.5 text-xs font-semibold flex items-center gap-2 hover:bg-amber-500/10 text-amber-500 transition-colors"
+        <button class="w-full px-3 py-2 text-xs font-black flex items-center gap-2 hover:bg-[#FFD026] hover:text-black text-[#FFD026] transition-colors cursor-pointer"
                 @onclick='() => ChangeStatusDirectly("Cancelled")'>
-            <span class="w-2 h-2 rounded-full bg-amber-500"></span> Cancelled
+            <span class="w-2.5 h-2.5 rounded-full bg-[#FFD026] border border-black shadow-neo-sm"></span> Cancelled
         </button>
-        <button class="w-full px-3 py-1.5 text-xs font-semibold flex items-center gap-2 hover:bg-muted-foreground/10 text-muted-foreground transition-colors"
+        <button class="w-full px-3 py-2 text-xs font-bold flex items-center gap-2 hover:bg-muted text-muted-foreground transition-colors cursor-pointer"
                 @onclick='() => ChangeStatusDirectly("Not Marked")'>
-            <span class="w-2 h-2 rounded-full bg-muted-foreground"></span> Not Marked
+            <span class="w-2.5 h-2.5 rounded-full bg-muted-foreground border border-black"></span> Not Marked
         </button>
     </div>
 }
@@ -223,20 +223,20 @@ else
 <!-- Single Status Confirm Modal -->
 @if (_showSingleConfirmModal)
 {
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[150] animate-in fade-in duration-200">
-        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg animate-in zoom-in duration-200">
-            <h3 class="text-base font-bold text-foreground mb-2">Confirm Status Change</h3>
-            <p class="text-xs text-muted-foreground mb-6">
-                Are you sure you want to change this session to <span class="font-bold text-foreground">@_pendingStatus</span>?
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-[150] animate-in fade-in duration-200">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-neo-xl animate-in zoom-in duration-200">
+            <h3 class="text-lg font-black text-foreground mb-2 font-sans">Confirm Status Change</h3>
+            <p class="text-xs text-muted-foreground font-mono mb-6">
+                Are you sure you want to change this session to <span class="font-bold text-foreground underline">@_pendingStatus</span>?
             </p>
-            <div class="flex justify-end gap-3">
+            <div class="flex justify-end gap-3 font-mono">
                 <button type="button"
-                        class="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold transition-all focus:outline-none"
+                        class="neo-btn px-4 py-2 bg-card hover:bg-muted text-foreground border-2 border-border rounded-xl text-xs font-bold shadow-neo-sm cursor-pointer"
                         @onclick="CancelConfirm">
                     Cancel
                 </button>
                 <button type="button"
-                        class="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md text-xs font-semibold transition-all focus:outline-none"
+                        class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo cursor-pointer"
                         @onclick="ConfirmSingleStatusChange">
                     Yes, Change
                 </button>
@@ -248,24 +248,24 @@ else
 <!-- Bulk Status Confirm Modal -->
 @if (_showBulkConfirmModal)
 {
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[150] animate-in fade-in duration-200">
-        <div class="bg-card border border-border rounded-lg p-6 max-w-md w-full shadow-lg animate-in zoom-in duration-200">
-            <h3 class="text-base font-bold text-foreground mb-2">Bulk Status Update</h3>
-            <p class="text-xs text-muted-foreground mb-4">
-                You are about to change the status of <span class="font-bold text-foreground">@_selectedIds.Count session(s)</span> to:
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-[150] animate-in fade-in duration-200">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-6 max-w-md w-full shadow-neo-xl animate-in zoom-in duration-200">
+            <h3 class="text-lg font-black text-foreground mb-2 font-sans">Bulk Status Update</h3>
+            <p class="text-xs text-muted-foreground font-mono mb-4">
+                You are about to change the status of <span class="font-bold text-foreground underline">@_selectedIds.Count session(s)</span> to:
             </p>
-            <div class="flex items-center gap-2 mb-6 p-3 bg-accent/30 border border-border rounded-md">
-                <span class="px-3 py-1 rounded-full text-xs font-bold border @GetBadgeClass(_pendingStatus)">@_pendingStatus</span>
-                <span class="text-xs text-muted-foreground">→ Applied to all selected sessions</span>
+            <div class="flex items-center gap-2.5 mb-6 p-3 bg-muted/30 border-2 border-border rounded-xl">
+                <span class="px-3 py-1 rounded-md text-xs font-black font-mono border-2 @GetBadgeClass(_pendingStatus)">@_pendingStatus</span>
+                <span class="text-xs text-muted-foreground font-mono">→ Applied to all selected sessions</span>
             </div>
-            <div class="flex justify-end gap-3">
+            <div class="flex justify-end gap-3 font-mono">
                 <button type="button"
-                        class="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold transition-all focus:outline-none"
+                        class="neo-btn px-4 py-2 bg-card hover:bg-muted text-foreground border-2 border-border rounded-xl text-xs font-bold shadow-neo-sm cursor-pointer"
                         @onclick="CancelConfirm">
                     Cancel
                 </button>
                 <button type="button"
-                        class="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md text-xs font-semibold transition-all focus:outline-none"
+                        class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo cursor-pointer"
                         @onclick="ConfirmBulkStatusChange">
                     Yes, Update All
                 </button>
@@ -277,12 +277,12 @@ else
 <!-- Updating Overlay -->
 @if (_isUpdating)
 {
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-[200] animate-in fade-in duration-200">
-        <div class="bg-card border border-border rounded-lg p-6 flex flex-col items-center gap-4 shadow-xl max-w-xs text-center animate-in zoom-in duration-200">
-            <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-xs flex flex-col items-center justify-center z-[200] animate-in fade-in duration-200">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-neo-xl max-w-xs text-center animate-in zoom-in duration-200">
+            <div class="w-10 h-10 border-4 border-[#A6FA53] border-t-transparent rounded-full animate-spin"></div>
             <div>
-                <h4 class="text-sm font-bold text-foreground">Updating Attendance</h4>
-                <p class="text-xs text-muted-foreground mt-1">
+                <h4 class="text-sm font-black text-foreground font-sans">Updating Attendance</h4>
+                <p class="text-xs text-muted-foreground font-mono mt-1">
                     @if (_selectedIds.Count > 1)
                     {
                         <span>Updating @_updateProgress of @_updateTotal sessions...</span>
@@ -754,11 +754,11 @@ else
 
     private string GetBadgeClass(string status) => status switch
     {
-        "Present" => "bg-emerald-500/15 text-emerald-500 border-emerald-500/30",
-        "Absent" => "bg-destructive/15 text-destructive border-destructive/30",
-        "Cancelled" => "bg-amber-500/15 text-amber-500 border-amber-500/30",
-        "Holiday" => "bg-violet-500/15 text-violet-500 border-violet-500/30",
-        "Not Marked" => "bg-muted text-muted-foreground border-border",
-        _ => "bg-muted text-muted-foreground border-border"
+        "Present" => "bg-[#A6FA53] text-black font-black font-mono border-2 border-black shadow-neo-sm",
+        "Absent" => "bg-[#FF6B6B] text-black font-black font-mono border-2 border-black shadow-neo-sm",
+        "Cancelled" => "bg-[#FFD026] text-black font-black font-mono border-2 border-black shadow-neo-sm",
+        "Holiday" => "bg-[#C084FC] text-black font-black font-mono border-2 border-black shadow-neo-sm",
+        "Not Marked" => "bg-card text-foreground font-bold font-mono border-2 border-border shadow-neo-sm",
+        _ => "bg-muted text-foreground font-bold font-mono border-2 border-border"
     };
 }

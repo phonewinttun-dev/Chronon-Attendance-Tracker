@@ -7,12 +7,12 @@
 
 <div class="flex justify-between items-center mb-6">
     <div>
-        <h1 class="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+        <h1 class="text-3xl font-black tracking-tight text-foreground flex items-center gap-2 font-sans">
             @if (ModuleId.HasValue && _selectedModule != null)
             {
-                <button class="mr-1 p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all" 
+                <button class="mr-1 p-1.5 rounded-lg border-2 border-border hover:bg-[#FFD026] text-foreground hover:text-black transition-all shadow-neo-sm cursor-pointer" 
                         @onclick="BackToModules" title="Back to Modules">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
                 </button>
                 <span>@_selectedModule.Name Sessions</span>
             }
@@ -21,26 +21,26 @@
                 <span>Class Sessions</span>
             }
         </h1>
-        <p class="text-xs text-muted-foreground">
+        <p class="text-xs text-muted-foreground font-mono mt-1">
             @(ModuleId.HasValue && _selectedModule != null ? $"{_selectedModule.ModuleCode} • {_selectedModule.TeacherName}" : "Select a module to view sessions")
         </p>
     </div>
     @if (ModuleId.HasValue)
     {
         <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1 bg-muted border border-border p-1 rounded-md">
-                <button class="p-1.5 rounded transition-all @(_viewMode == "table" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+            <div class="flex items-center gap-1 bg-card border-2 border-border p-0.5 rounded-lg shadow-neo-sm">
+                <button class="p-1.5 rounded-md transition-all cursor-pointer @(_viewMode == "table" ? "bg-[#FFD026] text-black border border-black shadow-neo-sm" : "text-muted-foreground hover:text-foreground")" 
                         @onclick='() => _viewMode = "table"' 
                         title="Table View">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
                 </button>
-                <button class="p-1.5 rounded transition-all @(_viewMode == "card" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+                <button class="p-1.5 rounded-md transition-all cursor-pointer @(_viewMode == "card" ? "bg-[#FFD026] text-black border border-black shadow-neo-sm" : "text-muted-foreground hover:text-foreground")" 
                         @onclick='() => _viewMode = "card"' 
                         title="Card View">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
                 </button>
             </div>
-            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="GenerateSessions" disabled="@_isGenerating">
+            <button class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer disabled:opacity-50" @onclick="GenerateSessions" disabled="@_isGenerating">
                 @(_isGenerating ? "Generating..." : "Generate Sessions")
             </button>
         </div>
@@ -51,23 +51,23 @@
 @if (ModuleId.HasValue)
 {
     <!-- Filter Bar -->
-    <div class="flex flex-wrap items-center gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm">
+    <div class="flex flex-wrap items-center gap-3 mb-6 bg-card border-2 border-black dark:border-zinc-700 p-5 rounded-xl shadow-neo font-mono">
         <!-- Search Bar -->
-        <div class="flex flex-col gap-1">
-            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Search</label>
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-foreground uppercase tracking-wider">Search</label>
             <div class="flex gap-2">
-                <input type="text" class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[180px]"
+                <input type="text" class="p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[180px]"
                        placeholder="Search sessions" @bind="_localSearchTerm" @onkeyup="OnSearchKeyUp" />
-                <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-1.5 rounded-md text-xs font-semibold transition-all shrink-0" @onclick="TriggerSearch">
+                <button class="neo-btn-primary px-3 py-1.5 rounded-lg text-xs font-black shadow-neo-sm shrink-0 cursor-pointer" @onclick="TriggerSearch">
                     Search
                 </button>
             </div>
         </div>
 
         <!-- Semester Filter -->
-        <div class="flex flex-col gap-1">
-            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Semester</label>
-            <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[160px]"
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-foreground uppercase tracking-wider">Semester</label>
+            <select class="p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[160px]"
                     value="@SemesterId" @onchange="OnSemesterChanged">
                 <option value="">All Semesters</option>
                 @if (_semesters != null)
@@ -81,9 +81,9 @@
         </div>
 
         <!-- Module Filter -->
-        <div class="flex flex-col gap-1">
-            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Module</label>
-            <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[160px]"
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-foreground uppercase tracking-wider">Module</label>
+            <select class="p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[160px]"
                     value="@ModuleId" @onchange="OnModuleChanged">
                 <option value="">All Modules</option>
                 @if (_modules != null)
@@ -97,9 +97,9 @@
         </div>
 
         <!-- Status Filter -->
-        <div class="flex flex-col gap-1">
-            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Status</label>
-            <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[120px]"
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-foreground uppercase tracking-wider">Status</label>
+            <select class="p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[120px]"
                     value="@Status" @onchange="OnStatusChanged">
                 <option value="">All Statuses</option>
                 <option value="Not Marked">Not Marked</option>
@@ -111,9 +111,9 @@
         </div>
 
         <!-- Day of Week Filter -->
-        <div class="flex flex-col gap-1">
-            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Day of Week</label>
-            <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[120px]"
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-foreground uppercase tracking-wider">Day of Week</label>
+            <select class="p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[120px]"
                     value="@DayOfWeek" @onchange="OnDayOfWeekChanged">
                 <option value="">All Days</option>
                 <option value="1">Monday</option>
@@ -127,20 +127,20 @@
         </div>
 
         <!-- Start Date -->
-        <div class="flex flex-col gap-1">
-            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Start Date</label>
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-foreground uppercase tracking-wider">Start Date</label>
             <DatePicker @bind-Value="DatePickerStartDate" />
         </div>
 
         <!-- End Date -->
-        <div class="flex flex-col gap-1">
-            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">End Date</label>
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-foreground uppercase tracking-wider">End Date</label>
             <DatePicker @bind-Value="DatePickerEndDate" />
         </div>
 
         <!-- Reset Button -->
-        <div class="flex flex-col gap-1 self-end">
-            <button class="px-3 py-2 bg-secondary hover:bg-secondary/80 text-foreground border border-border rounded-md text-xs font-semibold transition-all"
+        <div class="flex flex-col gap-1.5 self-end">
+            <button class="neo-btn px-3.5 py-2 bg-card text-foreground border-2 border-border rounded-lg text-xs font-bold shadow-neo-sm cursor-pointer hover:bg-muted"
                     @onclick="ResetFilters">
                 Clear Filters
             </button>
@@ -150,11 +150,11 @@
 
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="border p-4 rounded-lg mb-6 text-sm font-semibold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
+    <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-[#FF6B6B]/20 text-[#FF6B6B]" : "bg-[#A6FA53]/20 text-[#A6FA53]")">
         <div class="flex items-center gap-2.5">
             @if (_isError)
             {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             }
             else
             {
@@ -162,7 +162,7 @@
             }
             <span>@_message</span>
         </div>
-        <button class="hover:opacity-80 focus:outline-none text-base font-bold px-1.5 py-0.5 rounded hover:bg-foreground/5 transition-all" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
+        <button class="hover:opacity-80 focus:outline-none text-base font-black px-1.5 py-0.5 rounded cursor-pointer" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
     </div>
 }
 
@@ -170,21 +170,21 @@
 {
     @if (_viewMode == "table")
     {
-        <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl shadow-neo-lg overflow-hidden font-mono">
             @if (_isLoading)
             {
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm animate-pulse">
+                    <table class="w-full text-left border-collapse text-xs animate-pulse">
                         <thead>
-                            <tr class="border-b border-border bg-muted/50">
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                            <tr class="border-b-2 border-black dark:border-zinc-700 bg-muted/40">
+                                <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Date</th>
+                                <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Module</th>
+                                <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Status</th>
+                                <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-border">
-                            @for (int i = 0; i < 8; i++)
+                        <tbody class="divide-y-2 divide-border/60">
+                            @for (int i = 0; i < 6; i++)
                             {
                                 <tr>
                                     <td class="px-4 py-4">
@@ -194,13 +194,12 @@
                                         <div class="h-3 bg-muted rounded w-32"></div>
                                     </td>
                                     <td class="px-4 py-4">
-                                        <div class="h-5 bg-muted rounded-full w-16"></div>
+                                        <div class="h-5 bg-muted rounded w-16"></div>
                                     </td>
                                     <td class="px-4 py-4">
                                         <div class="flex gap-2">
-                                            <div class="h-7 bg-muted rounded w-20"></div>
-                                            <div class="h-7 bg-muted rounded w-20"></div>
-                                            <div class="h-7 bg-muted rounded w-20"></div>
+                                            <div class="h-7 bg-muted rounded w-16"></div>
+                                            <div class="h-7 bg-muted rounded w-16"></div>
                                         </div>
                                     </td>
                                 </tr>
@@ -211,40 +210,40 @@
             }
             else if (_sessions == null || !_sessions.Any())
             {
-                <div class="p-6 text-muted-foreground text-sm">No class sessions found. Try generating sessions for the current semester.</div>
+                <div class="p-8 text-center text-muted-foreground text-xs font-mono font-bold">No class sessions found. Try generating sessions for the current semester.</div>
             }
             else
             {
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm">
+                    <table class="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr class="border-b border-border bg-muted/50">
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Module</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-                                <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                            <tr class="border-b-2 border-black dark:border-zinc-700 bg-muted/40">
+                                <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Date</th>
+                                <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Module</th>
+                                <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Status</th>
+                                <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-border">
+                        <tbody class="divide-y-2 divide-border/60">
                             @foreach (var session in _sessions)
                             {
-                                <tr class="hover:bg-accent/40 transition-colors">
-                                    <td class="px-4 py-3.5 font-mono text-foreground">@session.SessionDate.ToString("dd-MM-yyyy")</td>
-                                    <td class="px-4 py-3.5 text-foreground">@session.ModuleName</td>
+                                <tr class="hover:bg-[#A6FA53]/10 transition-colors">
+                                    <td class="px-4 py-3.5 font-mono text-foreground font-bold">@session.SessionDate.ToString("dd-MM-yyyy")</td>
+                                    <td class="px-4 py-3.5 text-foreground font-sans font-bold">@session.ModuleName</td>
                                     <td class="px-4 py-3.5">
                                         <span class="@GetBadgeClass(session.Status)">@session.Status</span>
                                     </td>
                                     <td class="px-4 py-3.5">
-                                        <div class="flex flex-wrap gap-2">
-                                            @if (true /* DateTime.UtcNow <= session.StartDatetime.AddHours(24) */)
+                                        <div class="flex flex-wrap gap-2 font-mono">
+                                            @if (true)
                                             {
                                                 @if (session.Status == "Not Marked" || session.Status == "Late")
                                                 {
-                                                    <button class="w-20 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => RequestUpdateStatus(session.Id, "Present")'>Present</button>
-                                                    <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick='() => RequestUpdateStatus(session.Id, "Absent")'>Absent</button>
+                                                    <button class="neo-btn bg-[#A6FA53] text-black font-bold py-1 px-3 rounded-lg text-xs shadow-neo-sm hover:-translate-x-0.5 hover:-translate-y-0.5 cursor-pointer" @onclick='() => RequestUpdateStatus(session.Id, "Present")'>Present</button>
+                                                    <button class="neo-btn bg-[#FF6B6B] text-black font-bold py-1 px-3 rounded-lg text-xs shadow-neo-sm hover:-translate-x-0.5 hover:-translate-y-0.5 cursor-pointer" @onclick='() => RequestUpdateStatus(session.Id, "Absent")'>Absent</button>
                                                 }
-                                                <button class="w-20 bg-secondary hover:bg-secondary/80 text-foreground border border-border py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => OpenEditModal(session)">Edit</button>
-                                                <button class="w-20 bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/30 py-1 rounded text-xs font-semibold text-center transition-all" @onclick="() => DeleteSession(session.Id)">Delete</button>
+                                                <button class="neo-btn bg-card text-foreground border-2 border-border py-1 px-3 rounded-lg text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer" @onclick="() => OpenEditModal(session)">Edit</button>
+                                                <button class="neo-btn-destructive py-1 px-3 rounded-lg text-xs font-bold shadow-neo-sm cursor-pointer" @onclick="() => DeleteSession(session.Id)">Delete</button>
                                             }
                                         </div>
                                     </td>
@@ -253,7 +252,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="border-t border-border bg-card">
+                <div class="border-t-2 border-black dark:border-zinc-700 bg-card">
                     <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
                 </div>
             }
@@ -931,10 +930,10 @@ else
     {
         return status switch
         {
-            "Present" => "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded text-xs font-semibold",
-            "Absent" => "bg-destructive/10 text-destructive border border-destructive/20 px-2 py-0.5 rounded text-xs font-semibold",
-            "Late" => "bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded text-xs font-semibold",
-            _ => "bg-muted text-muted-foreground border border-border px-2 py-0.5 rounded text-xs font-semibold"
+            "Present" => "bg-[#A6FA53] text-black font-black font-mono border-2 border-black shadow-neo-sm px-3 py-1 rounded-md text-xs",
+            "Absent" => "bg-[#FF6B6B] text-black font-black font-mono border-2 border-black shadow-neo-sm px-3 py-1 rounded-md text-xs",
+            "Late" => "bg-[#FFD026] text-black font-black font-mono border-2 border-black shadow-neo-sm px-3 py-1 rounded-md text-xs",
+            _ => "bg-card text-foreground font-bold font-mono border-2 border-border shadow-neo-sm px-3 py-1 rounded-md text-xs"
         };
     }
 
@@ -1215,8 +1214,8 @@ else
 
     private string GetBadgeBorderAndBg(double rate)
     {
-        if (rate >= 75) return "border-emerald-500/20 text-emerald-500 bg-emerald-500/10";
-        if (rate >= 60) return "border-amber-500/20 text-amber-500 bg-amber-500/10";
-        return "border-destructive/20 text-destructive bg-destructive/10";
+        if (rate >= 75) return "border-2 border-black bg-[#A6FA53] text-black font-black shadow-neo-sm";
+        if (rate >= 60) return "border-2 border-black bg-[#FFD026] text-black font-black shadow-neo-sm";
+        return "border-2 border-black bg-[#FF6B6B] text-black font-black shadow-neo-sm";
     }
 }

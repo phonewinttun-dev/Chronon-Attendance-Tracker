@@ -5,40 +5,40 @@
 <PageTitle>Semesters</PageTitle>
 
 <div class="flex justify-between items-center mb-8">
-    <h1 class="text-2xl font-bold tracking-tight text-foreground">Semesters</h1>
+    <h1 class="text-3xl font-black tracking-tight text-foreground font-sans">Semesters</h1>
     <div class="flex items-center gap-3">
-        <div class="flex items-center gap-1 bg-muted border border-border p-1 rounded-md">
-            <button class="p-1.5 rounded transition-all @(_viewMode == "table" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+        <div class="flex items-center gap-1 bg-card border-2 border-border p-0.5 rounded-lg shadow-neo-sm">
+            <button class="p-1.5 rounded-md transition-all cursor-pointer @(_viewMode == "table" ? "bg-[#FFD026] text-black border border-black shadow-neo-sm" : "text-muted-foreground hover:text-foreground")" 
                     @onclick='() => _viewMode = "table"' 
                     title="Table View">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
             </button>
-            <button class="p-1.5 rounded transition-all @(_viewMode == "card" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")" 
+            <button class="p-1.5 rounded-md transition-all cursor-pointer @(_viewMode == "card" ? "bg-[#FFD026] text-black border border-black shadow-neo-sm" : "text-muted-foreground hover:text-foreground")" 
                     @onclick='() => _viewMode = "card"' 
                     title="Card View">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
             </button>
         </div>
-        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="ToggleCreateForm">
+        <button class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer" @onclick="ToggleCreateForm">
             @(_showCreateForm ? "Cancel" : "New Semester")
         </button>
     </div>
 </div>
 
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 font-mono">
     <div class="relative w-full md:max-w-xs">
         <input type="text" 
-               class="w-full pl-9 pr-8 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring text-xs transition-all placeholder:text-muted-foreground" 
+               class="w-full pl-9 pr-8 py-2 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-bold shadow-neo-sm transition-all placeholder:text-muted-foreground" 
                placeholder="Search semesters" 
                @bind="_searchTerm" 
                @bind:event="oninput"
                @onkeyup="OnSearchKeyUp" />
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         </div>
         @if (!string.IsNullOrEmpty(_searchTerm))
         {
-            <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-muted-foreground hover:text-foreground text-sm" @onclick="ClearSearch" title="Clear search">×</button>
+            <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-muted-foreground hover:text-foreground text-sm font-black cursor-pointer" @onclick="ClearSearch" title="Clear search">×</button>
         }
     </div>
 </div>
@@ -46,11 +46,11 @@
 
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="border p-4 rounded-lg mb-6 text-sm font-semibold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500")">
+    <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-[#FF6B6B]/20 text-[#FF6B6B]" : "bg-[#A6FA53]/20 text-[#A6FA53]")">
         <div class="flex items-center gap-2.5">
             @if (_isError)
             {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12"/><line x1="12" x2="12.01" y2="16"/></svg>
             }
             else
             {
@@ -58,62 +58,62 @@
             }
             <span>@_message</span>
         </div>
-        <button class="hover:opacity-80 focus:outline-none text-base font-bold px-1.5 py-0.5 rounded hover:bg-foreground/5 transition-all" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
+        <button class="hover:opacity-80 focus:outline-none text-base font-black px-1.5 py-0.5 rounded cursor-pointer" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
     </div>
 }
 
 @if (_showCreateForm)
 {
-    <div class="bg-card border border-border p-6 rounded-lg shadow-sm mb-8">
-        <h2 class="text-base font-bold mb-4 text-foreground tracking-tight">Create New Semester</h2>
+    <div class="bg-card border-2 border-black dark:border-zinc-700 p-6 rounded-xl shadow-neo mb-8 font-mono">
+        <h2 class="text-base font-black mb-4 text-foreground tracking-tight font-sans">Create New Semester</h2>
         
         <div class="mb-4">
-            <label class="block text-sm font-semibold text-muted-foreground mb-1">Name</label>
-            <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_newSemester.Name" placeholder="e.g. Fall 2026" />
+            <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Name</label>
+            <input type="text" class="w-full p-2.5 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]" @bind="_newSemester.Name" placeholder="e.g. Fall 2026" />
         </div>
         
         <div class="grid grid-cols-2 gap-4 mb-6">
             <div>
-                <label class="block text-sm font-semibold text-muted-foreground mb-1">Start Date</label>
+                <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Start Date</label>
                 <DatePicker @bind-Value="_newSemester.StartDate" />
             </div>
             <div>
-                <label class="block text-sm font-semibold text-muted-foreground mb-1">End Date</label>
+                <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">End Date</label>
                 <DatePicker @bind-Value="_newSemester.EndDate" />
             </div>
         </div>
 
-        <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="CreateSemester" disabled="@_isSubmitting">
+        <button class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer disabled:opacity-50" @onclick="CreateSemester" disabled="@_isSubmitting">
             @(_isSubmitting ? "Creating..." : "Create Semester")
         </button>
     </div>
 }
 else if (_showEditForm)
 {
-    <div class="bg-card border border-border p-6 rounded-lg shadow-sm mb-8">
-        <h2 class="text-base font-bold mb-4 text-foreground tracking-tight">Edit Semester</h2>
+    <div class="bg-card border-2 border-black dark:border-zinc-700 p-6 rounded-xl shadow-neo mb-8 font-mono">
+        <h2 class="text-base font-black mb-4 text-foreground tracking-tight font-sans">Edit Semester</h2>
         
         <div class="mb-4">
-            <label class="block text-sm font-semibold text-muted-foreground mb-1">Name</label>
-            <input type="text" class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editingSemester.Name" placeholder="e.g. Fall 2026" />
+            <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Name</label>
+            <input type="text" class="w-full p-2.5 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]" @bind="_editingSemester.Name" placeholder="e.g. Fall 2026" />
         </div>
         
         <div class="grid grid-cols-2 gap-4 mb-6">
             <div>
-                <label class="block text-sm font-semibold text-muted-foreground mb-1">Start Date</label>
+                <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Start Date</label>
                 <DatePicker @bind-Value="_editingSemester.StartDate" />
             </div>
             <div>
-                <label class="block text-sm font-semibold text-muted-foreground mb-1">End Date</label>
+                <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">End Date</label>
                 <DatePicker @bind-Value="_editingSemester.EndDate" />
             </div>
         </div>
 
         <div class="flex items-center gap-3">
-            <button class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50" @onclick="UpdateSemester" disabled="@_isSubmitting">
+            <button class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer disabled:opacity-50" @onclick="UpdateSemester" disabled="@_isSubmitting">
                 @(_isSubmitting ? "Saving..." : "Save Changes")
             </button>
-            <button class="bg-muted text-muted-foreground hover:text-foreground border border-border px-4 py-2 rounded-md text-sm font-semibold transition-all" @onclick="CancelEdit">
+            <button class="neo-btn bg-card text-foreground border-2 border-border px-4 py-2 rounded-xl text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer" @onclick="CancelEdit">
                 Cancel
             </button>
         </div>
@@ -164,26 +164,26 @@ else if (_showEditForm)
         else
         {
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
+                <table class="w-full text-left border-collapse text-xs font-mono">
                     <thead>
-                        <tr class="border-b border-border bg-muted/50">
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Start Date</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">End Date</th>
-                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                        <tr class="border-b-2 border-black dark:border-zinc-700 bg-muted/40">
+                            <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Name</th>
+                            <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Start Date</th>
+                            <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">End Date</th>
+                            <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-border">
+                    <tbody class="divide-y-2 divide-border/60">
                         @foreach (var sem in _semesters)
                         {
-                            <tr class="hover:bg-accent/40 transition-colors">
-                                <td class="px-4 py-3.5 text-foreground font-medium">@sem.Name</td>
-                                <td class="px-4 py-3.5 font-mono text-muted-foreground">@sem.StartDate.ToString("dd-MM-yyyy")</td>
-                                <td class="px-4 py-3.5 font-mono text-muted-foreground">@sem.EndDate.ToString("dd-MM-yyyy")</td>
+                            <tr class="hover:bg-[#A6FA53]/10 transition-colors">
+                                <td class="px-4 py-3.5 text-foreground font-bold font-sans">@sem.Name</td>
+                                <td class="px-4 py-3.5 font-mono text-muted-foreground font-bold">@sem.StartDate.ToString("dd-MM-yyyy")</td>
+                                <td class="px-4 py-3.5 font-mono text-muted-foreground font-bold">@sem.EndDate.ToString("dd-MM-yyyy")</td>
                                 <td class="px-4 py-3.5">
                                     <div class="flex items-center gap-2">
-                                        <button class="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => StartEdit(sem)">Edit</button>
-                                        <button class="text-destructive hover:bg-destructive/10 border border-destructive/20 px-3 py-1 rounded transition-all text-xs font-semibold" @onclick="() => DeleteSemester(sem.Id)">Delete</button>
+                                        <button class="neo-btn bg-card text-foreground border-2 border-border py-1 px-3 rounded-lg text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer" @onclick="() => StartEdit(sem)">Edit</button>
+                                        <button class="neo-btn-destructive py-1 px-3 rounded-lg text-xs font-bold shadow-neo-sm cursor-pointer" @onclick="() => DeleteSemester(sem.Id)">Delete</button>
                                     </div>
                                 </td>
                             </tr>
@@ -191,7 +191,7 @@ else if (_showEditForm)
                     </tbody>
                 </table>
             </div>
-            <div class="border-t border-border bg-card">
+            <div class="border-t-2 border-black dark:border-zinc-700 bg-card">
                 <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
             </div>
         }
@@ -204,7 +204,7 @@ else
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
             @for (int i = 0; i < 4; i++)
             {
-                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-sm">
+                <div class="bg-card border-2 border-border rounded-xl p-5 flex flex-col justify-between shadow-neo-sm">
                     <div>
                         <div class="flex justify-between items-start mb-3">
                             <div class="h-4 bg-muted rounded w-24"></div>
@@ -230,36 +230,36 @@ else
     }
     else if (_semesters == null || !_semesters.Any())
     {
-        <div class="bg-card border border-border rounded-lg shadow-sm p-6 text-muted-foreground text-sm">No semesters found. Create one to get started.</div>
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl shadow-neo p-8 text-center text-muted-foreground text-xs font-mono font-bold">No semesters found. Create one to get started.</div>
     }
     else
     {
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 font-mono">
             @foreach (var sem in _semesters)
             {
                 var status = GetSemesterStatus(sem.StartDate, sem.EndDate);
                 var progress = GetSemesterProgress(sem.StartDate, sem.EndDate);
                 
-                <div class="bg-card border border-border rounded-lg p-5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-sm">
+                <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-5 flex flex-col justify-between shadow-neo hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg transition-all">
                     <div>
                         <div class="flex justify-between items-start mb-3">
-                            <h3 class="text-base font-bold text-foreground tracking-tight">@sem.Name</h3>
-                            <span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full @GetSemesterStatusClass(status)">
+                            <h3 class="text-base font-black text-foreground tracking-tight font-sans">@sem.Name</h3>
+                            <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md border-2 @GetSemesterStatusClass(status)">
                                 @status
                             </span>
                         </div>
                         
                         <div class="space-y-2.5 my-4">
-                            <div class="flex items-center justify-between text-xs text-muted-foreground font-mono">
+                            <div class="flex items-center justify-between text-xs text-muted-foreground font-mono font-bold">
                                 <span class="flex items-center gap-1.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
                                     Start:
                                 </span>
                                 <span class="text-foreground">@sem.StartDate.ToString("dd-MM-yyyy")</span>
                             </div>
-                            <div class="flex items-center justify-between text-xs text-muted-foreground font-mono">
+                            <div class="flex items-center justify-between text-xs text-muted-foreground font-mono font-bold">
                                 <span class="flex items-center gap-1.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
                                     End:
                                 </span>
                                 <span class="text-foreground">@sem.EndDate.ToString("dd-MM-yyyy")</span>
@@ -267,13 +267,13 @@ else
                             
                             @if (status == "Active")
                             {
-                                <div class="space-y-1 pt-1.5">
-                                    <div class="flex justify-between text-[10px] text-muted-foreground font-mono">
+                                <div class="space-y-1.5 pt-1.5">
+                                    <div class="flex justify-between text-[10px] text-muted-foreground font-mono font-bold">
                                         <span>Progress</span>
                                         <span>@((int)progress)%</span>
                                     </div>
-                                    <div class="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                                        <div class="bg-primary h-full rounded-full transition-all duration-500" style="width: @(progress)%"></div>
+                                    <div class="w-full bg-muted border border-black rounded-md h-2.5 overflow-hidden p-0.5">
+                                        <div class="bg-[#A6FA53] h-full rounded-xs transition-all duration-500" style="width: @(progress)%"></div>
                                     </div>
                                 </div>
                             }
@@ -582,9 +582,9 @@ else
     {
         return status switch
         {
-            "Active" => "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20",
-            "Upcoming" => "bg-amber-500/10 text-amber-500 border border-amber-500/20",
-            _ => "bg-muted text-muted-foreground border border-border"
+            "Active" => "bg-[#A6FA53] text-black font-black font-mono border-black shadow-neo-sm",
+            "Upcoming" => "bg-[#FFD026] text-black font-black font-mono border-black shadow-neo-sm",
+            _ => "bg-card text-foreground font-bold font-mono border-border shadow-neo-sm"
         };
     }
 

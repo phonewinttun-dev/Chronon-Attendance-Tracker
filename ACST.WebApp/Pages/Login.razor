@@ -9,15 +9,18 @@
 <PageTitle>Login - Chronon Tracker</PageTitle>
 
 <div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 bg-card border border-border/80 rounded-2xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+    <div class="max-w-md w-full space-y-8 bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-8 shadow-neo-xl animate-in zoom-in-95 duration-200 relative">
+        <div class="absolute top-4 right-4">
+            <ThemeToggle />
+        </div>
         
         <!-- Header -->
         <div class="text-center space-y-2">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary mb-2 border border-primary/20">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#A6FA53] text-black mb-2 border-2 border-black shadow-neo-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-6 h-6"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
-            <h2 class="text-2xl font-bold tracking-tight text-foreground font-sans">Welcome Back</h2>
-            <p class="text-xs text-muted-foreground">Sign in to your Chronon Attendance Tracker account</p>
+            <h2 class="text-2xl font-black tracking-tight text-foreground font-sans">Welcome Back</h2>
+            <p class="text-xs text-muted-foreground font-mono">Sign in to your Chronon Attendance Tracker account</p>
         </div>
 
         <!-- Alert Message -->
@@ -25,22 +28,22 @@
         {
             <div role="@(_isError ? "alert" : "status")" 
                  aria-live="polite" 
-                 class="p-3.5 rounded-lg border text-xs font-medium flex items-center justify-between gap-2.5 @(_isError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-primary/10 border-primary/30 text-primary")">
+                 class="p-3.5 rounded-xl border-2 border-black text-xs font-mono font-bold flex items-center justify-between gap-2.5 shadow-neo-sm @(_isError ? "bg-[#FF6B6B]/20 text-[#FF6B6B]" : "bg-[#A6FA53]/20 text-[#A6FA53]")">
                 <div class="flex items-center gap-2.5">
                     @if (_isError)
                     {
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     }
                     else
                     {
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
                     }
                     <span>@_message</span>
                 </div>
                 @if (_canManualRetry && !_isSubmitting)
                 {
                     <button type="button" 
-                            class="px-2.5 py-1 text-[11px] font-semibold rounded bg-destructive/20 hover:bg-destructive/30 text-destructive transition-colors shrink-0 cursor-pointer" 
+                            class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-[#FF6B6B] text-black border border-black shadow-neo-sm transition-all hover:scale-105 shrink-0 cursor-pointer" 
                             @onclick="HandleLogin">
                         Retry Now
                     </button>
@@ -53,32 +56,32 @@
             <DataAnnotationsValidator />
 
             <div>
-                <label class="block text-xs font-semibold text-foreground mb-1.5">Email Address</label>
+                <label class="block text-xs font-mono font-bold uppercase tracking-wider text-foreground mb-1.5">Email Address</label>
                 <div class="relative">
                     <input type="email" 
-                           class="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-mono font-bold transition-all placeholder:text-muted-foreground shadow-neo-sm" 
                            placeholder="you@example.com" 
                            @bind="_loginModel.Email" 
                            required />
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                     </div>
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-foreground mb-1.5">Password</label>
+                <label class="block text-xs font-mono font-bold uppercase tracking-wider text-foreground mb-1.5">Password</label>
                 <div class="relative">
                     <input type="@(_showPassword ? "text" : "password")" 
-                           class="w-full pl-10 pr-10 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-xs transition-all placeholder:text-muted-foreground" 
+                           class="w-full pl-10 pr-10 py-2.5 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-mono font-bold transition-all placeholder:text-muted-foreground shadow-neo-sm" 
                            placeholder="••••••••" 
                            @bind="_loginModel.Password" 
                            required />
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     </div>
                     <button type="button" 
-                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
                             @onclick="() => _showPassword = !_showPassword">
                         @if (_showPassword)
                         {
@@ -94,10 +97,10 @@
 
             <button type="submit" 
                     disabled="@_isSubmitting" 
-                    class="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2.5 rounded-lg text-xs font-bold transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer">
+                    class="neo-btn-primary w-full py-3 rounded-xl text-xs font-black uppercase tracking-wider shadow-neo disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer">
                 @if (_isSubmitting)
                 {
-                    <svg class="animate-spin h-4 w-4 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <svg class="animate-spin h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     @if (_isRetrying)
                     {
                         <span>Retrying (Attempt @_retryAttempt of @_maxRetryAttempts)...</span>
@@ -110,16 +113,16 @@
                 else
                 {
                     <span>Sign In</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 }
             </button>
         </EditForm>
 
         <!-- Footer Link -->
-        <div class="text-center border-t border-border/60 pt-4">
+        <div class="text-center border-t-2 border-border pt-4 font-mono">
             <p class="text-xs text-muted-foreground">
                 Don't have an account? 
-                <a href="register" class="font-semibold text-primary hover:underline">Register now</a>
+                <a href="register" class="font-bold text-[#A6FA53] hover:underline">Register now</a>
             </p>
         </div>
     </div>
