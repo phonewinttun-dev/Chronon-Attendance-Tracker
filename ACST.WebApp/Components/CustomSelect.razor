@@ -1,0 +1,479 @@
+@typeparam TValue
+@using ACST.WebApp.Models
+@using ACST.WebApp.Services
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<CascadingValue Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+<div class="relative @(string.IsNullOrWhiteSpace(Class) ? "w-full" : Class)" id="@ContainerId">
+    <!-- Combobox Trigger Button -->
+    <button type="button"
+            id="@ButtonId"
+            class="w-full @GetTriggerSizeClass() bg-card border-2 border-border dark:border-zinc-700 rounded-lg shadow-neo-sm hover:border-black dark:hover:border-zinc-500 hover:shadow-neo text-foreground font-mono font-bold flex items-center justify-between text-left transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A6FA53] focus-visible:shadow-neo @(_isOpen ? "ring-2 ring-[#A6FA53] shadow-neo border-black dark:border-[#A6FA53]" : "") @(Disabled ? "opacity-50 cursor-not-allowed bg-muted/40 shadow-none" : "")"
+            role="combobox"
+            aria-haspopup="listbox"
+            aria-expanded="@_isOpen"
+            aria-controls="@ListboxId"
+            aria-activedescendant="@ActiveDescendantId"
+            aria-label="@(AriaLabel ?? Placeholder ?? "Select option")"
+            disabled="@Disabled"
+            @onclick="ToggleDropdown"
+            @onkeydown="HandleTriggerKeyDown">
+        
+        <div class="flex items-center gap-2 truncate pr-2">
+            @{
+                var selected = GetSelectedOption();
+            }
+            @if (selected != null)
+            {
+                <span class="truncate text-foreground">@selected.Text</span>
+                @if (!string.IsNullOrEmpty(selected.Badge))
+                {
+                    <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-muted text-foreground border border-border shrink-0">
+                        @selected.Badge
+                    </span>
+                }
+            }
+            else
+            {
+                <span class="text-muted-foreground font-normal truncate">@(Placeholder ?? "Select option...")</span>
+            }
+        </div>
+
+        <!-- Chevron SVG Icon (Lucide chevron-down) -->
+        <svg xmlns="http://www.w3.org/2000/svg" 
+             viewBox="0 0 24 24" 
+             fill="none" 
+             stroke="currentColor" 
+             stroke-width="2.5" 
+             stroke-linecap="round" 
+             stroke-linejoin="round" 
+             class="w-4 h-4 shrink-0 transition-transform duration-200 lucide lucide-chevron-down @(_isOpen ? "rotate-180" : "")"
+             aria-hidden="true">
+            <path d="m6 9 6 6 6-6"/>
+        </svg>
+    </button>
+
+    <!-- Dropdown Menu Panel -->
+    @if (_isOpen)
+    {
+        <!-- Transparent backdrop to dismiss on outside click -->
+        <div class="fixed inset-0 z-40 bg-transparent" @onclick="CloseDropdown" aria-hidden="true"></div>
+
+        <div id="@ListboxId"
+             role="listbox"
+             aria-label="@(AriaLabel ?? Placeholder ?? "Options")"
+             tabindex="-1"
+             class="absolute z-50 mt-1.5 @(AlignRight ? "right-0" : "left-0") w-full min-w-[200px] bg-card text-card-foreground border-2 border-black dark:border-zinc-700 rounded-xl shadow-neo-lg overflow-hidden py-1 max-h-64 overflow-y-auto animate-in fade-in zoom-in-95 duration-100"
+             @onclick:stopPropagation="true">
+
+            @if (EnableSearch)
+            {
+                <div class="p-2 border-b-2 border-border bg-muted/20 flex items-center gap-1.5" @onclick:stopPropagation="true">
+                    <input type="text"
+                           class="flex-1 px-2.5 py-1.5 bg-card border-2 border-border rounded-md text-xs font-mono font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53]"
+                           placeholder="Filter options..."
+                           @bind="_searchText"
+                           @bind:event="oninput"
+                           @onkeydown="HandleSearchKeyDown"
+                           aria-label="Filter options" />
+                    @if (!string.IsNullOrEmpty(_searchText))
+                    {
+                        <button type="button"
+                                class="p-1.5 text-muted-foreground hover:text-foreground text-xs font-bold cursor-pointer focus:outline-none"
+                                @onclick="ClearSearch"
+                                aria-label="Clear filter">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    }
+                </div>
+            }
+
+            @{
+                var displayOptions = GetFilteredOptions();
+            }
+
+            @if (!displayOptions.Any())
+            {
+                <div class="px-3 py-3 text-center text-xs font-mono text-muted-foreground">
+                    No options available
+                </div>
+            }
+            else
+            {
+                @for (int i = 0; i < displayOptions.Count; i++)
+                {
+                    var opt = displayOptions[i];
+                    var isSelected = IsSelected(opt.Value);
+                    var isHighlighted = i == _highlightedIndex;
+                    var index = i;
+
+                    <div id="@GetOptionId(index)"
+                         role="option"
+                         aria-selected="@(isSelected ? "true" : "false")"
+                         aria-disabled="@(opt.Disabled ? "true" : "false")"
+                         class="w-full px-3 py-2 text-xs font-mono font-bold text-left flex items-center justify-between transition-colors select-none @(opt.Disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer") @(isSelected ? "bg-[#A6FA53] text-black font-black" : (isHighlighted ? "bg-[#A6FA53]/30 text-foreground" : "text-foreground hover:bg-[#A6FA53] hover:text-black"))"
+                         @onclick="() => SelectOption(opt)"
+                         @onmouseenter="() => _highlightedIndex = index">
+                        
+                        <div class="flex flex-col truncate pr-2">
+                            <span class="truncate">@opt.Text</span>
+                            @if (!string.IsNullOrEmpty(opt.Subtext))
+                            {
+                                <span class="text-[10px] font-normal @(isSelected ? "text-black/70" : "text-muted-foreground")">
+                                    @opt.Subtext
+                                </span>
+                            }
+                        </div>
+
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            @if (!string.IsNullOrEmpty(opt.Badge))
+                            {
+                                <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold @(isSelected ? "bg-black text-white" : "bg-muted text-foreground") border border-black/20">
+                                    @opt.Badge
+                                </span>
+                            }
+                            @if (isSelected)
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" 
+                                     viewBox="0 0 24 24" 
+                                     fill="none" 
+                                     stroke="currentColor" 
+                                     stroke-width="3" 
+                                     stroke-linecap="round" 
+                                     stroke-linejoin="round" 
+                                     class="w-4 h-4 text-black lucide lucide-check"
+                                     aria-hidden="true">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public TValue Value { get; set; } = default!;
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+    [Parameter] public EventCallback<TValue> OnChange { get; set; }
+
+    [Parameter] public IEnumerable<SelectOption<TValue>>? Options { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public string? Id { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string Size { get; set; } = "md";
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool AlignRight { get; set; }
+    [Parameter] public bool EnableSearch { get; set; } = false;
+
+    private bool _isOpen = false;
+    private int _highlightedIndex = -1;
+    private string _searchText = string.Empty;
+    private readonly string _uniqueId = Guid.NewGuid().ToString("N")[..8];
+    private readonly List<CustomSelectOption<TValue>> _childComponents = new();
+
+    private string ContainerId => !string.IsNullOrEmpty(Id) ? $"{Id}-container" : $"select-container-{_uniqueId}";
+    private string ButtonId => !string.IsNullOrEmpty(Id) ? Id : $"select-btn-{_uniqueId}";
+    private string ListboxId => !string.IsNullOrEmpty(Id) ? $"{Id}-listbox" : $"select-listbox-{_uniqueId}";
+    private string GetOptionId(int index) => $"{ListboxId}-opt-{index}";
+    private string? ActiveDescendantId => _isOpen && _highlightedIndex >= 0 ? GetOptionId(_highlightedIndex) : null;
+
+    protected override void OnInitialized()
+    {
+        DropdownCoordinator.OnAnyDropdownOpened += HandleOtherDropdownOpened;
+    }
+
+    private void HandleOtherDropdownOpened(object source)
+    {
+        if (!ReferenceEquals(source, this) && _isOpen)
+        {
+            _isOpen = false;
+            _highlightedIndex = -1;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        DropdownCoordinator.OnAnyDropdownOpened -= HandleOtherDropdownOpened;
+    }
+
+    internal void RegisterChildOption(CustomSelectOption<TValue> child)
+    {
+        if (!_childComponents.Contains(child))
+        {
+            _childComponents.Add(child);
+            StateHasChanged();
+        }
+    }
+
+    internal void NotifyOptionUpdated(CustomSelectOption<TValue> child)
+    {
+        StateHasChanged();
+    }
+
+    internal void UnregisterChildOption(CustomSelectOption<TValue> child)
+    {
+        if (_childComponents.Remove(child))
+        {
+            StateHasChanged();
+        }
+    }
+
+    private string GetTriggerSizeClass() => Size switch
+    {
+        "sm" => "h-8 px-2.5 text-xs",
+        _ => "h-9 px-3 text-xs"
+    };
+
+    private List<SelectOption<TValue>> GetAllOptions()
+    {
+        var list = new List<SelectOption<TValue>>();
+        if (Options != null)
+        {
+            list.AddRange(Options);
+        }
+        foreach (var child in _childComponents)
+        {
+            list.Add(child.ToSelectOption());
+        }
+        return list;
+    }
+
+    private List<SelectOption<TValue>> GetFilteredOptions()
+    {
+        var all = GetAllOptions();
+        if (string.IsNullOrWhiteSpace(_searchText))
+        {
+            return all;
+        }
+
+        return all.Where(o => o.Text.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
+                              (!string.IsNullOrEmpty(o.Subtext) && o.Subtext.Contains(_searchText, StringComparison.OrdinalIgnoreCase)))
+                  .ToList();
+    }
+
+    private SelectOption<TValue>? GetSelectedOption()
+    {
+        var all = GetAllOptions();
+        return all.FirstOrDefault(o => IsSelected(o.Value));
+    }
+
+    private bool IsSelected(TValue optionValue)
+    {
+        return EqualityComparer<TValue>.Default.Equals(Value, optionValue);
+    }
+
+    private void ToggleDropdown()
+    {
+        if (Disabled) return;
+        _isOpen = !_isOpen;
+        if (_isOpen)
+        {
+            DropdownCoordinator.NotifyOpened(this);
+            var filtered = GetFilteredOptions();
+            var selectedIdx = filtered.FindIndex(o => IsSelected(o.Value));
+            _highlightedIndex = selectedIdx >= 0 ? selectedIdx : (filtered.Any() ? 0 : -1);
+            ScrollActiveOptionIntoView();
+        }
+        else
+        {
+            _highlightedIndex = -1;
+        }
+    }
+
+    public void CloseDropdown()
+    {
+        _isOpen = false;
+        _highlightedIndex = -1;
+    }
+
+    private async Task SelectOption(SelectOption<TValue> option)
+    {
+        if (option.Disabled) return;
+
+        Value = option.Value;
+        CloseDropdown();
+        await ValueChanged.InvokeAsync(Value);
+        await OnChange.InvokeAsync(Value);
+    }
+
+    private void ScrollActiveOptionIntoView()
+    {
+        if (_highlightedIndex >= 0)
+        {
+            _ = JSRuntime.InvokeVoidAsync("eval", $"document.getElementById('{GetOptionId(_highlightedIndex)}')?.scrollIntoView({{ block: 'nearest' }})");
+        }
+    }
+
+    private void HandleTriggerKeyDown(KeyboardEventArgs e)
+    {
+        if (Disabled) return;
+
+        var options = GetFilteredOptions();
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                if (!_isOpen)
+                {
+                    ToggleDropdown();
+                }
+                else if (options.Any())
+                {
+                    _highlightedIndex = (_highlightedIndex + 1) % options.Count;
+                    ScrollActiveOptionIntoView();
+                }
+                break;
+
+            case "ArrowUp":
+                if (!_isOpen)
+                {
+                    ToggleDropdown();
+                }
+                else if (options.Any())
+                {
+                    _highlightedIndex = _highlightedIndex <= 0 ? options.Count - 1 : _highlightedIndex - 1;
+                    ScrollActiveOptionIntoView();
+                }
+                break;
+
+            case "Home":
+                if (_isOpen && options.Any())
+                {
+                    _highlightedIndex = 0;
+                    ScrollActiveOptionIntoView();
+                }
+                break;
+
+            case "End":
+                if (_isOpen && options.Any())
+                {
+                    _highlightedIndex = options.Count - 1;
+                    ScrollActiveOptionIntoView();
+                }
+                break;
+
+            case "PageDown":
+                if (_isOpen && options.Any())
+                {
+                    _highlightedIndex = Math.Min(_highlightedIndex + 5, options.Count - 1);
+                    ScrollActiveOptionIntoView();
+                }
+                break;
+
+            case "PageUp":
+                if (_isOpen && options.Any())
+                {
+                    _highlightedIndex = Math.Max(_highlightedIndex - 5, 0);
+                    ScrollActiveOptionIntoView();
+                }
+                break;
+
+            case "Enter":
+            case " ":
+                if (!_isOpen)
+                {
+                    ToggleDropdown();
+                }
+                else if (_highlightedIndex >= 0 && _highlightedIndex < options.Count)
+                {
+                    _ = SelectOption(options[_highlightedIndex]);
+                }
+                break;
+
+            case "Escape":
+                if (_isOpen)
+                {
+                    CloseDropdown();
+                }
+                break;
+
+            case "Tab":
+                if (_isOpen)
+                {
+                    CloseDropdown();
+                }
+                break;
+
+            default:
+                // Type-ahead navigation when typing alphanumeric characters
+                if (e.Key.Length == 1 && !e.CtrlKey && !e.AltKey && !e.MetaKey)
+                {
+                    char keyChar = e.Key[0];
+                    if (char.IsLetterOrDigit(keyChar) && options.Any())
+                    {
+                        var matchIndex = options.FindIndex(_highlightedIndex + 1, o => o.Text.StartsWith(keyChar.ToString(), StringComparison.OrdinalIgnoreCase));
+                        if (matchIndex < 0)
+                        {
+                            matchIndex = options.FindIndex(0, o => o.Text.StartsWith(keyChar.ToString(), StringComparison.OrdinalIgnoreCase));
+                        }
+                        if (matchIndex >= 0)
+                        {
+                            _highlightedIndex = matchIndex;
+                            if (!_isOpen)
+                            {
+                                _ = SelectOption(options[matchIndex]);
+                            }
+                            else
+                            {
+                                ScrollActiveOptionIntoView();
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+    }
+
+    private void HandleSearchKeyDown(KeyboardEventArgs e)
+    {
+        var options = GetFilteredOptions();
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                if (options.Any())
+                {
+                    _highlightedIndex = (_highlightedIndex + 1) % options.Count;
+                    ScrollActiveOptionIntoView();
+                }
+                break;
+
+            case "ArrowUp":
+                if (options.Any())
+                {
+                    _highlightedIndex = _highlightedIndex <= 0 ? options.Count - 1 : _highlightedIndex - 1;
+                    ScrollActiveOptionIntoView();
+                }
+                break;
+
+            case "Enter":
+                if (_highlightedIndex >= 0 && _highlightedIndex < options.Count)
+                {
+                    _ = SelectOption(options[_highlightedIndex]);
+                }
+                break;
+
+            case "Escape":
+                CloseDropdown();
+                break;
+        }
+    }
+
+    private void ClearSearch()
+    {
+        _searchText = string.Empty;
+        var options = GetFilteredOptions();
+        _highlightedIndex = options.Any() ? 0 : -1;
+    }
+}

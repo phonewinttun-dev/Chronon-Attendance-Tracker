@@ -55,17 +55,19 @@
         <!-- Semester Filter -->
         <div class="flex flex-col gap-1.5 min-w-[200px]">
             <label class="text-xs font-bold text-foreground uppercase tracking-wider font-mono">Semester</label>
-            <select class="p-2.5 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53] w-full"
-                    value="@_selectedFilterSemesterIdStr" @onchange="OnSemesterFilterChanged">
-                <option value="">All Semesters</option>
+            <CustomSelect TValue="string"
+                          Value="_selectedFilterSemesterIdStr"
+                          ValueChanged="OnSemesterFilterChanged"
+                          Placeholder="All Semesters">
+                <CustomSelectOption TValue="string" Value='""' Text="All Semesters" />
                 @if (_semesters != null)
                 {
                     @foreach (var sem in _semesters)
                     {
-                        <option value="@sem.Id">@sem.Name</option>
+                        <CustomSelectOption TValue="string" Value="@sem.Id.ToString()" Text="@sem.Name" />
                     }
                 }
-            </select>
+            </CustomSelect>
         </div>
     </div>
 }
@@ -122,16 +124,18 @@
             </div>
             <div>
                 <label class="block text-sm font-semibold text-muted-foreground mb-1">Semester</label>
-                <select class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_newModuleSemesterIdStr">
-                    <option value="">Select Semester (Optional)...</option>
+                <CustomSelect TValue="string"
+                              @bind-Value="_newModuleSemesterIdStr"
+                              Placeholder="Select Semester (Optional)...">
+                    <CustomSelectOption TValue="string" Value='""' Text="Select Semester (Optional)..." />
                     @if (_semesters != null)
                     {
                         @foreach(var sem in _semesters)
                         {
-                            <option value="@sem.Id">@sem.Name</option>
+                            <CustomSelectOption TValue="string" Value="@sem.Id.ToString()" Text="@sem.Name" />
                         }
                     }
-                </select>
+                </CustomSelect>
             </div>
         </div>
 
@@ -152,16 +156,17 @@
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-muted/20 p-3 rounded-lg border border-border">
                             <div>
                                 <label class="block text-xs font-semibold text-muted-foreground mb-1">Day of Week</label>
-                                <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring" 
-                                        @bind="sch.DayOfWeek">
-                                    <option value="1">Monday</option>
-                                    <option value="2">Tuesday</option>
-                                    <option value="3">Wednesday</option>
-                                    <option value="4">Thursday</option>
-                                    <option value="5">Friday</option>
-                                    <option value="6">Saturday</option>
-                                    <option value="0">Sunday</option>
-                                </select>
+                                <CustomSelect TValue="short"
+                                              @bind-Value="sch.DayOfWeek"
+                                              Size="sm">
+                                    <CustomSelectOption TValue="short" Value="@((short)1)" Text="Monday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)2)" Text="Tuesday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)3)" Text="Wednesday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)4)" Text="Thursday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)5)" Text="Friday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)6)" Text="Saturday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)0)" Text="Sunday" />
+                                </CustomSelect>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-muted-foreground mb-1">Start Time</label>
@@ -232,16 +237,18 @@
         
         <div class="mb-6">
             <label class="block text-sm font-semibold text-muted-foreground mb-1">Semester</label>
-            <select class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_selectedSemesterId">
-                <option value="0">Select Semester...</option>
+            <CustomSelect TValue="long"
+                          @bind-Value="_selectedSemesterId"
+                          Placeholder="Select Semester...">
+                <CustomSelectOption TValue="long" Value="0L" Text="Select Semester..." />
                 @if (_semesters != null)
                 {
                     @foreach(var sem in _semesters)
                     {
-                        <option value="@sem.Id">@sem.Name</option>
+                        <CustomSelectOption TValue="long" Value="@sem.Id" Text="@sem.Name" />
                     }
                 }
-            </select>
+            </CustomSelect>
         </div>
 
         <div class="mb-6">
@@ -261,16 +268,17 @@
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-muted/20 p-3 rounded-lg border border-border">
                             <div>
                                 <label class="block text-xs font-semibold text-muted-foreground mb-1">Day of Week</label>
-                                <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring" 
-                                        @bind="sch.DayOfWeek">
-                                    <option value="1">Monday</option>
-                                    <option value="2">Tuesday</option>
-                                    <option value="3">Wednesday</option>
-                                    <option value="4">Thursday</option>
-                                    <option value="5">Friday</option>
-                                    <option value="6">Saturday</option>
-                                    <option value="0">Sunday</option>
-                                </select>
+                                <CustomSelect TValue="short"
+                                              @bind-Value="sch.DayOfWeek"
+                                              Size="sm">
+                                    <CustomSelectOption TValue="short" Value="@((short)1)" Text="Monday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)2)" Text="Tuesday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)3)" Text="Wednesday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)4)" Text="Thursday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)5)" Text="Friday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)6)" Text="Saturday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)0)" Text="Sunday" />
+                                </CustomSelect>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-muted-foreground mb-1">Start Time</label>
@@ -353,16 +361,18 @@
             </div>
             <div>
                 <label class="block text-sm font-semibold text-muted-foreground mb-1">Semester</label>
-                <select class="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editModuleSemesterIdStr">
-                    <option value="">Select Semester (Optional)...</option>
+                <CustomSelect TValue="string"
+                              @bind-Value="_editModuleSemesterIdStr"
+                              Placeholder="Select Semester (Optional)...">
+                    <CustomSelectOption TValue="string" Value='""' Text="Select Semester (Optional)..." />
                     @if (_semesters != null)
                     {
                         @foreach(var sem in _semesters)
                         {
-                            <option value="@sem.Id">@sem.Name</option>
+                            <CustomSelectOption TValue="string" Value="@sem.Id.ToString()" Text="@sem.Name" />
                         }
                     }
-                </select>
+                </CustomSelect>
             </div>
         </div>
 
@@ -383,16 +393,17 @@
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-muted/20 p-3 rounded-lg border border-border">
                             <div>
                                 <label class="block text-xs font-semibold text-muted-foreground mb-1">Day of Week</label>
-                                <select class="w-full p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring" 
-                                        @bind="sch.DayOfWeek">
-                                    <option value="1">Monday</option>
-                                    <option value="2">Tuesday</option>
-                                    <option value="3">Wednesday</option>
-                                    <option value="4">Thursday</option>
-                                    <option value="5">Friday</option>
-                                    <option value="6">Saturday</option>
-                                    <option value="0">Sunday</option>
-                                </select>
+                                <CustomSelect TValue="short"
+                                              @bind-Value="sch.DayOfWeek"
+                                              Size="sm">
+                                    <CustomSelectOption TValue="short" Value="@((short)1)" Text="Monday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)2)" Text="Tuesday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)3)" Text="Wednesday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)4)" Text="Thursday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)5)" Text="Friday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)6)" Text="Saturday" />
+                                    <CustomSelectOption TValue="short" Value="@((short)0)" Text="Sunday" />
+                                </CustomSelect>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-muted-foreground mb-1">Start Time</label>
@@ -1075,9 +1086,8 @@
         await LoadData();
     }
 
-    private async Task OnSemesterFilterChanged(ChangeEventArgs e)
+    private async Task OnSemesterFilterChanged(string val)
     {
-        var val = e.Value?.ToString();
         _selectedFilterSemesterIdStr = val ?? "";
         _pageNumber = 1;
         await LoadData();

@@ -93,13 +93,15 @@ else
         </div>
         <div class="flex items-center gap-3">
             <label class="text-muted-foreground font-mono font-bold text-xs uppercase whitespace-nowrap">Semester:</label>
-            <select class="p-2 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[220px]"
-                    value="@_selectedSemesterId" @onchange="OnSemesterChanged">
+            <CustomSelect TValue="long"
+                          Value="_selectedSemesterId"
+                          ValueChanged="OnSemesterChanged"
+                          Class="min-w-[220px]">
                 @foreach (var sem in _semesters)
                 {
-                    <option value="@sem.Id">@sem.Name</option>
+                    <CustomSelectOption TValue="long" Value="@sem.Id" Text="@sem.Name" />
                 }
-            </select>
+            </CustomSelect>
         </div>
     </div>
 
@@ -196,25 +198,31 @@ else
                     <!-- Semester dropdown in card header -->
                     <div class="flex items-center gap-1.5">
                         <span class="text-muted-foreground text-xs font-bold uppercase whitespace-nowrap">Sem:</span>
-                        <select class="p-1.5 bg-card border-2 border-border rounded-lg text-foreground font-mono text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[120px]"
-                                value="@_selectedSemesterId" @onchange="OnSemesterChanged">
+                        <CustomSelect TValue="long"
+                                      Value="_selectedSemesterId"
+                                      ValueChanged="OnSemesterChanged"
+                                      Size="sm"
+                                      Class="min-w-[140px]">
                             @foreach (var sem in _semesters)
                             {
-                                <option value="@sem.Id">@sem.Name</option>
+                                <CustomSelectOption TValue="long" Value="@sem.Id" Text="@sem.Name" />
                             }
-                        </select>
+                        </CustomSelect>
                     </div>
 
                     <!-- Month dropdown in card header -->
                     <div class="flex items-center gap-1.5">
                         <span class="text-muted-foreground text-xs font-bold uppercase whitespace-nowrap">Month:</span>
-                        <select class="p-1.5 bg-card border-2 border-border rounded-lg text-foreground font-mono text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[120px]"
-                                value="@_selectedMonthFilter" @onchange="OnMonthFilterChanged">
+                        <CustomSelect TValue="string"
+                                      Value="_selectedMonthFilter"
+                                      ValueChanged="OnMonthFilterChanged"
+                                      Size="sm"
+                                      Class="min-w-[130px]">
                             @foreach (var opt in _availableMonths)
                             {
-                                <option value="@opt.Value">@opt.Text</option>
+                                <CustomSelectOption TValue="string" Value="@opt.Value" Text="@opt.Text" />
                             }
-                        </select>
+                        </CustomSelect>
                     </div>
 
                     <div class="flex items-center gap-1 bg-card border-2 border-border p-0.5 rounded-lg shadow-neo-sm">
@@ -750,13 +758,10 @@ else
         }
     }
 
-    private async Task OnSemesterChanged(ChangeEventArgs e)
+    private async Task OnSemesterChanged(long semesterId)
     {
-        if (e.Value != null && long.TryParse(e.Value.ToString(), out long semesterId))
-        {
-            _selectedSemesterId = semesterId;
-            await LoadDashboardSummary(_selectedSemesterId);
-        }
+        _selectedSemesterId = semesterId;
+        await LoadDashboardSummary(_selectedSemesterId);
     }
 
     private async Task SetActiveTab(Tab tab)
@@ -925,10 +930,9 @@ else
         }
     }
 
-    private async Task OnMonthFilterChanged(ChangeEventArgs e)
+    private async Task OnMonthFilterChanged(string monthVal)
     {
-        if (e.Value == null) return;
-        _selectedMonthFilter = e.Value.ToString() ?? "all";
+        _selectedMonthFilter = string.IsNullOrEmpty(monthVal) ? "all" : monthVal;
         
         _isLoadingDailyWeekly = true;
         _isLoadingModules = true;
