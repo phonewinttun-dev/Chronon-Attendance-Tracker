@@ -1,0 +1,43 @@
+@typeparam TValue
+@using ACST.WebApp.Models
+@implements IDisposable
+
+@code {
+    [CascadingParameter]
+    public CustomSelect<TValue>? ParentSelect { get; set; }
+
+    [Parameter]
+    public TValue Value { get; set; } = default!;
+
+    [Parameter]
+    public string Text { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Subtext { get; set; }
+
+    [Parameter]
+    public string? Badge { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ParentSelect?.RegisterChildOption(this);
+    }
+
+    protected override void OnParametersSet()
+    {
+        ParentSelect?.NotifyOptionUpdated(this);
+    }
+
+    public void Dispose()
+    {
+        ParentSelect?.UnregisterChildOption(this);
+    }
+
+    public SelectOption<TValue> ToSelectOption()
+    {
+        return new SelectOption<TValue>(Value, Text, Subtext, Badge, Disabled);
+    }
+}

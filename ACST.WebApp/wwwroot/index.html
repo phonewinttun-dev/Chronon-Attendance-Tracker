@@ -25,6 +25,12 @@
                 } else {
                     document.documentElement.classList.remove('dark');
                 }
+                const storedNightLight = localStorage.getItem('chronon_night_light');
+                if (storedNightLight === 'true') {
+                    document.documentElement.classList.add('night-light');
+                } else {
+                    document.documentElement.classList.remove('night-light');
+                }
             } catch (e) {}
         })();
     </script>
@@ -74,6 +80,22 @@
                     localStorage.setItem('chronon_theme', newTheme);
                 } catch (e) {}
                 return newTheme;
+            },
+            getNightLight: function() {
+                return document.documentElement.classList.contains('night-light');
+            },
+            toggleNightLight: function() {
+                const isNightLight = document.documentElement.classList.contains('night-light');
+                const newState = !isNightLight;
+                if (newState) {
+                    document.documentElement.classList.add('night-light');
+                } else {
+                    document.documentElement.classList.remove('night-light');
+                }
+                try {
+                    localStorage.setItem('chronon_night_light', newState.toString());
+                } catch (e) {}
+                return newState;
             }
         };
     </script>

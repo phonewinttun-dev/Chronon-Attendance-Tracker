@@ -1,13 +1,14 @@
 ---
-name: Chronon Neobrutalism (Eye-Comfort & Night-Light Enhanced)
+name: Chronon Neobrutalism (Multi-Mode & Eye-Comfort Enhanced)
 modes:
   light:
-    surface: "#F7F4EB"
-    surface-card: "#FAF8F5"
-    surface-inner: "#EBE6DC"
-    on-surface: "#1C1917"
-    on-surface-muted: "#78716C"
-    border: "#1C1917"
+    name: "Crisp Daylight"
+    surface: "#F4F0EA"
+    surface-card: "#FFFFFF"
+    surface-inner: "#F9F7F2"
+    on-surface: "#121212"
+    on-surface-muted: "#71717A"
+    border: "#121212"
     shadow: "#000000"
     primary: "#A6FA53"
     on-primary: "#000000"
@@ -19,13 +20,33 @@ modes:
     on-error: "#000000"
     warning: "#FFD026"
     on-warning: "#000000"
+  light-night:
+    name: "Warm Linen (Eye-Comfort)"
+    surface: "#F7F4EB"
+    surface-card: "#FAF8F5"
+    surface-inner: "#EBE6DC"
+    on-surface: "#1C1917"
+    on-surface-muted: "#78716C"
+    border: "#1C1917"
+    shadow: "#1C1917"
+    primary: "#9EE547"
+    on-primary: "#000000"
+    secondary: "#00D0E8"
+    on-secondary: "#000000"
+    tertiary: "#F59E0B"
+    on-tertiary: "#000000"
+    error: "#EF4444"
+    on-error: "#000000"
+    warning: "#F59E0B"
+    on-warning: "#000000"
   dark:
-    surface: "#181716"
-    surface-card: "#201E1C"
-    surface-inner: "#2B2826"
-    on-surface: "#F5F2EB"
-    on-surface-muted: "#A8A29E"
-    border: "#3F3B37"
+    name: "Crisp Cyber Charcoal"
+    surface: "#121214"
+    surface-card: "#1C1C21"
+    surface-inner: "#24242B"
+    on-surface: "#F4F4F5"
+    on-surface-muted: "#A1A1AA"
+    border: "#3F3F46"
     shadow: "#000000"
     primary: "#A6FA53"
     on-primary: "#000000"
@@ -36,6 +57,25 @@ modes:
     error: "#FF6B6B"
     on-error: "#000000"
     warning: "#FFD026"
+    on-warning: "#000000"
+  dark-night:
+    name: "Warm Espresso (Eye-Comfort)"
+    surface: "#181716"
+    surface-card: "#201E1C"
+    surface-inner: "#2B2826"
+    on-surface: "#F5F2EB"
+    on-surface-muted: "#A8A29E"
+    border: "#3F3B37"
+    shadow: "#000000"
+    primary: "#9EE547"
+    on-primary: "#000000"
+    secondary: "#22D3EE"
+    on-secondary: "#000000"
+    tertiary: "#FBBF24"
+    on-tertiary: "#000000"
+    error: "#F87171"
+    on-error: "#000000"
+    warning: "#FBBF24"
     on-warning: "#000000"
 shadows:
   neo-sm: "2px 2px 0px #000000"
@@ -106,20 +146,26 @@ The Chronon Attendance Tracker design system embodies a **High-Energy Neobrutali
 - **Bold Contrast & Clarity:** Heavy outlines (`border-2 border-black` / `border-[#3F3F46]`) delineate all interactive components, cards, tables, and modal dialogs.
 - **Tactile Micro-Interactions:** Buttons and clickable cards employ hard offset drop shadows (`4px 4px 0px #000`) and physically respond to user interaction (`hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5`).
 - **High-Density Data Presentation:** Clean, grid-based layouts ensure attendance metrics, weekly breakdowns, and scheduling details are immediately readable.
-- **Full Theme Flexibility:** Engineered with dual support for **Light Mode** (warm retro canvas `#F4F0EA`, pure white cards) and **Dark Mode** (deep charcoal `#121214`, dark containers `#1C1C21`).
+- **Full Multi-Mode & Eye-Comfort Flexibility:** Built with 4 native display modes:
+  1. **Light Mode (Crisp Daylight):** Clean retro high-contrast paper canvas (`#F4F0EA`), pure white cards (`#FFFFFF`), solid `#121212` text and borders.
+  2. **Light Mode + Night Light (Warm Linen):** Soothing eye-comfort amber linen canvas (`#F7F4EB`), `#FAF8F5` cards, `#1C1917` warm deep carbon borders, designed to eliminate harsh blue daylight reflections while preserving sharp high contrast.
+  3. **Dark Mode (Crisp Cyber Charcoal):** Deep neutral charcoal canvas (`#121214`), dark graphite cards (`#1C1C21`), `#3F3F46` crisp borders, `#F4F4F5` high-contrast text.
+  4. **Dark Mode + Night Light (Warm Espresso):** Warm amber-tinted espresso canvas (`#181716`), `#201E1C` cards, `#3F3B37` warm bronze borders, `#F5F2EB` soft ivory text, eliminating OLED blue glare for late night sessions.
 
 ---
 
 ## 2. Color Palette & Functional Semantics
 
 ### Functional Color Strategy:
-- **Primary (Electric Lime - `#A6FA53`):** Main brand color, primary CTA buttons (Save, Submit, Check-in), and healthy attendance indicators (>= 75%).
-- **Secondary (Cyber Cyan - `#00E5FF`):** Informational actions, calendar filters, module tags, and secondary action triggers.
-- **Tertiary / Warning (Sunny Yellow - `#FFD026`):** Table header accents, caution status badges (< 75%), active navigation tabs, and highlighted notes.
-- **Destructive / Error (Coral Red - `#FF6B6B`):** Critical alerts, absent indicators (< 60%), delete actions, and logout dialogs.
-- **Neutral Canvas:**
-  - *Light Mode:* Canvas `#F4F0EA`, Cards `#FFFFFF`, Inner Tiles `#FFFDF5`, Text `#121212`.
-  - *Dark Mode:* Canvas `#121214`, Cards `#1C1C21`, Inner Tiles `#24242B`, Text `#F4F4F5`.
+- **Primary (Electric Lime - `#A6FA53` / `#9EE547` in Night Light):** Main brand color, primary CTA buttons (Save, Submit, Check-in), active navigation indicators, and healthy attendance indicators (>= 75%).
+- **Secondary (Cyber Cyan - `#00E5FF` / `#00D0E8` in Night Light):** Informational actions, calendar filters, module tags, and secondary action triggers.
+- **Tertiary / Warning (Sunny Yellow - `#FFD026` / `#F59E0B` in Night Light):** Table header accents, caution status badges (< 75%), active navigation tabs, and highlighted notes.
+- **Destructive / Error (Coral Red - `#FF6B6B` / `#EF4444` in Night Light):** Critical alerts, absent indicators (< 60%), delete actions, and sign out dialogs.
+- **Surface & Typography Matrix:**
+  - *Light (Crisp):* Canvas `#F4F0EA`, Cards `#FFFFFF`, Inner Tiles `#F9F7F2`, Text `#121212`, Borders `#121212`.
+  - *Light (Night Light):* Canvas `#F7F4EB`, Cards `#FAF8F5`, Inner Tiles `#EBE6DC`, Text `#1C1917`, Borders `#1C1917`.
+  - *Dark (Crisp):* Canvas `#121214`, Cards `#1C1C21`, Inner Tiles `#24242B`, Text `#F4F4F5`, Borders `#3F3F46`.
+  - *Dark (Night Light):* Canvas `#181716`, Cards `#201E1C`, Inner Tiles `#2B2826`, Text `#F5F2EB`, Borders `#3F3B37`.
 
 ### Attendance Health Semantics:
 - **Healthy (>= 75%):** Lime Green `#A6FA53` pill badge with solid black border.

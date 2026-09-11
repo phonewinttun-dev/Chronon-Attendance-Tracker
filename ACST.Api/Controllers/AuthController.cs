@@ -3,6 +3,7 @@ using ACST.Domain.Features.Auth;
 using ACST.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ACST.Api.Controllers
 {
@@ -11,6 +12,7 @@ namespace ACST.Api.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("auth-policy")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -29,6 +31,7 @@ namespace ACST.Api.Controllers
         [HttpPost("register")]
         [ProducesResponseType(typeof(Result<LoginResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Result<LoginResponse>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken = default)
         {
             var result = await _authService.RegisterAsync(request, cancellationToken);
@@ -45,6 +48,7 @@ namespace ACST.Api.Controllers
         [HttpPost("login")]
         [ProducesResponseType(typeof(Result<LoginResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Result<LoginResponse>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken = default)
         {
             var result = await _authService.LoginAsync(request, cancellationToken);
@@ -61,6 +65,7 @@ namespace ACST.Api.Controllers
         [HttpPost("refresh-token")]
         [ProducesResponseType(typeof(Result<LoginResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Result<LoginResponse>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken = default)
         {
             var result = await _authService.RefreshTokenAsync(request, cancellationToken);

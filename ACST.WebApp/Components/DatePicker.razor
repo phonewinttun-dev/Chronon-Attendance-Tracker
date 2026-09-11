@@ -99,16 +99,14 @@
     private DateOnly _viewDate;
     private bool _isFocused = false;
 
-    private static event Action<DatePicker>? OnCalendarOpened;
-
     protected override void OnInitialized()
     {
-        OnCalendarOpened += HandleOtherCalendarOpened;
+        DropdownCoordinator.OnAnyDropdownOpened += HandleOtherDropdownOpened;
     }
 
-    private void HandleOtherCalendarOpened(DatePicker openedDatePicker)
+    private void HandleOtherDropdownOpened(object openedItem)
     {
-        if (openedDatePicker != this && _showCalendar)
+        if (!ReferenceEquals(openedItem, this) && _showCalendar)
         {
             _showCalendar = false;
             InvokeAsync(StateHasChanged);
@@ -117,7 +115,7 @@
 
     public void Dispose()
     {
-        OnCalendarOpened -= HandleOtherCalendarOpened;
+        DropdownCoordinator.OnAnyDropdownOpened -= HandleOtherDropdownOpened;
     }
 
     protected override void OnParametersSet()
@@ -144,7 +142,7 @@
         if (_showCalendar)
         {
             _viewDate = Value != default ? Value : DateOnly.FromDateTime(DateTime.Today);
-            OnCalendarOpened?.Invoke(this);
+            DropdownCoordinator.NotifyOpened(this);
         }
     }
 

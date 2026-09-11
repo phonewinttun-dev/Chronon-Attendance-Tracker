@@ -40,16 +40,20 @@
 
     <!-- Filters -->
     <div class="flex items-center gap-3">
-        <select class="p-2 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53] min-w-[200px]" @bind:get="_selectedSemesterId" @bind:set="OnSemesterChanged">
-            <option value="0">All Semesters</option>
+        <CustomSelect TValue="long"
+                      Value="_selectedSemesterId"
+                      ValueChanged="OnSemesterChanged"
+                      Placeholder="All Semesters"
+                      Class="min-w-[200px]">
+            <CustomSelectOption TValue="long" Value="0L" Text="All Semesters" />
             @if (_semesters != null)
             {
                 @foreach (var sem in _semesters)
                 {
-                    <option value="@sem.Id">@sem.Name</option>
+                    <CustomSelectOption TValue="long" Value="@sem.Id" Text="@sem.Name" />
                 }
             }
-        </select>
+        </CustomSelect>
     </div>
 </div>
 

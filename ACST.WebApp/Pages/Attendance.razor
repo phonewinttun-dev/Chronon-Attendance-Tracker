@@ -17,44 +17,51 @@
 <div class="flex flex-wrap items-end gap-3 mb-6 bg-card border-2 border-black dark:border-zinc-700 p-5 rounded-xl shadow-neo w-full">
     <div class="flex flex-col gap-1.5 flex-1 min-w-[140px]">
         <label class="text-xs font-mono font-bold text-foreground uppercase tracking-wider">Semester</label>
-        <select class="w-full p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-mono font-bold shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]"
-                value="@_selectedSemesterId" @onchange="OnSemesterChanged">
+        <CustomSelect TValue="long?"
+                      Value="_selectedSemesterId"
+                      ValueChanged="OnSemesterChanged"
+                      Placeholder="Select Semester">
             @if (_semesters != null)
             {
                 @foreach (var sem in _semesters)
                 {
-                    <option value="@sem.Id">@sem.Name</option>
+                    <CustomSelectOption TValue="long?" Value="@((long?)sem.Id)" Text="@sem.Name" />
                 }
             }
-        </select>
+        </CustomSelect>
     </div>
 
     <div class="flex flex-col gap-1.5 flex-1 min-w-[180px]">
         <label class="text-xs font-mono font-bold text-foreground uppercase tracking-wider">Module</label>
-        <select class="w-full p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-mono font-bold shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]"
-                value="@_selectedModuleId" @onchange="OnModuleChanged">
-            <option value="">All Modules</option>
+        <CustomSelect TValue="long?"
+                      Value="_selectedModuleId"
+                      ValueChanged="OnModuleChanged"
+                      Placeholder="All Modules"
+                      EnableSearch="true">
+            <CustomSelectOption TValue="long?" Value="@((long?)null)" Text="All Modules" />
             @if (_modules != null)
             {
                 @foreach (var mod in _modules)
                 {
-                    <option value="@mod.Id">@mod.ModuleCode - @mod.Name</option>
+                    <CustomSelectOption TValue="long?" Value="@((long?)mod.Id)" Text="@($"{mod.ModuleCode} - {mod.Name}")" />
                 }
             }
-        </select>
+        </CustomSelect>
     </div>
 
     <div class="flex flex-col gap-1.5 flex-1 min-w-[130px]">
         <label class="text-xs font-mono font-bold text-foreground uppercase tracking-wider">Status</label>
-        <select class="w-full p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-mono font-bold shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]"
-                value="@_filterStatus" @onchange="OnStatusFilterChanged">
-            <option value="">All Statuses</option>
-            <option value="Not Marked">Not Marked</option>
-            <option value="Present">Present</option>
-            <option value="Absent">Absent</option>
-            <option value="Cancelled">Cancelled</option>
-            <option value="Holiday">Holiday</option>
-        </select>
+        <CustomSelect TValue="string"
+                      Value="_filterStatus"
+                      ValueChanged="OnStatusFilterChanged"
+                      Placeholder="All Statuses">
+            <CustomSelectOption TValue="string" Value='""' Text="All Statuses" />
+            <CustomSelectOption TValue="string" Value='"Not Marked"' Text="Not Marked" />
+            <CustomSelectOption TValue="string" Value='"Present"' Text="Present" />
+            <CustomSelectOption TValue="string" Value='"Absent"' Text="Absent" />
+            <CustomSelectOption TValue="string" Value='"Cancelled"' Text="Cancelled" />
+            <CustomSelectOption TValue="string" Value='"Holiday"' Text="Holiday" />
+        </CustomSelect>
     </div>
 
     <div class="flex flex-col gap-1.5 flex-1 min-w-[140px]">
@@ -442,27 +449,23 @@ else
 
     // --- Filter Handlers ---
 
-    private async Task OnSemesterChanged(ChangeEventArgs e)
+    private async Task OnSemesterChanged(long? id)
     {
-        if (long.TryParse(e.Value?.ToString(), out var id))
-        {
-            _selectedSemesterId = id;
-        }
+        _selectedSemesterId = id;
         _pageNumber = 1;
         await LoadSessions();
     }
 
-    private async Task OnModuleChanged(ChangeEventArgs e)
+    private async Task OnModuleChanged(long? id)
     {
-        var val = e.Value?.ToString();
-        _selectedModuleId = long.TryParse(val, out var id) ? id : null;
+        _selectedModuleId = id;
         _pageNumber = 1;
         await LoadSessions();
     }
 
-    private async Task OnStatusFilterChanged(ChangeEventArgs e)
+    private async Task OnStatusFilterChanged(string status)
     {
-        _filterStatus = e.Value?.ToString() ?? "";
+        _filterStatus = status ?? "";
         _pageNumber = 1;
         await LoadSessions();
     }

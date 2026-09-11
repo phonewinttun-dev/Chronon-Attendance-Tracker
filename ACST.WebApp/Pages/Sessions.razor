@@ -66,64 +66,77 @@
 
         <!-- Semester Filter -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-foreground uppercase tracking-wider">Semester</label>
-            <select class="p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[160px]"
-                    value="@SemesterId" @onchange="OnSemesterChanged">
-                <option value="">All Semesters</option>
+            <label class="text-xs font-bold text-foreground uppercase tracking-wider font-mono">Semester</label>
+            <CustomSelect TValue="long?"
+                          Value="SemesterId"
+                          ValueChanged="OnSemesterChanged"
+                          Placeholder="All Semesters"
+                          Class="min-w-[160px]">
+                <CustomSelectOption TValue="long?" Value="@((long?)null)" Text="All Semesters" />
                 @if (_semesters != null)
                 {
                     @foreach (var sem in _semesters)
                     {
-                        <option value="@sem.Id">@sem.Name</option>
+                        <CustomSelectOption TValue="long?" Value="@((long?)sem.Id)" Text="@sem.Name" />
                     }
                 }
-            </select>
+            </CustomSelect>
         </div>
 
         <!-- Module Filter -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-foreground uppercase tracking-wider">Module</label>
-            <select class="p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[160px]"
-                    value="@ModuleId" @onchange="OnModuleChanged">
-                <option value="">All Modules</option>
+            <label class="text-xs font-bold text-foreground uppercase tracking-wider font-mono">Module</label>
+            <CustomSelect TValue="long?"
+                          Value="ModuleId"
+                          ValueChanged="OnModuleChanged"
+                          Placeholder="All Modules"
+                          EnableSearch="true"
+                          Class="min-w-[160px]">
+                <CustomSelectOption TValue="long?" Value="@((long?)null)" Text="All Modules" />
                 @if (_modules != null)
                 {
                     @foreach (var mod in _modules)
                     {
-                        <option value="@mod.Id">@mod.Name</option>
+                        <CustomSelectOption TValue="long?" Value="@((long?)mod.Id)" Text="@mod.Name" />
                     }
                 }
-            </select>
+            </CustomSelect>
         </div>
 
         <!-- Status Filter -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-foreground uppercase tracking-wider">Status</label>
-            <select class="p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[120px]"
-                    value="@Status" @onchange="OnStatusChanged">
-                <option value="">All Statuses</option>
-                <option value="Not Marked">Not Marked</option>
-                <option value="Present">Present</option>
-                <option value="Absent">Absent</option>
-                <option value="Cancelled">Cancelled</option>
-                <option value="Holiday">Holiday</option>
-            </select>
+            <label class="text-xs font-bold text-foreground uppercase tracking-wider font-mono">Status</label>
+            <CustomSelect TValue="string"
+                          Value='@(Status ?? "")'
+                          ValueChanged="OnStatusChanged"
+                          Placeholder="All Statuses"
+                          Class="min-w-[130px]">
+                <CustomSelectOption TValue="string" Value='""' Text="All Statuses" />
+                <CustomSelectOption TValue="string" Value='"Not Marked"' Text="Not Marked" />
+                <CustomSelectOption TValue="string" Value='"Present"' Text="Present" />
+                <CustomSelectOption TValue="string" Value='"Absent"' Text="Absent" />
+                <CustomSelectOption TValue="string" Value='"Cancelled"' Text="Cancelled" />
+                <CustomSelectOption TValue="string" Value='"Holiday"' Text="Holiday" />
+            </CustomSelect>
         </div>
 
         <!-- Day of Week Filter -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-foreground uppercase tracking-wider">Day of Week</label>
-            <select class="p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm min-w-[120px]"
-                    value="@DayOfWeek" @onchange="OnDayOfWeekChanged">
-                <option value="">All Days</option>
-                <option value="1">Monday</option>
-                <option value="2">Tuesday</option>
-                <option value="3">Wednesday</option>
-                <option value="4">Thursday</option>
-                <option value="5">Friday</option>
-                <option value="6">Saturday</option>
-                <option value="0">Sunday</option>
-            </select>
+            <label class="text-xs font-bold text-foreground uppercase tracking-wider font-mono">Day of Week</label>
+            <CustomSelect TValue="int?"
+                          Value="DayOfWeek"
+                          ValueChanged="OnDayOfWeekChanged"
+                          Placeholder="All Days"
+                          Class="min-w-[130px]">
+                <CustomSelectOption TValue="int?" Value="@((int?)null)" Text="All Days" />
+                <CustomSelectOption TValue="int?" Value="@((int?)1)" Text="Monday" />
+                <CustomSelectOption TValue="int?" Value="@((int?)2)" Text="Tuesday" />
+                <CustomSelectOption TValue="int?" Value="@((int?)3)" Text="Wednesday" />
+                <CustomSelectOption TValue="int?" Value="@((int?)4)" Text="Thursday" />
+                <CustomSelectOption TValue="int?" Value="@((int?)5)" Text="Friday" />
+                <CustomSelectOption TValue="int?" Value="@((int?)6)" Text="Saturday" />
+                <CustomSelectOption TValue="int?" Value="@((int?)0)" Text="Sunday" />
+            </CustomSelect>
         </div>
 
         <!-- Start Date -->
@@ -347,20 +360,22 @@
 else
 {
     <!-- Filter Bar for Semester -->
-    <div class="flex flex-wrap items-center gap-3 mb-6 bg-card border border-border p-4 rounded-lg shadow-sm">
-        <div class="flex flex-col gap-1">
-            <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Filter by Semester</label>
-            <select class="p-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring min-w-[200px]"
-                    value="@SemesterId" @onchange="OnSemesterChanged">
-                <option value="">All Semesters</option>
+    <div class="flex flex-wrap items-center gap-3 mb-6 bg-card border-2 border-black dark:border-zinc-700 p-4 rounded-xl shadow-neo">
+        <div class="flex flex-col gap-1.5 min-w-[200px]">
+            <label class="text-xs font-mono font-bold text-foreground uppercase tracking-wider">Filter by Semester</label>
+            <CustomSelect TValue="long?"
+                          Value="SemesterId"
+                          ValueChanged="OnSemesterChanged"
+                          Placeholder="All Semesters">
+                <CustomSelectOption TValue="long?" Value="@((long?)null)" Text="All Semesters" />
                 @if (_semesters != null)
                 {
                     @foreach (var sem in _semesters)
                     {
-                        <option value="@sem.Id">@sem.Name</option>
+                        <CustomSelectOption TValue="long?" Value="@((long?)sem.Id)" Text="@sem.Name" />
                     }
                 }
-            </select>
+            </CustomSelect>
         </div>
     </div>
 
@@ -487,43 +502,48 @@ else
             <!-- Modal Content / Form -->
             <div class="space-y-4 mb-6">
                 <div>
-                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Module</label>
-                    <select class="w-full p-2 bg-card border border-input rounded-md text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editModuleId">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 font-mono">Module</label>
+                    <CustomSelect TValue="long"
+                                  @bind-Value="_editModuleId"
+                                  Placeholder="Select Module"
+                                  EnableSearch="true">
                         @if (_modules != null)
                         {
                             @foreach (var mod in _modules)
                             {
-                                <option value="@mod.Id">@mod.Name</option>
+                                <CustomSelectOption TValue="long" Value="@mod.Id" Text="@mod.Name" />
                             }
                         }
-                    </select>
+                    </CustomSelect>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Session Date</label>
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 font-mono">Session Date</label>
                     <DatePicker @bind-Value="_editSessionDate" />
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Start Time</label>
-                        <input type="time" class="w-full p-2 bg-card border border-input rounded-md text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-ring font-mono" @bind="_editStartTime" />
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 font-mono">Start Time</label>
+                        <input type="time" class="w-full p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm" @bind="_editStartTime" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">End Time</label>
-                        <input type="time" class="w-full p-2 bg-card border border-input rounded-md text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-ring font-mono" @bind="_editEndTime" />
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 font-mono">End Time</label>
+                        <input type="time" class="w-full p-2 bg-card border-2 border-border rounded-lg text-foreground text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#A6FA53] shadow-neo-sm" @bind="_editEndTime" />
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Status</label>
-                    <select class="w-full p-2 bg-card border border-input rounded-md text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-ring" @bind="_editStatus">
-                        <option value="Not Marked">Not Marked</option>
-                        <option value="Present">Present</option>
-                        <option value="Absent">Absent</option>
-                        <option value="Cancelled">Cancelled</option>
-                        <option value="Holiday">Holiday</option>
-                    </select>
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 font-mono">Status</label>
+                    <CustomSelect TValue="string"
+                                  @bind-Value="_editStatus"
+                                  Placeholder="Select Status">
+                        <CustomSelectOption TValue="string" Value='"Not Marked"' Text="Not Marked" />
+                        <CustomSelectOption TValue="string" Value='"Present"' Text="Present" />
+                        <CustomSelectOption TValue="string" Value='"Absent"' Text="Absent" />
+                        <CustomSelectOption TValue="string" Value='"Cancelled"' Text="Cancelled" />
+                        <CustomSelectOption TValue="string" Value='"Holiday"' Text="Holiday" />
+                    </CustomSelect>
                 </div>
             </div>
 
@@ -978,30 +998,27 @@ else
         }
     }
 
-    private void OnSemesterChanged(ChangeEventArgs e)
+    private void OnSemesterChanged(long? id)
     {
-        var val = e.Value?.ToString();
-        SemesterId = string.IsNullOrEmpty(val) ? null : long.Parse(val);
+        SemesterId = id;
         ApplyFilters();
     }
 
-    private void OnModuleChanged(ChangeEventArgs e)
+    private void OnModuleChanged(long? id)
     {
-        var val = e.Value?.ToString();
-        ModuleId = string.IsNullOrEmpty(val) ? null : long.Parse(val);
+        ModuleId = id;
         ApplyFilters();
     }
 
-    private void OnStatusChanged(ChangeEventArgs e)
+    private void OnStatusChanged(string? status)
     {
-        Status = e.Value?.ToString();
+        Status = string.IsNullOrEmpty(status) ? null : status;
         ApplyFilters();
     }
 
-    private void OnDayOfWeekChanged(ChangeEventArgs e)
+    private void OnDayOfWeekChanged(int? day)
     {
-        var val = e.Value?.ToString();
-        DayOfWeek = string.IsNullOrEmpty(val) ? null : int.Parse(val);
+        DayOfWeek = day;
         ApplyFilters();
     }
 

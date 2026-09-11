@@ -10,6 +10,8 @@ using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
 using System.Text;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Debug()
@@ -103,6 +105,19 @@ try
             });
     });
 
+    // Configure Rate Limiting
+    builder.Services.AddRateLimiter(options =>
+    {
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        options.AddPolicy("auth-policy", context =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                context.Connection.RemoteIpAddress?.ToString() ?? "anon",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 5,
+                    Window = TimeSpan.FromMinutes(1)
+                }));
+    });
 
     var app = builder.Build();
 
@@ -126,6 +141,7 @@ try
 
     app.UseAuthentication();
     app.UseAuthorization();
+    app.UseRateLimiter();
 
     app.UseHangfireDashboard();
 
