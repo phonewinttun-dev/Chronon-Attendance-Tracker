@@ -9,13 +9,15 @@ This document lists all of the HTTP endpoints defined within the project, detail
 ## 1. Authentication
 * **Controller:** [AuthController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Api/Controllers/AuthController.cs)
 * **Base Route:** `api/Auth`
+* **Rate Limiting:** Enforced via `auth-policy` (5 requests / minute per client IP, returns HTTP `429 Too Many Requests` when exceeded).
 
 | HTTP Verb | Route | Method | Required Permission | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `POST` | `api/Auth/register` | `Register` | *None (Public)* | Registers a new user account. |
-| `POST` | `api/Auth/login` | `Login` | *None (Public)* | Authenticates user credentials and issues JWT access token & refresh token. |
-| `POST` | `api/Auth/refresh-token` | `RefreshToken` | *None (Public)* | Rotates expired access token using a valid refresh token. |
+| `POST` | `api/Auth/register` | `Register` | *None (Public)* | Registers a new user account (Rate limited: 5 req/min). |
+| `POST` | `api/Auth/login` | `Login` | *None (Public)* | Authenticates user credentials and issues JWT access token & refresh token (Rate limited: 5 req/min). |
+| `POST` | `api/Auth/refresh-token` | `RefreshToken` | *None (Public)* | Rotates expired access token using a valid refresh token (Rate limited: 5 req/min). |
 | `GET` | `api/Auth/users` | `GetUsers` | *None (Authenticated/Admin)* | Retrieves all registered system user accounts. |
+| `DELETE` | `api/Auth/users/{userId}` | `DeleteUser` | *None (Authenticated/Admin)* | Soft deletes a registered system user account. |
 
 ---
 
