@@ -41,11 +41,11 @@ This document lists all of the HTTP endpoints defined within the project, detail
 
 | HTTP Verb | Route | Method | Required Permission | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `GET` | `api/Semesters` | `GetAll` | `Permissions.Semesters.View` | Retrieves a paginated list of all semesters. |
+| `GET` | `api/Semesters` | `GetAll` | `Permissions.Semesters.View` | Retrieves a paginated list of all semesters (including optional `lectureEndDate`). |
 | `GET` | `api/Semesters/{id}` | `GetById` | `Permissions.Semesters.View` | Retrieves a specific semester by its unique ID. |
-| `POST` | `api/Semesters` | `Create` | `Permissions.Semesters.Create` | Creates a new semester. |
-| `PATCH` | `api/Semesters/{id}` | `Update` | `Permissions.Semesters.Update` | Updates details of an existing semester. |
-| `DELETE` | `api/Semesters/{id}` | `Delete` | `Permissions.Semesters.Delete` | Deletes a semester by its ID. |
+| `POST` | `api/Semesters` | `Create` | `Permissions.Semesters.Create` | Creates a new semester with optional `lectureEndDate`. |
+| `PATCH` | `api/Semesters/{id}` | `Update` | `Permissions.Semesters.Update` | Updates details of an existing semester (updating `lectureEndDate` or `endDate` auto-deletes out-of-range sessions). |
+| `DELETE` | `api/Semesters/{id}` | `Delete` | `Permissions.Semesters.Delete` | Deletes a semester and cascades soft-delete to modules, schedules, and sessions. |
 
 ---
 
