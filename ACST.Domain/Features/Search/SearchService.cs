@@ -33,18 +33,21 @@ namespace ACST.Domain.Features.Search
                 {
                     if (!string.IsNullOrWhiteSpace(searchRequest.Name))
                     {
-                        var term = searchRequest.Name;
-                        query = query.Where(m => EF.Functions.ToTsVector("english", m.Name + " " + (m.TeacherName ?? "") + " " + m.ModuleCode)
-                            .Matches(term));
+                        var term = searchRequest.Name.Trim().ToLower();
+                        query = query.Where(m => 
+                            m.Name.ToLower().Contains(term) ||
+                            m.ModuleCode.ToLower().Contains(term) ||
+                            (m.TeacherName != null && m.TeacherName.ToLower().Contains(term)));
                     }
                     if (!string.IsNullOrWhiteSpace(searchRequest.ModuleCode))
                     {
-                        query = query.Where(m => m.ModuleCode.Contains(searchRequest.ModuleCode));
+                        var code = searchRequest.ModuleCode.Trim().ToLower();
+                        query = query.Where(m => m.ModuleCode.ToLower().Contains(code));
                     }
                     if (!string.IsNullOrWhiteSpace(searchRequest.TeacherName))
                     {
-                        query = query.Where(m => m.TeacherName != null && EF.Functions.ToTsVector("english", m.TeacherName)
-                            .Matches(searchRequest.TeacherName));
+                        var teacher = searchRequest.TeacherName.Trim().ToLower();
+                        query = query.Where(m => m.TeacherName != null && m.TeacherName.ToLower().Contains(teacher));
                     }
                 }
 
@@ -89,9 +92,8 @@ namespace ACST.Domain.Features.Search
 
                 if (searchRequest != null && !string.IsNullOrWhiteSpace(searchRequest.Name))
                 {
-                    var term = searchRequest.Name;
-                    query = query.Where(s => EF.Functions.ToTsVector("english", s.Name)
-                        .Matches(term));
+                    var term = searchRequest.Name.Trim().ToLower();
+                    query = query.Where(s => s.Name.ToLower().Contains(term));
                 }
 
                 query = query.OrderByDescending(s => s.StartDate);
@@ -141,8 +143,12 @@ namespace ACST.Domain.Features.Search
                 {
                     if (!string.IsNullOrWhiteSpace(searchRequest.Name))
                     {
-                        var term = searchRequest.Name;
-                        query = query.Where(s => s.Module.Name.Contains(term) || (s.Module.TeacherName != null && s.Module.TeacherName.Contains(term)));
+                        var term = searchRequest.Name.Trim().ToLower();
+                        query = query.Where(s => 
+                            (s.Module != null && s.Module.Name.ToLower().Contains(term)) ||
+                            (s.Module != null && s.Module.ModuleCode.ToLower().Contains(term)) ||
+                            (s.Module != null && s.Module.TeacherName != null && s.Module.TeacherName.ToLower().Contains(term)) ||
+                            (s.Semester != null && s.Semester.Name.ToLower().Contains(term)));
                     }
                 }
 
