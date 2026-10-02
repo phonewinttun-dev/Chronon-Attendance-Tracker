@@ -1,0 +1,204 @@
+@using ACST.WebApp.Models
+
+<div class="w-full flex flex-col justify-between">
+    @if (_activeSlices == null || !_activeSlices.Any())
+    {
+        <div class="flex flex-col items-center justify-center p-8 bg-card border border-dashed border-border rounded-lg text-center my-4">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10 text-muted-foreground/60 mb-2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+            </svg>
+            <h4 class="text-xs font-semibold text-foreground mb-1">No Module Data Available</h4>
+            <p class="text-[11px] text-muted-foreground max-w-xs font-mono">
+                No module records found for this semester.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 py-2">
+            <!-- SVG Pie Chart Container -->
+            <div class="relative w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center shrink-0">
+                <svg viewBox="0 0 200 200" class="w-full h-full overflow-visible">
+                    @foreach (var slice in _activeSlices)
+                    {
+                        var isHovered = _hoveredId == slice.Id;
+                        <path d="@slice.PathD" 
+                              fill="@slice.Color" 
+                              stroke="#000000" 
+                              stroke-width="2" 
+                              class="cursor-pointer transition-transform duration-200 @(isHovered ? "scale-105" : "")"
+                              style="transform-origin: 100px 100px;"
+                              @onmouseenter="() => _hoveredId = slice.Id"
+                              @onmouseleave="() => _hoveredId = null" />
+
+                        @if (slice.Percentage >= 8)
+                        {
+                            @((MarkupString)$"<text x=\"{slice.LabelX.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}\" y=\"{slice.LabelY.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}\" text-anchor=\"middle\" fill=\"#000000\" font-size=\"9\" font-weight=\"900\" font-family=\"monospace\" pointer-events=\"none\">{slice.Percentage}%</text>")
+                        }
+                    }
+                </svg>
+
+                <!-- Center Metric Callout -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    @{
+                        var activeSlice = _activeSlices.FirstOrDefault(s => s.Id == _hoveredId);
+                    }
+                    @if (activeSlice != null)
+                    {
+                        <span class="text-xl sm:text-2xl font-black font-mono" style="color: @activeSlice.Color;">
+                            @activeSlice.Percentage%
+                        </span>
+                        <span class="text-[10px] font-mono font-bold text-foreground uppercase tracking-wider truncate max-w-[90px] px-1">
+                            @activeSlice.Code
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-xl sm:text-2xl font-black font-mono text-foreground">
+                            @_displayTotal
+                        </span>
+                        <span class="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider">
+                            Total Classes
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <!-- Module Legend -->
+            <div class="flex-1 w-full flex flex-col justify-center">
+                <div class="text-[11px] font-bold text-muted-foreground font-mono uppercase tracking-wider mb-2">
+                    Module Distribution (Sessions & Share)
+                </div>
+                <div class="flex flex-col gap-1.5 w-full">
+                    @foreach (var slice in _activeSlices)
+                    {
+                        var isHovered = _hoveredId == slice.Id;
+                        <div class="flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg border-2 transition-all cursor-pointer shadow-neo-sm @(isHovered ? "border-black bg-[#A6FA53]/15" : "border-transparent hover:border-black hover:bg-muted/40")"
+                             @onmouseenter="() => _hoveredId = slice.Id"
+                             @onmouseleave="() => _hoveredId = null">
+                            <div class="flex items-center gap-2 truncate">
+                                <span class="w-3.5 h-3.5 rounded-xs border border-black shrink-0 inline-block shadow-xs" style="background-color: @slice.Color;"></span>
+                                <div class="truncate">
+                                    <span class="font-black text-xs font-mono text-foreground">@slice.Code</span>
+                                    <span class="text-[11px] text-muted-foreground truncate hidden sm:inline ml-1">- @slice.Name</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 font-mono shrink-0">
+                                <span class="text-[11px] text-muted-foreground">@slice.Sessions cls</span>
+                                <span class="font-black text-xs px-1.5 py-0.2 rounded bg-muted border border-border">@slice.Percentage%</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Card Footer -->
+    <div class="border-t-2 border-border/30 pt-3 mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+        <div class="flex items-center gap-2 text-foreground font-bold">
+            <svg class="w-4 h-4 text-[#A6FA53] shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            <span>@TrendText</span>
+        </div>
+        <div class="text-muted-foreground text-[11px]">
+            @FooterSummary
+        </div>
+    </div>
+</div>
+
+@code {
+    public class PieSliceItem
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public int Sessions { get; set; }
+        public string Color { get; set; } = "#A6FA53";
+        public int Percentage { get; set; }
+        public string PathD { get; set; } = string.Empty;
+        public double LabelX { get; set; }
+        public double LabelY { get; set; }
+    }
+
+    [Parameter] public List<ModuleAnalyticsDto>? Modules { get; set; }
+    [Parameter] public List<PieSliceItem>? Slices { get; set; }
+    [Parameter] public int TotalSessions { get; set; }
+    [Parameter] public string TrendText { get; set; } = "Module attendance distribution across enrolled subjects";
+    [Parameter] public string FooterSummary { get; set; } = string.Empty;
+
+    private static readonly string[] Palette = new[] { "#A6FA53", "#00E5FF", "#FFD026", "#FF6B6B", "#C084FC", "#38BDF8", "#F472B6" };
+    private List<PieSliceItem> _activeSlices = new();
+    private int _displayTotal = 0;
+    private string? _hoveredId;
+
+    protected override void OnParametersSet()
+    {
+        if (Slices != null && Slices.Any())
+        {
+            _activeSlices = Slices;
+            _displayTotal = TotalSessions > 0 ? TotalSessions : Slices.Sum(s => s.Sessions);
+        }
+        else if (Modules != null && Modules.Any())
+        {
+            int total = Modules.Sum(m => m.TotalSessions);
+            if (total == 0) total = Modules.Count;
+            _displayTotal = Modules.Sum(m => m.TotalSessions);
+
+            double cx = 100, cy = 100, r = 80, innerR = 44;
+            double currentAngle = -Math.PI / 2;
+            var computed = new List<PieSliceItem>();
+
+            for (int i = 0; i < Modules.Count; i++)
+            {
+                var m = Modules[i];
+                int count = m.TotalSessions > 0 ? m.TotalSessions : 1;
+                double sliceAngle = ((double)count / total) * 2 * Math.PI;
+                double endAngle = currentAngle + sliceAngle;
+                int pct = (int)Math.Round(((double)count / total) * 100);
+
+                double x1 = cx + r * Math.Cos(currentAngle);
+                double y1 = cy + r * Math.Sin(currentAngle);
+                double x2 = cx + r * Math.Cos(endAngle);
+                double y2 = cy + r * Math.Sin(endAngle);
+
+                double ix1 = cx + innerR * Math.Cos(endAngle);
+                double iy1 = cy + innerR * Math.Sin(endAngle);
+                double ix2 = cx + innerR * Math.Cos(currentAngle);
+                double iy2 = cy + innerR * Math.Sin(currentAngle);
+
+                int largeArc = sliceAngle > Math.PI ? 1 : 0;
+                string pathD = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                    "M {0:F2} {1:F2} A {2:F2} {2:F2} 0 {3} 1 {4:F2} {5:F2} L {6:F2} {7:F2} A {8:F2} {8:F2} 0 {3} 0 {9:F2} {10:F2} Z",
+                    x1, y1, r, largeArc, x2, y2, ix1, iy1, innerR, ix2, iy2);
+
+                double midAngle = currentAngle + sliceAngle / 2;
+                double labelR = r * 0.72;
+                double lx = cx + labelR * Math.Cos(midAngle);
+                double ly = cy + labelR * Math.Sin(midAngle) + 3.5;
+
+                computed.Add(new PieSliceItem
+                {
+                    Id = m.ModuleId.ToString(),
+                    Code = m.ModuleName.Split(' ').FirstOrDefault() ?? m.ModuleName,
+                    Name = m.ModuleName,
+                    Sessions = m.TotalSessions,
+                    Percentage = pct,
+                    Color = Palette[i % Palette.Length],
+                    PathD = pathD,
+                    LabelX = lx,
+                    LabelY = ly
+                });
+
+                currentAngle = endAngle;
+            }
+            _activeSlices = computed;
+        }
+        else
+        {
+            _activeSlices.Clear();
+            _displayTotal = 0;
+        }
+    }
+}
