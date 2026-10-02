@@ -72,7 +72,7 @@
             <input type="text" class="w-full p-2.5 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]" @bind="_newSemester.Name" placeholder="e.g. Fall 2026" />
         </div>
         
-        <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
                 <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Start Date</label>
                 <DatePicker @bind-Value="_newSemester.StartDate" />
@@ -80,6 +80,13 @@
             <div>
                 <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">End Date</label>
                 <DatePicker @bind-Value="_newSemester.EndDate" />
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1 flex items-center justify-between">
+                    <span>Lecture End Date</span>
+                    <span class="text-[10px] text-muted-foreground font-normal">Optional</span>
+                </label>
+                <DatePicker @bind-Value="NewSemesterLectureEndDate" />
             </div>
         </div>
 
@@ -98,7 +105,7 @@ else if (_showEditForm)
             <input type="text" class="w-full p-2.5 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]" @bind="_editingSemester.Name" placeholder="e.g. Fall 2026" />
         </div>
         
-        <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
                 <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Start Date</label>
                 <DatePicker @bind-Value="_editingSemester.StartDate" />
@@ -107,10 +114,17 @@ else if (_showEditForm)
                 <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">End Date</label>
                 <DatePicker @bind-Value="_editingSemester.EndDate" />
             </div>
+            <div>
+                <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1 flex items-center justify-between">
+                    <span>Lecture End Date</span>
+                    <span class="text-[10px] text-muted-foreground font-normal">Optional</span>
+                </label>
+                <DatePicker @bind-Value="EditingSemesterLectureEndDate" />
+            </div>
         </div>
 
         <div class="flex items-center gap-3">
-            <button class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer disabled:opacity-50" @onclick="UpdateSemester" disabled="@_isSubmitting">
+            <button class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer disabled:opacity-50" @onclick="OnClickSaveSemester" disabled="@_isSubmitting">
                 @(_isSubmitting ? "Saving..." : "Save Changes")
             </button>
             <button class="neo-btn bg-card text-foreground border-2 border-border px-4 py-2 rounded-xl text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer" @onclick="CancelEdit">
@@ -132,6 +146,7 @@ else if (_showEditForm)
                             <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
                             <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Start Date</th>
                             <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">End Date</th>
+                            <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Lecture End</th>
                             <th class="px-4 py-3.5 font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -141,6 +156,9 @@ else if (_showEditForm)
                             <tr>
                                 <td class="px-4 py-4">
                                     <div class="h-3 bg-muted rounded w-28"></div>
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="h-3 bg-muted rounded w-20"></div>
                                 </td>
                                 <td class="px-4 py-4">
                                     <div class="h-3 bg-muted rounded w-20"></div>
@@ -170,6 +188,7 @@ else if (_showEditForm)
                             <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Name</th>
                             <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Start Date</th>
                             <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">End Date</th>
+                            <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Lecture End</th>
                             <th class="px-4 py-3.5 font-bold uppercase tracking-wider text-foreground">Actions</th>
                         </tr>
                     </thead>
@@ -180,6 +199,7 @@ else if (_showEditForm)
                                 <td class="px-4 py-3.5 text-foreground font-bold font-sans">@sem.Name</td>
                                 <td class="px-4 py-3.5 font-mono text-muted-foreground font-bold">@sem.StartDate.ToString("dd-MM-yyyy")</td>
                                 <td class="px-4 py-3.5 font-mono text-muted-foreground font-bold">@sem.EndDate.ToString("dd-MM-yyyy")</td>
+                                <td class="px-4 py-3.5 font-mono text-muted-foreground font-bold">@(sem.LectureEndDate.HasValue ? sem.LectureEndDate.Value.ToString("dd-MM-yyyy") : "-")</td>
                                 <td class="px-4 py-3.5">
                                     <div class="flex items-center gap-2">
                                         <button class="neo-btn bg-card text-foreground border-2 border-border py-1 px-3 rounded-lg text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer" @onclick="() => StartEdit(sem)">Edit</button>
@@ -264,6 +284,16 @@ else
                                 </span>
                                 <span class="text-foreground">@sem.EndDate.ToString("dd-MM-yyyy")</span>
                             </div>
+                            @if (sem.LectureEndDate.HasValue)
+                            {
+                                <div class="flex items-center justify-between text-xs text-muted-foreground font-mono font-bold">
+                                    <span class="flex items-center gap-1.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-check"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
+                                        Lecture End:
+                                    </span>
+                                    <span class="text-foreground">@sem.LectureEndDate.Value.ToString("dd-MM-yyyy")</span>
+                                </div>
+                            }
                             
                             @if (status == "Active")
                             {
@@ -291,6 +321,40 @@ else
             <PaginationControl PageNumber="@_pageNumber" TotalPages="@_totalPages" PageChanged="OnPageChanged" />
         </div>
     }
+}
+
+@if (_showWarningModal)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200 p-4">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl max-w-md w-full shadow-neo p-6 animate-in zoom-in-95 duration-200 font-mono">
+            <div class="flex items-start gap-3 mb-4">
+                <div class="p-2.5 bg-[#FF6B6B]/20 text-[#FF6B6B] border-2 border-black rounded-lg shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-foreground font-sans tracking-tight">Warning: Sessions Will Be Deleted</h3>
+                    <p class="text-xs text-muted-foreground mt-1 font-mono">Shortening the semester or lecture period will automatically remove class sessions scheduled outside the new date range.</p>
+                </div>
+            </div>
+
+            <div class="p-3 bg-muted/50 border-2 border-border rounded-lg text-xs space-y-1 mb-5">
+                <div class="flex justify-between text-muted-foreground">
+                    <span>Effective Lecture End:</span>
+                    <span class="font-bold text-foreground">@((_editingSemester.LectureEndDate ?? _editingSemester.EndDate).ToString("dd-MM-yyyy"))</span>
+                </div>
+                <p class="text-[11px] text-muted-foreground mt-1">Any class sessions occurring after this date (or before the start date) will be removed from attendance summaries.</p>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 font-sans">
+                <button type="button" class="neo-btn bg-card text-foreground border-2 border-border px-4 py-2 rounded-xl text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer" @onclick="() => _showWarningModal = false">
+                    Cancel
+                </button>
+                <button type="button" class="neo-btn-destructive px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer" @onclick="ConfirmAndUpdateSemester" disabled="@_isSubmitting">
+                    @(_isSubmitting ? "Updating..." : "Proceed & Update")
+                </button>
+            </div>
+        </div>
+    </div>
 }
 
 @if (_showErrorDialog)
@@ -326,6 +390,20 @@ else
 
     private long _editingSemesterId;
     private UpdateSemesterRequest _editingSemester = new();
+    private SemesterDto? _originalSemester;
+    private bool _showWarningModal = false;
+
+    private DateOnly NewSemesterLectureEndDate
+    {
+        get => _newSemester.LectureEndDate ?? default;
+        set => _newSemester.LectureEndDate = value == default ? null : value;
+    }
+
+    private DateOnly EditingSemesterLectureEndDate
+    {
+        get => _editingSemester.LectureEndDate ?? default;
+        set => _editingSemester.LectureEndDate = value == default ? null : value;
+    }
 
     private int _pageNumber = 1;
     private int _pageSize = 10;
@@ -397,7 +475,8 @@ else
                             Id = s.Id,
                             Name = s.Name,
                             StartDate = s.StartDate,
-                            EndDate = s.EndDate
+                            EndDate = s.EndDate,
+                            LectureEndDate = s.LectureEndDate
                         }).ToList(),
                         Pagination = searchResult.Pagination
                     };
@@ -483,11 +562,13 @@ else
         _showEditForm = true;
         _showCreateForm = false;
         _editingSemesterId = sem.Id;
+        _originalSemester = sem;
         _editingSemester = new UpdateSemesterRequest
         {
             Name = sem.Name,
             StartDate = sem.StartDate,
-            EndDate = sem.EndDate
+            EndDate = sem.EndDate,
+            LectureEndDate = sem.LectureEndDate
         };
         _message = string.Empty;
     }
@@ -495,8 +576,33 @@ else
     private void CancelEdit()
     {
         _showEditForm = false;
+        _showWarningModal = false;
         _editingSemesterId = 0;
+        _originalSemester = null;
         _message = string.Empty;
+    }
+
+    private void OnClickSaveSemester()
+    {
+        var origLectureEnd = _originalSemester?.LectureEndDate ?? _originalSemester?.EndDate ?? DateOnly.MaxValue;
+        var newLectureEnd = _editingSemester.LectureEndDate ?? _editingSemester.EndDate;
+        var origStart = _originalSemester?.StartDate ?? DateOnly.MinValue;
+        var newStart = _editingSemester.StartDate;
+
+        if (newLectureEnd < origLectureEnd || newStart > origStart || (_editingSemester.LectureEndDate.HasValue && (!_originalSemester?.LectureEndDate.HasValue ?? true)))
+        {
+            _showWarningModal = true;
+        }
+        else
+        {
+            _ = UpdateSemester();
+        }
+    }
+
+    private async Task ConfirmAndUpdateSemester()
+    {
+        _showWarningModal = false;
+        await UpdateSemester();
     }
 
     private async Task UpdateSemester()
