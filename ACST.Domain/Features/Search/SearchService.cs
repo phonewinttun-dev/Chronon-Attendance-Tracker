@@ -107,6 +107,7 @@ namespace ACST.Domain.Features.Search
                         Name = s.Name,
                         StartDate = s.StartDate,
                         EndDate = s.EndDate,
+                        LectureEndDate = s.LectureEndDate,
                         CreatedAt = s.CreatedAt,
                         UpdatedAt = s.UpdatedAt
                     })
