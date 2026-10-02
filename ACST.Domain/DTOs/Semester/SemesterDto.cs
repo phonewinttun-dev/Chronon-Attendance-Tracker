@@ -9,6 +9,7 @@ public class SemesterDto
     public string Name { get; set; } = null!;
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
+    public DateOnly? LectureEndDate { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
@@ -24,6 +25,8 @@ public class CreateSemesterRequest
 
     [Required]
     public DateOnly EndDate { get; set; }
+
+    public DateOnly? LectureEndDate { get; set; }
 }
 
 public class UpdateSemesterRequest
@@ -37,4 +40,6 @@ public class UpdateSemesterRequest
 
     [Required]
     public DateOnly EndDate { get; set; }
+
+    public DateOnly? LectureEndDate { get; set; }
 }
