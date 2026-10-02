@@ -398,6 +398,7 @@ public class AnalyticsService : IAnalyticsService
                 moduleBreakdown.Add(new ModuleAnalyticsDto
                 {
                     ModuleId = mod.Id,
+                    ModuleCode = mod.ModuleCode,
                     ModuleName = mod.Name,
                     AttendanceRate = Math.Round(rate, 2),
                     TotalPresent = present,
