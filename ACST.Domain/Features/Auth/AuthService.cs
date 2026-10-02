@@ -172,6 +172,7 @@ namespace ACST.Domain.Features.Auth
             return Result<LoginResponse>.Success(response, "Tokens refreshed successfully.");
         }
 
+        #region User Management
         public async Task<Result> UpdateProfileAsync(int userId, UpdateProfileRequest request, CancellationToken cancellationToken = default)
         {
             var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId && u.DeleteFlag != true, cancellationToken);
@@ -208,6 +209,30 @@ namespace ACST.Domain.Features.Auth
             return Result<List<UserAccountResponse>>.Success(users);
         }
 
+        public async Task<Result<UserAccountResponse>> DeleteUserAsync(int userId, CancellationToken cancellationToken = default)
+        {
+            var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId && u.DeleteFlag != true, cancellationToken);
+            if (user == null)
+            {
+                return Result<UserAccountResponse>.Failure("User account not found.");
+            }
+            user.DeleteFlag = true;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync(cancellationToken);
+            return Result<UserAccountResponse>.Success(new UserAccountResponse
+            {
+                UserId = user.UserId,
+                FullName = user.FullName,
+                Email = user.Email,
+                MobileNum = user.MobileNum,
+                RoleId = user.RoleId,
+                RoleName = user.Role?.RoleName,
+                CreatedAt = user.CreatedAt
+            });
+        }
+        #endregion
+
+        #region Helper Functions
         private string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
@@ -243,5 +268,6 @@ namespace ACST.Domain.Features.Auth
             }
             return 30; // Default 30 days stay logged in duration
         }
+        #endregion
     }
 }

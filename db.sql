@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS public."TblSemester" (
   "Name" text NOT NULL,
   "StartDate" date NOT NULL,
   "EndDate" date NOT NULL,
+  "LectureEndDate" date,
   "IsDeleted" boolean NOT NULL DEFAULT false,
   "CreatedAt" timestamp with time zone NOT NULL DEFAULT now(),
   "UpdatedAt" timestamp with time zone NOT NULL DEFAULT now(),

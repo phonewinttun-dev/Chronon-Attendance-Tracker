@@ -19,23 +19,23 @@ public class SearchController : ControllerBase
     }
 
     [HttpGet("modules")]
-    public async Task<IActionResult> SearchModules([FromQuery] SearchDto searchRequest, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] long? semesterId = null)
+    public async Task<IActionResult> SearchModules([FromQuery] SearchDto? searchRequest = null, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] long? semesterId = null)
     {
-        var result = await _searchService.SearchModuleAsync(searchRequest, pageNumber, pageSize, semesterId);
+        var result = await _searchService.SearchModuleAsync(searchRequest ?? new SearchDto(), pageNumber, pageSize, semesterId);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     [HttpGet("semesters")]
-    public async Task<IActionResult> SearchSemesters([FromQuery] SearchDto searchRequest, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> SearchSemesters([FromQuery] SearchDto? searchRequest = null, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _searchService.SearchSemesterAsync(searchRequest, pageNumber, pageSize);
+        var result = await _searchService.SearchSemesterAsync(searchRequest ?? new SearchDto(), pageNumber, pageSize);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     [HttpGet("sessions")]
-    public async Task<IActionResult> SearchSessions([FromQuery] SearchDto searchRequest, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] long? semesterId = null, [FromQuery] long? moduleId = null)
+    public async Task<IActionResult> SearchSessions([FromQuery] SearchDto? searchRequest = null, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] long? semesterId = null, [FromQuery] long? moduleId = null)
     {
-        var result = await _searchService.SearchSessionAsync(searchRequest, pageNumber, pageSize, semesterId, moduleId);
+        var result = await _searchService.SearchSessionAsync(searchRequest ?? new SearchDto(), pageNumber, pageSize, semesterId, moduleId);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 }

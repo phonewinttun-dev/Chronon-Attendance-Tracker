@@ -166,43 +166,8 @@
 
         try
         {
-            var retryOptions = new RetryOptions
-            {
-                MaxRetries = 3,
-                InitialDelay = TimeSpan.FromSeconds(1),
-                BackoffMultiplier = 2.0
-            };
-
-            var result = await RetryHelper.ExecuteWithRetryAsync(
-                async ct =>
-                {
-                    var response = await Http.PostAsJsonAsync("api/Auth/login", _loginModel, ct);
-
-                    // Check for transient server status codes (5xx, 408, 429) to trigger automatic retry
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        var code = (int)response.StatusCode;
-                        if (code is 500 or 502 or 503 or 504 or 408 or 429)
-                        {
-                            throw new HttpRequestException($"Transient server error: {response.StatusCode}", null, response.StatusCode);
-                        }
-                    }
-
-                    return await response.Content.ReadFromJsonAsync<ApiResult<LoginResponseDto>>(cancellationToken: ct);
-                },
-                options: retryOptions,
-                onRetry: async (attempt, maxAttempts, delay, ex) =>
-                {
-                    _isRetrying = true;
-                    _retryAttempt = attempt + 1;
-                    _maxRetryAttempts = maxAttempts;
-                    var delaySec = (int)Math.Ceiling(delay.TotalSeconds);
-                    _message = $"Connection issue detected. Retrying in {delaySec}s (Attempt {_retryAttempt} of {maxAttempts})...";
-                    _isError = true;
-                    StateHasChanged();
-                    await Task.CompletedTask;
-                }
-            );
+            var response = await Http.PostAsJsonAsync("api/Auth/login", _loginModel);
+            var result = await response.Content.ReadFromJsonAsync<ApiResult<LoginResponseDto>>();
 
             if (result?.IsSuccess == true && result.Data != null)
             {

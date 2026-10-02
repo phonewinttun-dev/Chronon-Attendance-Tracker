@@ -9,13 +9,15 @@ This document lists all of the HTTP endpoints defined within the project, detail
 ## 1. Authentication
 * **Controller:** [AuthController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Api/Controllers/AuthController.cs)
 * **Base Route:** `api/Auth`
+* **Rate Limiting:** Enforced via `auth-policy` (5 requests / minute per client IP, returns HTTP `429 Too Many Requests` when exceeded).
 
 | HTTP Verb | Route | Method | Required Permission | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `POST` | `api/Auth/register` | `Register` | *None (Public)* | Registers a new user account. |
-| `POST` | `api/Auth/login` | `Login` | *None (Public)* | Authenticates user credentials and issues JWT access token & refresh token. |
-| `POST` | `api/Auth/refresh-token` | `RefreshToken` | *None (Public)* | Rotates expired access token using a valid refresh token. |
+| `POST` | `api/Auth/register` | `Register` | *None (Public)* | Registers a new user account (Rate limited: 5 req/min). |
+| `POST` | `api/Auth/login` | `Login` | *None (Public)* | Authenticates user credentials and issues JWT access token & refresh token (Rate limited: 5 req/min). |
+| `POST` | `api/Auth/refresh-token` | `RefreshToken` | *None (Public)* | Rotates expired access token using a valid refresh token (Rate limited: 5 req/min). |
 | `GET` | `api/Auth/users` | `GetUsers` | *None (Authenticated/Admin)* | Retrieves all registered system user accounts. |
+| `DELETE` | `api/Auth/users/{userId}` | `DeleteUser` | *None (Authenticated/Admin)* | Soft deletes a registered system user account. |
 
 ---
 
@@ -39,11 +41,11 @@ This document lists all of the HTTP endpoints defined within the project, detail
 
 | HTTP Verb | Route | Method | Required Permission | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `GET` | `api/Semesters` | `GetAll` | `Permissions.Semesters.View` | Retrieves a paginated list of all semesters. |
+| `GET` | `api/Semesters` | `GetAll` | `Permissions.Semesters.View` | Retrieves a paginated list of all semesters (including optional `lectureEndDate`). |
 | `GET` | `api/Semesters/{id}` | `GetById` | `Permissions.Semesters.View` | Retrieves a specific semester by its unique ID. |
-| `POST` | `api/Semesters` | `Create` | `Permissions.Semesters.Create` | Creates a new semester. |
-| `PATCH` | `api/Semesters/{id}` | `Update` | `Permissions.Semesters.Update` | Updates details of an existing semester. |
-| `DELETE` | `api/Semesters/{id}` | `Delete` | `Permissions.Semesters.Delete` | Deletes a semester by its ID. |
+| `POST` | `api/Semesters` | `Create` | `Permissions.Semesters.Create` | Creates a new semester with optional `lectureEndDate`. |
+| `PATCH` | `api/Semesters/{id}` | `Update` | `Permissions.Semesters.Update` | Updates details of an existing semester (updating `lectureEndDate` or `endDate` auto-deletes out-of-range sessions). |
+| `DELETE` | `api/Semesters/{id}` | `Delete` | `Permissions.Semesters.Delete` | Deletes a semester and cascades soft-delete to modules, schedules, and sessions. |
 
 ---
 

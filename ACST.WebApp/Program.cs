@@ -23,19 +23,17 @@ if (!apiBaseUrl.EndsWith("/"))
     apiBaseUrl += "/";
 }
 
-builder.Services.AddScoped(sp =>
+builder.Services.AddTransient<CustomAuthorizationHandler>();
+
+builder.Services.AddHttpClient("ChrononApi", client =>
 {
-    var js = sp.GetRequiredService<IJSRuntime>();
-    var handler = new CustomAuthorizationHandler(js)
-    {
-        InnerHandler = new HttpClientHandler()
-    };
-    return new HttpClient(handler)
-    {
-        BaseAddress = new Uri(apiBaseUrl),
-        Timeout = TimeSpan.FromSeconds(30)
-    };
-});
+    client.BaseAddress = new Uri(apiBaseUrl);
+})
+.AddHttpMessageHandler<CustomAuthorizationHandler>()
+.AddStandardResilienceHandler();
+
+builder.Services.AddScoped(sp =>
+    sp.GetRequiredService<IHttpClientFactory>().CreateClient("ChrononApi"));
 
 builder.Services.AddScoped<AuthStateService>();
 

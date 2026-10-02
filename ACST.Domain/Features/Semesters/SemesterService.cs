@@ -1,9 +1,11 @@
 using ACST.Database.ApplicationDbContextModels.Models;
 using ACST.Domain.DTOs.Module;
 using ACST.Domain.DTOs.Semester;
+using ACST.Domain.Features.Analytics;
 using ACST.Domain.Features.GoogleCalendar;
 using ACST.Shared;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,17 +23,20 @@ public class SemesterService : ISemesterService
     private readonly IGoogleCalendarService _googleCalendarService;
     private readonly IBackgroundJobClient? _backgroundJobClient;
     private readonly IHttpContextAccessor? _httpContextAccessor;
+    private readonly IServiceProvider? _serviceProvider;
 
     public SemesterService(
         AppDbContext context, 
         IGoogleCalendarService googleCalendarService,
         IBackgroundJobClient? backgroundJobClient = null,
-        IHttpContextAccessor? httpContextAccessor = null)
+        IHttpContextAccessor? httpContextAccessor = null,
+        IServiceProvider? serviceProvider = null)
     {
         _context = context;
         _googleCalendarService = googleCalendarService;
         _backgroundJobClient = backgroundJobClient;
         _httpContextAccessor = httpContextAccessor;
+        _serviceProvider = serviceProvider;
     }
 
     private int? CurrentUserId
@@ -84,6 +89,7 @@ public class SemesterService : ISemesterService
                         Name = s.Name,
                         StartDate = s.StartDate,
                         EndDate = s.EndDate,
+                        LectureEndDate = s.LectureEndDate,
                         CreatedAt = s.CreatedAt,
                         UpdatedAt = s.UpdatedAt
                     })
@@ -118,6 +124,7 @@ public class SemesterService : ISemesterService
                 Name = semester.Name,
                 StartDate = semester.StartDate,
                 EndDate = semester.EndDate,
+                LectureEndDate = semester.LectureEndDate,
                 CreatedAt = semester.CreatedAt,
                 UpdatedAt = semester.UpdatedAt
             });
@@ -138,12 +145,21 @@ public class SemesterService : ISemesterService
             {
                 return Result<SemesterDto>.Failure("Start date cannot be after end date.");
             }
+
+            if (request.LectureEndDate.HasValue)
+            {
+                if (request.LectureEndDate.Value < request.StartDate || request.LectureEndDate.Value > request.EndDate)
+                {
+                    return Result<SemesterDto>.Failure("Lecture end date must fall between semester start date and end date.");
+                }
+            }
                 
             var semester = new TblSemester
             {
                 Name = request.Name,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
+                LectureEndDate = request.LectureEndDate,
                 UserId = CurrentUserId,
                 IsDeleted = false
             };
@@ -157,6 +173,7 @@ public class SemesterService : ISemesterService
                 Name = semester.Name,
                 StartDate = semester.StartDate,
                 EndDate = semester.EndDate,
+                LectureEndDate = semester.LectureEndDate,
                 CreatedAt = semester.CreatedAt,
                 UpdatedAt = semester.UpdatedAt
             },
@@ -177,6 +194,14 @@ public class SemesterService : ISemesterService
             if (request.StartDate > request.EndDate)
             {
                 return Result<SemesterDto>.Failure("Start date cannot be after end date.");
+            }
+
+            if (request.LectureEndDate.HasValue)
+            {
+                if (request.LectureEndDate.Value < request.StartDate || request.LectureEndDate.Value > request.EndDate)
+                {
+                    return Result<SemesterDto>.Failure("Lecture end date must fall between semester start date and end date.");
+                }
             }
 
             var semester = await _context.TblSemesters.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
@@ -201,7 +226,29 @@ public class SemesterService : ISemesterService
                 semester.EndDate = request.EndDate;
             }
 
+            semester.LectureEndDate = request.LectureEndDate;
+
+            // lecture cutoff date
+            var lectureEnd = semester.LectureEndDate ?? semester.EndDate;
+
+            // Automatically soft-delete any sessions falling outside the valid lecture window
+            var outOfRangeSessions = await _context.TblSessions
+                .Where(s => s.SemesterId == semester.Id && !s.IsDeleted &&
+                           (s.SessionDate < semester.StartDate || s.SessionDate > lectureEnd))
+                .ToListAsync();
+
+            if (outOfRangeSessions.Any())
+            {
+                foreach (var s in outOfRangeSessions)
+                {
+                    s.IsDeleted = true;
+                }
+            }
+
             await _context.SaveChangesAsync();
+
+            // Recalculate dashboard summary
+            await TriggerDashboardSummaryUpdateAsync(semester.Id);
 
             return Result<SemesterDto>.Success(new SemesterDto
             {
@@ -209,6 +256,7 @@ public class SemesterService : ISemesterService
                 Name = semester.Name,
                 StartDate = semester.StartDate,
                 EndDate = semester.EndDate,
+                LectureEndDate = semester.LectureEndDate,
                 CreatedAt = semester.CreatedAt,
                 UpdatedAt = semester.UpdatedAt
             }, "Semester updated successfully.");
@@ -280,6 +328,7 @@ public class SemesterService : ISemesterService
             }
 
             await _context.SaveChangesAsync();
+            await TriggerDashboardSummaryUpdateAsync(id);
 
             return Result.Success("Semester and all its associated modules, schedules, and sessions deleted successfully.");
         }
@@ -289,4 +338,21 @@ public class SemesterService : ISemesterService
         }
     }
     #endregion
+
+    private async Task TriggerDashboardSummaryUpdateAsync(long semesterId)
+    {
+        if (_backgroundJobClient is not null)
+        {
+            _backgroundJobClient.Enqueue<IAnalyticsService>(service => service.UpdateSemesterDashboardSummaryAsync(semesterId));
+        }
+        else if (_serviceProvider is not null)
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var analyticsService = scope.ServiceProvider.GetService<IAnalyticsService>();
+            if (analyticsService is not null)
+            {
+                await analyticsService.UpdateSemesterDashboardSummaryAsync(semesterId);
+            }
+        }
+    }
 }

@@ -4,9 +4,9 @@ namespace ACST.Domain.DTOs.Search
 {
     public class SearchDto
     {
-        public long Id { get; set; }
-        public string Name { get; set; } = null!;
-        public string ModuleCode { get; set; } = null!;
+        public long? Id { get; set; }
+        public string? Name { get; set; }
+        public string? ModuleCode { get; set; }
         public string? TeacherName { get; set; }
     }
 
@@ -28,6 +28,7 @@ namespace ACST.Domain.DTOs.Search
         public string Name { get; set; } = null!;
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
+        public DateOnly? LectureEndDate { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }

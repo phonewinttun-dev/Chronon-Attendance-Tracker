@@ -12,6 +12,8 @@ public partial class TblSemester
     public DateOnly StartDate { get; set; }
 
     public DateOnly EndDate { get; set; }
+    
+    public DateOnly? LectureEndDate { get; set; }
 
     public bool IsDeleted { get; set; }
 

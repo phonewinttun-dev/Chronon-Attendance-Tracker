@@ -346,4 +346,61 @@ public class ClassSessionServiceTests
         Assert.Empty(result.Data);
         Assert.Equal(0, result.Pagination.TotalCount);
     }
+
+    [Fact]
+    public async Task GenerateSessionsAsync_WithLectureEndDate_ShouldStopGeneratingAtLectureEndDate()
+    {
+        // Arrange
+        var semester = new TblSemester
+        {
+            Name = "Fall 2026",
+            StartDate = new DateOnly(2026, 9, 1),
+            EndDate = new DateOnly(2026, 9, 30),
+            LectureEndDate = new DateOnly(2026, 9, 11),
+            IsDeleted = false
+        };
+        _context.TblSemesters.Add(semester);
+
+        var module = new TblModule
+        {
+            Name = "Software Engineering",
+            ModuleCode = "SE101",
+            SemesterId = semester.Id,
+            IsDeleted = false
+        };
+        _context.TblModules.Add(module);
+        await _context.SaveChangesAsync();
+
+        var schedule = new TblRecurringSchedule
+        {
+            ModuleId = module.Id,
+            SemesterId = semester.Id,
+            DayOfWeek = (short)DayOfWeek.Wednesday, // Sep 2, 9, 16, 23, 30
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            IsActive = true,
+            IsDeleted = false
+        };
+        _context.TblRecurringSchedules.Add(schedule);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.GenerateSessionsAsync(new GenerateSessionsRequest
+        {
+            SemesterId = semester.Id
+        });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var sessions = await _context.TblSessions
+            .Where(s => s.SemesterId == semester.Id && !s.IsDeleted)
+            .OrderBy(s => s.SessionDate)
+            .ToListAsync();
+
+        // Only Sep 2 and Sep 9 should be generated (Sep 16, 23, 30 are after Sep 11)
+        Assert.Equal(2, sessions.Count);
+        Assert.All(sessions, s => Assert.True(s.SessionDate <= semester.LectureEndDate));
+        Assert.Contains(sessions, s => s.SessionDate == new DateOnly(2026, 9, 2));
+        Assert.Contains(sessions, s => s.SessionDate == new DateOnly(2026, 9, 9));
+    }
 }

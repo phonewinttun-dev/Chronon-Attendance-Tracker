@@ -188,9 +188,12 @@ public class ClassSessionService : IClassSessionService
             var schedules = await schedulesQuery.ToListAsync();
             if (!schedules.Any()) return Result.Failure("No active recurring schedules found for this semester.");
 
+            // cutoff date for generating recurring lecture sessions
+            var lectureCutoffDate = semester.LectureEndDate ?? semester.EndDate;
+
             // Load active holidays and map to a HashSet for O(1) lookups
             var holidays = await _context.TblHolidays
-                .Where(h => !h.IsDeleted && h.HolidayDate >= semester.StartDate && h.HolidayDate <= semester.EndDate)
+                .Where(h => !h.IsDeleted && h.HolidayDate >= semester.StartDate && h.HolidayDate <= lectureCutoffDate)
                 .Select(h => h.HolidayDate)
                 .ToListAsync();
 
@@ -218,8 +221,8 @@ public class ClassSessionService : IClassSessionService
                 int daysToAdd = ((int)schedule.DayOfWeek - (int)semester.StartDate.DayOfWeek + 7) % 7;
                 var firstDate = semester.StartDate.AddDays(daysToAdd);
 
-                // Iterate only over target weekdays
-                for (var date = firstDate; date <= semester.EndDate; date = date.AddDays(7))
+                // Iterate only over target weekdays up to lectureCutoffDate
+                for (var date = firstDate; date <= lectureCutoffDate; date = date.AddDays(7))
                 {
                     if (!existingSessionsSet.Contains((schedule.Id, date)))
                     {
