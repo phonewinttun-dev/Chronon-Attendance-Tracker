@@ -139,9 +139,9 @@ This document lists all of the HTTP endpoints defined within the project, detail
 | :--- | :--- | :--- | :--- | :--- |
 | `GET` | `api/Analytics/overall/{semesterId}` | `GetOverall` | `Permissions.Analytics.View` | Retrieves overall statistics for a semester ID. |
 | `GET` | `api/Analytics/modules/{moduleId}/{semesterId}` | `GetByModule` | `Permissions.Analytics.View` | Retrieves module-level analytics. |
-| `GET` | `api/semesters/{id}/dashboard/summary` | `GetDashboardSummary` | `Permissions.Analytics.View` | Retrieves dashboard summary for current semester & warnings. |
+| `GET` | `api/semesters/{id}/dashboard/summary` | `GetDashboardSummary` | `Permissions.Analytics.View` | Retrieves dashboard summary for current semester & warnings (includes module attendance with `ModuleCode`). |
 | `GET` | `api/semesters/{id}/dashboard/daily-weekly` | `GetDashboardDailyWeekly` | `Permissions.Analytics.View` | Retrieves day/week chart data (supports optional `month` query parameter). |
-| `GET` | `api/semesters/{id}/dashboard/modules` | `GetDashboardModules` | `Permissions.Analytics.View` | Retrieves module breakdown chart data (supports optional `month` query parameter). |
+| `GET` | `api/semesters/{id}/dashboard/modules` | `GetDashboardModules` | `Permissions.Analytics.View` | Retrieves module breakdown chart data with `ModuleCode` (supports optional `month` query parameter). |
 
 ---
 

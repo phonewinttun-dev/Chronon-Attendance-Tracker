@@ -180,32 +180,22 @@ else
                         <span>Attendance Analytics</span>
                     </h2>
                     <p class="text-xs text-muted-foreground font-mono mt-0.5">
-                        Weekly & Monthly: Horizontal Bar Chart | Module: Pie Chart with Legend
+                        Monthly Attendance & Module Distribution Analytics
                     </p>
                 </div>
                 <div class="flex items-center gap-1.5 font-mono text-xs">
-                    <button class="px-3 py-1.5 rounded-lg border-2 font-bold cursor-pointer transition-all @(_chartTab == ChartPeriodTab.Weekly ? "bg-[#A6FA53] text-black border-black shadow-neo-sm font-black" : "border-transparent text-muted-foreground hover:bg-[#FFD026] hover:text-black hover:border-black")"
-                            @onclick="() => _chartTab = ChartPeriodTab.Weekly">
-                        Weekly (Bar)
-                    </button>
                     <button class="px-3 py-1.5 rounded-lg border-2 font-bold cursor-pointer transition-all @(_chartTab == ChartPeriodTab.Monthly ? "bg-[#A6FA53] text-black border-black shadow-neo-sm font-black" : "border-transparent text-muted-foreground hover:bg-[#FFD026] hover:text-black hover:border-black")"
                             @onclick="() => _chartTab = ChartPeriodTab.Monthly">
-                        Monthly (Bar)
+                        Monthly
                     </button>
                     <button class="px-3 py-1.5 rounded-lg border-2 font-bold cursor-pointer transition-all @(_chartTab == ChartPeriodTab.Module ? "bg-[#FFD026] text-black border-black shadow-neo-sm font-black" : "border-transparent text-muted-foreground hover:bg-[#FFD026] hover:text-black hover:border-black")"
                             @onclick="() => _chartTab = ChartPeriodTab.Module">
-                        Module (Pie)
+                        Module
                     </button>
                 </div>
             </div>
 
-            @if (_chartTab == ChartPeriodTab.Weekly)
-            {
-                <AttendanceHorizontalBarChart Items="@GetWeeklyBarItems()" 
-                                              TrendText="@GetChartTrendText()" 
-                                              FooterSummary="@GetChartFooterSummary()" />
-            }
-            else if (_chartTab == ChartPeriodTab.Monthly)
+            @if (_chartTab == ChartPeriodTab.Monthly)
             {
                 <AttendanceHorizontalBarChart Items="@GetMonthlyBarItems()" 
                                               TrendText="@GetChartTrendText()" 
@@ -630,8 +620,8 @@ else
     private long _selectedSemesterId;
     private long _currentSemesterId;
     private Tab _activeTab = Tab.Daily;
-    private enum ChartPeriodTab { Weekly, Monthly, Module }
-    private ChartPeriodTab _chartTab = ChartPeriodTab.Weekly;
+    private enum ChartPeriodTab { Monthly, Module }
+    private ChartPeriodTab _chartTab = ChartPeriodTab.Monthly;
     private string _breakdownViewMode = "table";
     private int _weeklyPageNumber = 1;
     private const int _weeklyPageSize = 5;
@@ -1030,21 +1020,6 @@ else
         return option != null ? option.Text : "the selected month";
     }
 
-    private List<AttendanceHorizontalBarChart.HorizontalBarItem> GetWeeklyBarItems()
-    {
-        if (_summary?.WeeklyAttendance == null) return new();
-        return _summary.WeeklyAttendance
-            .OrderBy(w => w.WeekNumber)
-            .Select(w => new AttendanceHorizontalBarChart.HorizontalBarItem
-            {
-                Name = $"Week {w.WeekNumber}",
-                Rate = w.AttendanceRate,
-                Present = w.Present,
-                Absent = w.Absent,
-                TotalSessions = w.TotalSessions
-            }).ToList();
-    }
-
     private List<AttendanceHorizontalBarChart.HorizontalBarItem> GetMonthlyBarItems()
     {
         if (_summary?.MonthlyAttendance == null) return new();
@@ -1061,14 +1036,7 @@ else
 
     private string GetChartTrendText()
     {
-        if (_chartTab == ChartPeriodTab.Weekly)
-        {
-            var bestWeek = _summary?.WeeklyAttendance?.OrderByDescending(w => w.AttendanceRate).FirstOrDefault();
-            return bestWeek != null 
-                ? $"Highest weekly attendance recorded in Week {bestWeek.WeekNumber} ({bestWeek.AttendanceRate}%)"
-                : "Weekly attendance trends across active terms";
-        }
-        else if (_chartTab == ChartPeriodTab.Monthly)
+        if (_chartTab == ChartPeriodTab.Monthly)
         {
             var bestMonth = _summary?.MonthlyAttendance?.OrderByDescending(m => m.AttendanceRate).FirstOrDefault();
             return bestMonth != null
@@ -1086,8 +1054,6 @@ else
 
     private string GetChartFooterSummary()
     {
-        if (_chartTab == ChartPeriodTab.Weekly)
-            return $"{_summary?.WeeklyAttendance?.Count ?? 0} Weeks Monitored";
         if (_chartTab == ChartPeriodTab.Monthly)
             return $"{_summary?.MonthlyAttendance?.Count ?? 0} Months Tracked";
         return $"{_summary?.ModuleAttendance?.Count ?? 0} Active Modules";

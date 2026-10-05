@@ -67,7 +67,7 @@
             <!-- Module Legend -->
             <div class="flex-1 w-full flex flex-col justify-center">
                 <div class="text-[11px] font-bold text-muted-foreground font-mono uppercase tracking-wider mb-2">
-                    Module Distribution (Sessions & Share)
+                    Module Distribution
                 </div>
                 <div class="flex flex-col gap-1.5 w-full">
                     @foreach (var slice in _activeSlices)
@@ -76,16 +76,18 @@
                         <div class="flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg border-2 transition-all cursor-pointer shadow-neo-sm @(isHovered ? "border-black bg-[#A6FA53]/15" : "border-transparent hover:border-black hover:bg-muted/40")"
                              @onmouseenter="() => _hoveredId = slice.Id"
                              @onmouseleave="() => _hoveredId = null">
-                            <div class="flex items-center gap-2 truncate">
+                            <div class="flex items-center gap-2 truncate min-w-0">
                                 <span class="w-3.5 h-3.5 rounded-xs border border-black shrink-0 inline-block shadow-xs" style="background-color: @slice.Color;"></span>
-                                <div class="truncate">
-                                    <span class="font-black text-xs font-mono text-foreground">@slice.Code</span>
-                                    <span class="text-[11px] text-muted-foreground truncate hidden sm:inline ml-1">- @slice.Name</span>
+                                <div class="truncate flex items-baseline gap-1.5">
+                                    <span class="font-black text-xs font-mono text-foreground shrink-0">@slice.Code</span>
+                                    <span class="text-xs font-medium text-foreground/90 truncate">@slice.Name</span>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 font-mono shrink-0">
-                                <span class="text-[11px] text-muted-foreground">@slice.Sessions cls</span>
-                                <span class="font-black text-xs px-1.5 py-0.2 rounded bg-muted border border-border">@slice.Percentage%</span>
+                                <span class="text-[11px] text-muted-foreground hidden sm:inline">@slice.Sessions cls (@slice.Percentage%)</span>
+                                <span class="px-2 py-0.5 rounded text-xs font-black border-2 shadow-xs @GetRateBadgeClass(slice.AttendanceRate)">
+                                    @($"{slice.AttendanceRate:0.#}%")
+                                </span>
                             </div>
                         </div>
                     }
@@ -115,6 +117,7 @@
         public string Code { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public int Sessions { get; set; }
+        public double AttendanceRate { get; set; }
         public string Color { get; set; } = "#A6FA53";
         public int Percentage { get; set; }
         public string PathD { get; set; } = string.Empty;
@@ -181,9 +184,10 @@
                 computed.Add(new PieSliceItem
                 {
                     Id = m.ModuleId.ToString(),
-                    Code = m.ModuleName.Split(' ').FirstOrDefault() ?? m.ModuleName,
+                    Code = !string.IsNullOrWhiteSpace(m.ModuleCode) ? m.ModuleCode : (m.ModuleName.Split(' ').FirstOrDefault() ?? m.ModuleName),
                     Name = m.ModuleName,
                     Sessions = m.TotalSessions,
+                    AttendanceRate = m.AttendanceRate,
                     Percentage = pct,
                     Color = Palette[i % Palette.Length],
                     PathD = pathD,
@@ -200,5 +204,12 @@
             _activeSlices.Clear();
             _displayTotal = 0;
         }
+    }
+
+    private string GetRateBadgeClass(double rate)
+    {
+        if (rate >= 80) return "bg-[#A6FA53] text-black border-black";
+        if (rate >= 60) return "bg-[#FFD026] text-black border-black";
+        return "bg-[#FF6B6B] text-black border-black";
     }
 }

@@ -17,6 +17,7 @@ public class OverallAnalyticsDto
 public class ModuleAnalyticsDto
 {
     public long ModuleId { get; set; }
+    public string ModuleCode { get; set; } = string.Empty;
     public string ModuleName { get; set; } = string.Empty;
     public string? TeacherName { get; set; }
     public double AttendanceRate { get; set; }

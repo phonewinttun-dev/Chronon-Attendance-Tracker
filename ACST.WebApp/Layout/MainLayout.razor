@@ -7,7 +7,8 @@
     var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri).Trim('/');
     var isAuthPage = string.IsNullOrEmpty(relativePath) ||
                      relativePath.Equals("login", StringComparison.OrdinalIgnoreCase) ||
-                     relativePath.Equals("register", StringComparison.OrdinalIgnoreCase);
+                     relativePath.Equals("register", StringComparison.OrdinalIgnoreCase) ||
+                     (!AuthState.IsLoggedIn && relativePath.Equals("not-found", StringComparison.OrdinalIgnoreCase));
 }
 
 @if (isAuthPage)
@@ -248,7 +249,8 @@ else
         var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri).Trim('/');
         var isAuthPage = string.IsNullOrEmpty(relativePath) ||
                          relativePath.Equals("login", StringComparison.OrdinalIgnoreCase) ||
-                         relativePath.Equals("register", StringComparison.OrdinalIgnoreCase);
+                         relativePath.Equals("register", StringComparison.OrdinalIgnoreCase) ||
+                         relativePath.Equals("not-found", StringComparison.OrdinalIgnoreCase);
 
         if (!AuthState.IsLoggedIn && !isAuthPage)
         {
