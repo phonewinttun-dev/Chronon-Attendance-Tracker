@@ -181,20 +181,29 @@
   .neo-box {
     @apply border-2 border-border shadow-neo rounded-xl bg-card transition-all;
   }
+  .neo-card {
+    @apply bg-card border-2 border-black dark:border-zinc-700 rounded-xl shadow-neo transition-all;
+  }
+  .neo-card-interactive {
+    @apply hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg;
+  }
+  .neo-modal {
+    @apply bg-card border-2 border-black dark:border-zinc-700 rounded-2xl shadow-neo-xl;
+  }
   .neo-btn {
-    @apply border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm cursor-pointer;
+    @apply border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer;
   }
   .neo-btn-primary {
-    @apply bg-[#A6FA53] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm cursor-pointer;
+    @apply bg-[#A6FA53] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer;
   }
   .neo-btn-secondary {
-    @apply bg-[#00E5FF] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm cursor-pointer;
+    @apply bg-[#00E5FF] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer;
   }
   .neo-btn-accent {
-    @apply bg-[#FFD026] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm cursor-pointer;
+    @apply bg-[#FFD026] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer;
   }
   .neo-btn-destructive {
-    @apply bg-[#FF6B6B] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm cursor-pointer;
+    @apply bg-[#FF6B6B] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer;
   }
   .neo-input {
     @apply border-2 border-border shadow-neo-sm font-bold bg-card text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A6FA53] focus:shadow-neo transition-all;
