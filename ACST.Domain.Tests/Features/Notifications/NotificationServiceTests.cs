@@ -1,4 +1,4 @@
-using ACST.Database.ApplicationDbContextModels.Models;
+﻿using ACST.Database.ApplicationDbContextModels.Models;
 using ACST.Domain.Features.Notifications;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

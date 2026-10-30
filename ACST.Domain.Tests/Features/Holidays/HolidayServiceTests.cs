@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,6 +30,8 @@ public class HolidayServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "critical-path")]
     public async Task ImportGoogleCalendarHolidaysAsync_WithNewHolidays_ShouldSaveToDb()
     {
         // Arrange
@@ -57,6 +59,8 @@ public class HolidayServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "boundary")]
     public async Task ImportGoogleCalendarHolidaysAsync_WithDuplicateHolidays_ShouldSkipDuplicates()
     {
         // Arrange
@@ -92,6 +96,7 @@ public class HolidayServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
     public async Task ImportGoogleCalendarHolidaysAsync_CalendarFetchFailure_ShouldReturnFailure()
     {
         // Arrange
