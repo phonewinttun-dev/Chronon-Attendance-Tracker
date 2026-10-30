@@ -227,7 +227,19 @@ public class AnalyticsService : IAnalyticsService
 
             if (month.HasValue)
             {
-                query = query.Where(s => s.SessionDate.Month == month.Value);
+                var semester = await _context.TblSemesters.FindAsync(semesterId);
+                int year = DateTime.UtcNow.Year;
+                if (semester != null)
+                {
+                    year = (semester.EndDate.Year > semester.StartDate.Year && month.Value <= semester.EndDate.Month)
+                        ? semester.EndDate.Year
+                        : semester.StartDate.Year;
+                }
+
+                var startOfMonth = new DateOnly(year, month.Value, 1);
+                var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+
+                query = query.Where(s => s.SessionDate >= startOfMonth && s.SessionDate <= endOfMonth);
             }
 
             var dateAggregates = await query
@@ -363,7 +375,19 @@ public class AnalyticsService : IAnalyticsService
 
             if (month.HasValue)
             {
-                query = query.Where(s => s.SessionDate.Month == month.Value);
+                var semester = await _context.TblSemesters.FindAsync(semesterId);
+                int year = DateTime.UtcNow.Year;
+                if (semester != null)
+                {
+                    year = (semester.EndDate.Year > semester.StartDate.Year && month.Value <= semester.EndDate.Month)
+                        ? semester.EndDate.Year
+                        : semester.StartDate.Year;
+                }
+
+                var startOfMonth = new DateOnly(year, month.Value, 1);
+                var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+
+                query = query.Where(s => s.SessionDate >= startOfMonth && s.SessionDate <= endOfMonth);
             }
 
             var moduleAggregates = await query
