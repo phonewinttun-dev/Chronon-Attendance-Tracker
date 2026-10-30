@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using ACST.Database.ApplicationDbContextModels.Models;
@@ -33,6 +33,8 @@ public class ClassSessionServiceTests
 
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "critical-path")]
     public async Task MarkAttendanceWithMagicLinkAsync_ValidWindow_ShouldMarkPresent()
     {
         // Arrange
@@ -61,10 +63,13 @@ public class ClassSessionServiceTests
         Assert.Equal("Attendance successfully marked.", result.Data);
         
         var dbSession = await _context.TblSessions.FindAsync(session.Id);
+        Assert.NotNull(dbSession);
         Assert.Equal("Present", dbSession.Status);
     }
 
     [Fact]
+    [Trait("Category", "negative")]
+    [Trait("Category", "boundary")]
     public async Task MarkAttendanceWithMagicLinkAsync_OutsideWindow_ShouldFail()
     {
         // Arrange
@@ -93,11 +98,13 @@ public class ClassSessionServiceTests
         Assert.Equal("Outside of attendance window.", result.Message);
         
         var dbSession = await _context.TblSessions.FindAsync(session.Id);
+        Assert.NotNull(dbSession);
         Assert.Equal("Not Marked", dbSession.Status); // Status should remain unchanged
     }
 
-    /*
-    [Fact]
+    [Fact(Skip = "24-hour attendance edit window limit is currently disabled in business logic")]
+    [Trait("Category", "negative")]
+    [Trait("Category", "boundary")]
     public async Task UpdateSessionStatusAsync_ShouldFail_WhenAfter24Hours()
     {
         // Arrange
@@ -123,10 +130,13 @@ public class ClassSessionServiceTests
         Assert.Equal("Attendance status cannot be changed after 24 hours.", result.Message);
         
         var dbSession = await _context.TblSessions.FindAsync(session.Id);
+        Assert.NotNull(dbSession);
         Assert.Equal("Not Marked", dbSession.Status);
     }
 
-    [Fact]
+    [Fact(Skip = "24-hour attendance edit window limit is currently disabled in business logic")]
+    [Trait("Category", "negative")]
+    [Trait("Category", "boundary")]
     public async Task UpdateSessionAsync_ShouldFail_WhenAfter24Hours()
     {
         // Arrange
@@ -161,7 +171,9 @@ public class ClassSessionServiceTests
         Assert.Equal("Attendance status cannot be changed after 24 hours.", result.Message);
     }
 
-    [Fact]
+    [Fact(Skip = "24-hour attendance edit window limit is currently disabled in business logic")]
+    [Trait("Category", "negative")]
+    [Trait("Category", "boundary")]
     public async Task DeleteSessionAsync_ShouldFail_WhenAfter24Hours()
     {
         // Arrange
@@ -187,11 +199,12 @@ public class ClassSessionServiceTests
         Assert.Equal("Attendance status cannot be changed after 24 hours.", result.Message);
         
         var dbSession = await _context.TblSessions.FindAsync(session.Id);
+        Assert.NotNull(dbSession);
         Assert.False(dbSession.IsDeleted);
     }
-    */
 
     [Fact]
+    [Trait("Category", "positive")]
     public async Task UpdateSessionAsync_ShouldSucceed_WhenWithin24Hours()
     {
         // Arrange
@@ -229,11 +242,13 @@ public class ClassSessionServiceTests
         Assert.True(result.IsSuccess);
         
         var dbSession = await _context.TblSessions.FindAsync(session.Id);
+        Assert.NotNull(dbSession);
         Assert.Equal("Present", dbSession.Status);
         Assert.Equal(now.AddHours(-1), dbSession.StartDatetime);
     }
 
     [Fact]
+    [Trait("Category", "positive")]
     public async Task DeleteSessionAsync_ShouldSucceed_WhenWithin24Hours()
     {
         // Arrange
@@ -258,10 +273,13 @@ public class ClassSessionServiceTests
         Assert.True(result.IsSuccess);
         
         var dbSession = await _context.TblSessions.FindAsync(session.Id);
+        Assert.NotNull(dbSession);
         Assert.True(dbSession.IsDeleted);
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "boundary")]
     public async Task GetSessionsAsync_ShouldIgnoreSessionsOfDeletedModulesOrSemesters()
     {
         // Arrange
@@ -336,6 +354,8 @@ public class ClassSessionServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "boundary")]
     public async Task GetSessionsAsync_WhenNoSessionsExist_ShouldReturnSuccessWithEmptyList()
     {
         // Act
@@ -348,6 +368,8 @@ public class ClassSessionServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "critical-path")]
     public async Task GenerateSessionsAsync_WithLectureEndDate_ShouldStopGeneratingAtLectureEndDate()
     {
         // Arrange

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using ACST.Database.ApplicationDbContextModels.Models;
@@ -25,6 +25,8 @@ public class AnalyticsServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "critical-path")]
     public async Task GetDashboardSummaryAsync_ShouldCalculateReconciliationAndBreakdownsCorrectly()
     {
         // Arrange
@@ -89,6 +91,7 @@ public class AnalyticsServiceTests
         // Verify cache miss fallback works first and creates the entry
         var initialResult = await _service.GetDashboardSummaryAsync(1);
         Assert.True(initialResult.IsSuccess);
+        Assert.NotNull(initialResult.Data);
         Assert.Equal("Test Semester", initialResult.Data.SemesterName);
 
         // Verify precalculated entry exists in database
@@ -212,6 +215,7 @@ public class AnalyticsServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
     public async Task GetDashboardSummaryAsync_ShouldCalculateTodayAttendanceRateCorrectly()
     {
         // Arrange
