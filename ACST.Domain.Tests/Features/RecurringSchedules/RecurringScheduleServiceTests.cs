@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using ACST.Database.ApplicationDbContextModels.Models;
@@ -31,6 +31,8 @@ public class RecurringScheduleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "critical-path")]
     public async Task CreateScheduleAsync_ShouldAutoGenerateClassSessions()
     {
         // Arrange
@@ -68,6 +70,8 @@ public class RecurringScheduleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "critical-path")]
     public async Task DeleteScheduleAsync_ShouldCascadeSoftDeleteFutureSessions()
     {
         // Arrange
@@ -131,12 +135,15 @@ public class RecurringScheduleServiceTests
         Assert.True(result.IsSuccess);
 
         var dbSchedule = await _context.TblRecurringSchedules.FindAsync(schedule.Id);
+        Assert.NotNull(dbSchedule);
         Assert.True(dbSchedule.IsDeleted);
 
         var dbPastSession = await _context.TblSessions.FindAsync(pastSession.Id);
+        Assert.NotNull(dbPastSession);
         Assert.False(dbPastSession.IsDeleted); // Remains untouched
 
         var dbFutureSession = await _context.TblSessions.FindAsync(futureSession.Id);
+        Assert.NotNull(dbFutureSession);
         Assert.True(dbFutureSession.IsDeleted); // Soft-deleted
     }
 }

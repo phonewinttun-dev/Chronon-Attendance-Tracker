@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using ACST.Database.ApplicationDbContextModels.Models;
@@ -38,6 +38,8 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "critical-path")]
     public async Task DeleteModuleAsync_ShouldCascadeSoftDeleteSchedulesAndSessions()
     {
         // Arrange
@@ -104,6 +106,8 @@ public class ModuleServiceTests
     #region CreateModuleAsync Tests
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "critical-path")]
     public async Task CreateModuleAsync_WithValidRequest_WithoutSchedules_ShouldSucceed()
     {
         // Arrange
@@ -135,6 +139,7 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
     public async Task CreateModuleAsync_WithMissingSemesterForSchedules_ShouldReturnFailure()
     {
         // Arrange
@@ -158,6 +163,8 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
+    [Trait("Category", "boundary")]
     public async Task CreateModuleAsync_WithInvalidScheduleTimes_ShouldReturnFailure()
     {
         // Arrange
@@ -181,6 +188,7 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
     public async Task CreateModuleAsync_WithNonexistentSemester_ShouldReturnFailure()
     {
         // Arrange
@@ -204,6 +212,8 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "critical-path")]
     public async Task CreateModuleAsync_WithSchedulesAndGenerateSessions_ShouldCreateModuleAndSchedulesAndCallGenerateSessions()
     {
         // Arrange
@@ -254,6 +264,8 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
+    [Trait("Category", "resilience")]
     public async Task CreateModuleAsync_OnException_ShouldRollbackTransactionAndReturnFailure()
     {
         // Arrange
@@ -295,6 +307,7 @@ public class ModuleServiceTests
     #region UpdateModuleAsync Tests
 
     [Fact]
+    [Trait("Category", "negative")]
     public async Task UpdateModuleAsync_WithNonexistentModule_ShouldReturnFailure()
     {
         // Arrange
@@ -313,6 +326,7 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
     public async Task UpdateModuleAsync_WithInvalidSemesterId_ShouldReturnFailure()
     {
         // Arrange
@@ -338,6 +352,7 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
     public async Task UpdateModuleAsync_WithMissingSemesterForSchedules_ShouldReturnFailure()
     {
         // Arrange
@@ -365,6 +380,8 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
+    [Trait("Category", "boundary")]
     public async Task UpdateModuleAsync_WithInvalidScheduleTimes_ShouldReturnFailure()
     {
         // Arrange
@@ -392,6 +409,8 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "critical-path")]
     public async Task UpdateModuleAsync_WithValidRequest_ShouldUpdateBasicFields()
     {
         // Arrange
@@ -426,6 +445,8 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "critical-path")]
     public async Task UpdateModuleAsync_WithSchedulesToRemove_ShouldSoftDeleteSchedulesAndFutureSessionsAndCollectGoogleEventIds()
     {
         // Arrange
@@ -516,6 +537,7 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
     public async Task UpdateModuleAsync_WithSchedulesToAddAndModify_ShouldAddAndModifySchedules()
     {
         // Arrange
@@ -568,6 +590,8 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
+    [Trait("Category", "resilience")]
     public async Task UpdateModuleAsync_OnDatabaseException_ShouldRollbackTransactionAndReturnFailure()
     {
         // Arrange
@@ -600,6 +624,7 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
     public async Task UpdateModuleAsync_WithSchedulesToRemove_ShouldDeleteOrphanedGoogleCalendarEventsOutofTransaction()
     {
         // Arrange
@@ -645,6 +670,8 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "boundary")]
     public async Task GetAllModulesAsync_WhenNoModulesExist_ShouldReturnSuccessWithEmptyList()
     {
         // Act

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using ACST.Domain.Features.GoogleCalendar;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -16,6 +16,7 @@ public class DisabledGoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
     public async Task CreateEventAsync_ShouldReturnSuccess_WithMockEventId()
     {
         // Act
@@ -34,6 +35,7 @@ public class DisabledGoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
     public async Task UpdateEventStatusAsync_ShouldReturnSuccess()
     {
         // Act
@@ -44,6 +46,7 @@ public class DisabledGoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
     public async Task DeleteEventAsync_ShouldReturnSuccess()
     {
         // Act
@@ -54,6 +57,7 @@ public class DisabledGoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
     public async Task IsConnectedAsync_ShouldReturnSuccess_WithFalse()
     {
         // Act
@@ -65,6 +69,7 @@ public class DisabledGoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
     public async Task GetAuthorizationUrlAsync_ShouldReturnFailure()
     {
         // Act
@@ -76,6 +81,7 @@ public class DisabledGoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
     public async Task ExchangeCodeAndStoreTokenAsync_ShouldReturnFailure()
     {
         // Act
@@ -87,6 +93,7 @@ public class DisabledGoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
     public async Task DisconnectAsync_ShouldReturnFailure()
     {
         // Act

@@ -22,8 +22,11 @@
     <ProjectReference Include="..\ACST.Shared\ACST.Shared.csproj" />
   </ItemGroup>
 
-  <Target Name="Tailwind" BeforeTargets="Build">
+  <Target Name="NpmInstall" BeforeTargets="Build" Condition="!Exists('node_modules')">
     <Exec Command="npm install" />
+  </Target>
+
+  <Target Name="Tailwind" BeforeTargets="Build" Inputs="Styles\tailwind.css;package.json" Outputs="wwwroot\css\tailwind.css">
     <Exec Command="npm run build:css" />
   </Target>
 

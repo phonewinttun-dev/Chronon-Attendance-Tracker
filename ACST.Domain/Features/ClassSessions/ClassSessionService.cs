@@ -27,7 +27,6 @@ public class ClassSessionService : IClassSessionService
     private readonly IBackgroundJobClient? _backgroundJobClient;
     private readonly IServiceProvider? _serviceProvider;
     private readonly IHttpContextAccessor? _httpContextAccessor;
-    private static readonly TimeSpan MyanmarOffset = TimeSpan.FromHours(6.5);
 
     public ClassSessionService(
         AppDbContext context, 

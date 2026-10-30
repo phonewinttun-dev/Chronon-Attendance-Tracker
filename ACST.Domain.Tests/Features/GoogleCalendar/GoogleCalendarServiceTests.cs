@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ACST.Domain.Features.GoogleCalendar;
@@ -11,6 +11,8 @@ namespace ACST.Domain.Tests.Features.GoogleCalendar;
 public class GoogleCalendarServiceTests
 {
     [Fact]
+    [Trait("Category", "negative")]
+    [Trait("Category", "configuration")]
     public async Task CreateEventAsync_WithMissingConfiguration_ShouldReturnSystemError()
     {
         // Arrange
@@ -40,6 +42,8 @@ public class GoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
+    [Trait("Category", "configuration")]
     public async Task UpdateEventStatusAsync_WithMissingConfiguration_ShouldReturnSystemError()
     {
         // Arrange
@@ -63,6 +67,8 @@ public class GoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
+    [Trait("Category", "configuration")]
     public async Task DeleteEventAsync_WithMissingConfiguration_ShouldReturnSystemError()
     {
         // Arrange
@@ -86,6 +92,8 @@ public class GoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "positive")]
+    [Trait("Category", "configuration")]
     public async Task IsConnectedAsync_WithMissingConfiguration_ShouldReturnFalse()
     {
         // Arrange
@@ -102,6 +110,8 @@ public class GoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
+    [Trait("Category", "configuration")]
     public async Task GetAuthorizationUrlAsync_WithMissingConfiguration_ShouldReturnFailure()
     {
         // Arrange
@@ -118,6 +128,8 @@ public class GoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
+    [Trait("Category", "configuration")]
     public async Task ExchangeCodeAndStoreTokenAsync_WithMissingConfiguration_ShouldReturnFailure()
     {
         // Arrange
@@ -134,6 +146,8 @@ public class GoogleCalendarServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
+    [Trait("Category", "configuration")]
     public async Task DisconnectAsync_WithMissingConfiguration_ShouldReturnFailure()
     {
         // Arrange
