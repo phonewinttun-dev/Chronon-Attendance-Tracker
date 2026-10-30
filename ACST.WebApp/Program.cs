@@ -18,7 +18,7 @@ if (string.IsNullOrWhiteSpace(apiBaseUrl))
     apiBaseUrl = isHttps ? "https://localhost:7019/" : "http://localhost:5211/";
 }
 
-if (!apiBaseUrl.EndsWith("/"))
+if (!apiBaseUrl.EndsWith("/", StringComparison.Ordinal))
 {
     apiBaseUrl += "/";
 }
