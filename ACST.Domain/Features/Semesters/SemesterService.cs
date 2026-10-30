@@ -283,48 +283,45 @@ public class SemesterService : ISemesterService
             semester.IsDeleted = true;
 
             // Cascade soft-delete modules belonging to this semester
-            var modules = await _context.TblModules
-                .Where(m => m.SemesterId == id && !m.IsDeleted)
-                .ToListAsync();
+            var modulesQuery = _context.TblModules
+                .Where(m => m.SemesterId == id && !m.IsDeleted);
 
-            foreach (var module in modules)
+            if (_context.Database.IsRelational())
             {
-                module.IsDeleted = true;
+                await modulesQuery.ExecuteUpdateAsync(s => s.SetProperty(x => x.IsDeleted, true));
+            }
+            else
+            {
+                var modules = await modulesQuery.ToListAsync();
+                foreach (var module in modules) module.IsDeleted = true;
             }
 
             // Cascade soft-delete recurring schedules belonging to this semester
-            var schedules = await _context.TblRecurringSchedules
-                .Where(s => s.SemesterId == id && !s.IsDeleted)
-                .ToListAsync();
+            var schedulesQuery = _context.TblRecurringSchedules
+                .Where(s => s.SemesterId == id && !s.IsDeleted);
 
-            foreach (var schedule in schedules)
+            if (_context.Database.IsRelational())
             {
-                schedule.IsDeleted = true;
+                await schedulesQuery.ExecuteUpdateAsync(s => s.SetProperty(x => x.IsDeleted, true));
+            }
+            else
+            {
+                var schedules = await schedulesQuery.ToListAsync();
+                foreach (var schedule in schedules) schedule.IsDeleted = true;
             }
 
-            // Cascade soft-delete sessions belonging to this semester and remove their Google Calendar events
-            var sessions = await _context.TblSessions
-                .Where(s => s.SemesterId == id && !s.IsDeleted)
-                .ToListAsync();
+            // Cascade soft-delete sessions belonging to this semester
+            var sessionsQuery = _context.TblSessions
+                .Where(s => s.SemesterId == id && !s.IsDeleted);
 
-            foreach (var session in sessions)
+            if (_context.Database.IsRelational())
             {
-                session.IsDeleted = true;
-
-                /*
-                if (!string.IsNullOrEmpty(session.GoogleEventId))
-                {
-                    if (_backgroundJobClient is not null)
-                    {
-                        _backgroundJobClient.Enqueue<IGoogleCalendarService>(service => 
-                            service.DeleteEventAsync(session.GoogleEventId));
-                    }
-                    else
-                    {
-                        await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
-                    }
-                }
-                */
+                await sessionsQuery.ExecuteUpdateAsync(s => s.SetProperty(x => x.IsDeleted, true));
+            }
+            else
+            {
+                var sessions = await sessionsQuery.ToListAsync();
+                foreach (var session in sessions) session.IsDeleted = true;
             }
 
             await _context.SaveChangesAsync();

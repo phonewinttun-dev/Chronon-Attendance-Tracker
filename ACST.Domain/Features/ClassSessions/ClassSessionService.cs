@@ -384,30 +384,44 @@ public class ClassSessionService : IClassSessionService
                 return Result.Failure("No session IDs provided.");
             }
 
-            var sessions = await _context.TblSessions
-                .Where(s => request.SessionIds.Contains(s.Id) && !s.IsDeleted)
+            var query = _context.TblSessions
+                .Where(s => request.SessionIds.Contains(s.Id) && !s.IsDeleted);
+
+            var semesterIds = await query
+                .Select(s => s.SemesterId)
+                .Distinct()
                 .ToListAsync();
 
-            if (!sessions.Any())
+            if (!semesterIds.Any())
             {
                 return Result.Failure("No matching sessions found.");
             }
 
-            foreach (var session in sessions)
+            int updatedCount;
+            if (_context.Database.IsRelational())
             {
-                session.Status = request.Status;
+                updatedCount = await query
+                    .ExecuteUpdateAsync(s => s.SetProperty(x => x.Status, request.Status));
+            }
+            else
+            {
+                var sessions = await query.ToListAsync();
+                foreach (var session in sessions)
+                {
+                    session.Status = request.Status;
+                }
+
+                await _context.SaveChangesAsync();
+                updatedCount = sessions.Count;
             }
 
-            await _context.SaveChangesAsync();
-
             // Trigger dashboard update for each distinct semester
-            var semesterIds = sessions.Select(s => s.SemesterId).Distinct().ToList();
             foreach (var semId in semesterIds)
             {
                 await TriggerDashboardSummaryUpdateAsync(semId);
             }
 
-            return Result.Success($"Successfully updated {sessions.Count} session(s).");
+            return Result.Success($"Successfully updated {updatedCount} session(s).");
         }
         catch (Exception ex)
         {

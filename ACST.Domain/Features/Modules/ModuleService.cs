@@ -542,38 +542,37 @@ public class ModuleService : IModuleService
             module.IsDeleted = true;
 
             // Cascade soft-delete associated recurring schedules
-            var schedules = await _context.TblRecurringSchedules
-                .Where(s => s.ModuleId == id && !s.IsDeleted)
-                .ToListAsync();
+            var schedulesQuery = _context.TblRecurringSchedules
+                .Where(s => s.ModuleId == id && !s.IsDeleted);
 
-            foreach (var schedule in schedules)
+            if (_context.Database.IsRelational())
             {
-                schedule.IsDeleted = true;
+                await schedulesQuery.ExecuteUpdateAsync(s => s.SetProperty(x => x.IsDeleted, true));
+            }
+            else
+            {
+                var schedules = await schedulesQuery.ToListAsync();
+                foreach (var schedule in schedules)
+                {
+                    schedule.IsDeleted = true;
+                }
             }
 
             // Cascade soft-delete associated class sessions
-            var sessions = await _context.TblSessions
-                .Where(s => s.ModuleId == id && !s.IsDeleted)
-                .ToListAsync();
+            var sessionsQuery = _context.TblSessions
+                .Where(s => s.ModuleId == id && !s.IsDeleted);
 
-            foreach (var session in sessions)
+            if (_context.Database.IsRelational())
             {
-                session.IsDeleted = true;
-
-                /*
-                if (!string.IsNullOrEmpty(session.GoogleEventId))
+                await sessionsQuery.ExecuteUpdateAsync(s => s.SetProperty(x => x.IsDeleted, true));
+            }
+            else
+            {
+                var sessions = await sessionsQuery.ToListAsync();
+                foreach (var session in sessions)
                 {
-                    if (_backgroundJobClient is not null)
-                    {
-                        _backgroundJobClient.Enqueue<IGoogleCalendarService>(service =>
-                            service.DeleteEventAsync(session.GoogleEventId));
-                    }
-                    else
-                    {
-                        await _googleCalendarService.DeleteEventAsync(session.GoogleEventId);
-                    }
+                    session.IsDeleted = true;
                 }
-                */
             }
 
             await _context.SaveChangesAsync();

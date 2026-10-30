@@ -26,8 +26,7 @@ namespace ACST.Domain.Features.Notifications
             try
             {
                 var query = _context.TblNotifications
-                    .Include(n => n.Session)
-                    .ThenInclude(s => s!.Module)
+                    .AsNoTracking()
                     .Where(n => n.UserId == userId);
 
                 if (unreadOnly)
@@ -104,16 +103,23 @@ namespace ACST.Domain.Features.Notifications
         {
             try
             {
-                var unreadNotifications = await _context.TblNotifications
-                    .Where(n => n.UserId == userId && !n.IsRead)
-                    .ToListAsync();
+                var query = _context.TblNotifications
+                    .Where(n => n.UserId == userId && !n.IsRead);
 
-                foreach (var n in unreadNotifications)
+                if (_context.Database.IsRelational())
                 {
-                    n.IsRead = true;
+                    await query.ExecuteUpdateAsync(s => s.SetProperty(x => x.IsRead, true));
+                }
+                else
+                {
+                    var unreadNotifications = await query.ToListAsync();
+                    foreach (var n in unreadNotifications)
+                    {
+                        n.IsRead = true;
+                    }
+                    await _context.SaveChangesAsync();
                 }
 
-                await _context.SaveChangesAsync();
                 return Result.Success("All notifications marked as read.");
             }
             catch (Exception ex)

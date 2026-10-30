@@ -85,19 +85,21 @@ namespace ACST.Domain.Features.RolePermission
 
             _context.TblRolepermissions.RemoveRange(existing);
 
-            // Add new permissions
-            foreach (var permissionId in request.PermissionIds)
+            // Add new permissions in a single database roundtrip
+            var validPermissionIds = await _context.TblPermissions
+                .Where(p => request.PermissionIds.Contains(p.PermissionId) && p.DeleteFlag != true)
+                .Select(p => p.PermissionId)
+                .ToListAsync();
+
+            foreach (var permissionId in validPermissionIds)
             {
-                if (await _context.TblPermissions.AnyAsync(p => p.PermissionId == permissionId && p.DeleteFlag != true))
+                var rp = new TblRolepermission
                 {
-                    var rp = new TblRolepermission
-                    {
-                        RoleId = roleId,
-                        PermissionId = permissionId,
-                        DeleteFlag = false
-                    };
-                    _context.TblRolepermissions.Add(rp);
-                }
+                    RoleId = roleId,
+                    PermissionId = permissionId,
+                    DeleteFlag = false
+                };
+                _context.TblRolepermissions.Add(rp);
             }
 
             await _context.SaveChangesAsync();
