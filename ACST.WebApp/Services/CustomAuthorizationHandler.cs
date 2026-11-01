@@ -69,11 +69,8 @@ namespace ACST.WebApp.Services
                 if (originalUri != null)
                 {
                     Uri? fallbackUri = null;
-                    if (originalUri.Port == 7019)
-                    {
-                        fallbackUri = new UriBuilder(originalUri) { Scheme = "http", Port = 5211 }.Uri;
-                    }
-                    else if (originalUri.Port == 5211)
+                    // Only attempt secure upgrade from http to https, never downgrade https to unencrypted http
+                    if (originalUri.Scheme == "http" && originalUri.Port == 5211)
                     {
                         fallbackUri = new UriBuilder(originalUri) { Scheme = "https", Port = 7019 }.Uri;
                     }

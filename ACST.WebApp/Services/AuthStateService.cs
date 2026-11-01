@@ -48,7 +48,7 @@ namespace ACST.WebApp.Services
                         }
                         else
                         {
-                            ActiveRole = !string.IsNullOrEmpty(roleOverride) ? roleOverride : CurrentUser.RoleName;
+                            ActiveRole = (IsActualAdmin && !string.IsNullOrEmpty(roleOverride)) ? roleOverride : CurrentUser.RoleName;
                         }
                     }
                 }
@@ -84,6 +84,10 @@ namespace ACST.WebApp.Services
 
         public async Task SwitchRoleAsync(string newRole)
         {
+            if (!IsActualAdmin && !string.Equals(newRole, "User", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
             ActiveRole = newRole;
             try
             {
