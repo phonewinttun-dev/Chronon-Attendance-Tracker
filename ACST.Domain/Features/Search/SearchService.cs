@@ -1,18 +1,33 @@
 using ACST.Database.ApplicationDbContextModels.Models;
 using ACST.Domain.DTOs.Search;
 using ACST.Shared;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ACST.Domain.Features.Search
 {
     public class SearchService : ISearchService
     {
         private readonly AppDbContext _context;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
 
-        public SearchService(AppDbContext context)
+        public SearchService(AppDbContext context, IHttpContextAccessor? httpContextAccessor = null)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
+
+        private int? CurrentUserId
+        {
+            get
+            {
+                var claim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                return int.TryParse(claim, out var userId) ? userId : null;
+            }
+        }
+
+        private bool IsAdmin => _httpContextAccessor?.HttpContext?.User?.IsInRole("Admin") ?? false;
 
         #region Search Module
         public async Task<PagedResult<SearchModuleDto>> SearchModuleAsync(SearchDto searchRequest, int pageNumber = 1, int pageSize = 10, long? semesterId = null)
@@ -23,6 +38,18 @@ namespace ACST.Domain.Features.Search
                     .AsNoTracking()
                     .Include(m => m.Semester)
                     .Where(m => !m.IsDeleted);
+
+                if (_httpContextAccessor?.HttpContext != null && !IsAdmin)
+                {
+                    if (CurrentUserId.HasValue)
+                    {
+                        query = query.Where(m => m.UserId == CurrentUserId.Value);
+                    }
+                    else
+                    {
+                        return PagedResult<SearchModuleDto>.Success(new List<SearchModuleDto>(), new Pagination(pageNumber, pageSize, 0));
+                    }
+                }
 
                 if (semesterId.HasValue)
                 {
@@ -90,6 +117,18 @@ namespace ACST.Domain.Features.Search
                     .AsNoTracking()
                     .Where(s => !s.IsDeleted);
 
+                if (_httpContextAccessor?.HttpContext != null && !IsAdmin)
+                {
+                    if (CurrentUserId.HasValue)
+                    {
+                        query = query.Where(s => s.UserId == CurrentUserId.Value);
+                    }
+                    else
+                    {
+                        return PagedResult<SearchSemesterDto>.Success(new List<SearchSemesterDto>(), new Pagination(pageNumber, pageSize, 0));
+                    }
+                }
+
                 if (searchRequest != null && !string.IsNullOrWhiteSpace(searchRequest.Name))
                 {
                     var term = searchRequest.Name.Trim().ToLower();
@@ -136,6 +175,18 @@ namespace ACST.Domain.Features.Search
                     .AsNoTracking()
                     .Where(s => !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
 
+                if (_httpContextAccessor?.HttpContext != null && !IsAdmin)
+                {
+                    if (CurrentUserId.HasValue)
+                    {
+                        query = query.Where(s => s.UserId == CurrentUserId.Value);
+                    }
+                    else
+                    {
+                        return PagedResult<SearchClassSessionDto>.Success(new List<SearchClassSessionDto>(), new Pagination(pageNumber, pageSize, 0));
+                    }
+                }
+
                 if (semesterId.HasValue) query = query.Where(s => s.SemesterId == semesterId.Value);
                 if (moduleId.HasValue) query = query.Where(s => s.ModuleId == moduleId.Value);
 
@@ -170,7 +221,7 @@ namespace ACST.Domain.Features.Search
                         StartDatetime = s.StartDatetime,
                         EndDatetime = s.EndDatetime,
                         Status = s.Status,
-                        MagicLinkToken = s.MagicLinkToken,
+                        MagicLinkToken = Guid.Empty, // Sanitized: do not leak magic link token via search
                         GoogleEventId = s.GoogleEventId
                     })
                     .ToListAsync();
