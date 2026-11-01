@@ -1,4 +1,4 @@
-﻿using ACST.Database.ApplicationDbContextModels.Models;
+using ACST.Database.ApplicationDbContextModels.Models;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
@@ -25,6 +25,8 @@ public static class HealthCheckExtensions
             ResponseWriter = async (context, report) =>
             {
                 context.Response.ContentType = "application/json";
+                var env = context.RequestServices.GetService<IWebHostEnvironment>();
+                var isDev = env?.IsDevelopment() ?? false;
 
                 var response = new
                 {
@@ -40,7 +42,7 @@ public static class HealthCheckExtensions
                                 : "Database check failed."),
                             duration = entry.Value.Duration.ToString(),
                             tags = entry.Value.Tags,
-                            error = entry.Value.Exception?.Message
+                            error = isDev ? entry.Value.Exception?.Message : (entry.Value.Exception != null ? "An internal error occurred." : null)
                         })
                 };
 

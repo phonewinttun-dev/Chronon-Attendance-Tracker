@@ -121,7 +121,7 @@ public class GoogleCalendarController : ControllerBase
             _logger.LogWarning(ex, "Failed to automatically import holidays on Google Calendar connection callback.");
         }
 
-        if (!string.IsNullOrEmpty(state))
+        if (!string.IsNullOrEmpty(state) && Url.IsLocalUrl(state))
         {
             return Redirect(state!);
         }

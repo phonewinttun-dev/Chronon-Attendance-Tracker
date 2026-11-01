@@ -96,15 +96,18 @@ try
     builder.Services.AddAuthorization();
 
     // Add CORS policy for Blazor WebApp
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+        ?? new[] { "http://localhost:5211", "https://localhost:7019", "http://localhost:5000", "https://localhost:5001" };
+
     builder.Services.AddCors(options =>
     {
-        options.AddPolicy("AllowAll",
-            builder =>
-            {
-                builder.AllowAnyOrigin()
-                       .AllowAnyMethod()
-                       .AllowAnyHeader();
-            });
+        options.AddPolicy("AllowAll", policy =>
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();
+        });
     });
 
     // Configure Rate Limiting
@@ -117,6 +120,14 @@ try
                 _ => new FixedWindowRateLimiterOptions
                 {
                     PermitLimit = 5,
+                    Window = TimeSpan.FromMinutes(1)
+                }));
+        options.AddPolicy("magic-link-policy", context =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                context.Connection.RemoteIpAddress?.ToString() ?? "anon",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 10,
                     Window = TimeSpan.FromMinutes(1)
                 }));
     });

@@ -4,6 +4,8 @@ using ACST.Domain.Features.ClassSessions;
 using ACST.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Net;
 
 namespace ACST.Api.Controllers;
 
@@ -86,12 +88,13 @@ public class ClassSessionsController : ControllerBase
     // Public Magic Link Endpoint
     [HttpGet("magic-link/{token}")]
     [AllowAnonymous]
+    [EnableRateLimiting("magic-link-policy")]
     public async Task<IActionResult> MagicLink(Guid token)
     {
         var result = await _sessionService.MarkAttendanceWithMagicLinkAsync(token);
 
-        string title = result.IsSuccess ? "Success" : "Error";
-        string message = result.IsSuccess ? result.Data! : result.Message;
+        string title = WebUtility.HtmlEncode(result.IsSuccess ? "Success" : "Error");
+        string message = WebUtility.HtmlEncode(result.IsSuccess ? result.Data! : result.Message);
         string color = result.IsSuccess ? "#98d68b" : (result.Message == "Already marked as present." ? "#b4cea9" : "#ffb4ab");
         string bgColor = "#11140f";
 
