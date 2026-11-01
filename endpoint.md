@@ -76,7 +76,7 @@ This document lists all of the HTTP endpoints defined within the project, detail
 | `PATCH` | `api/ClassSessions/bulk-status` | `BulkUpdateStatus` | `Permissions.ClassSessions.Manage` | Bulk updates the status of multiple class sessions. |
 | `PUT` | `api/ClassSessions/{id}` | `Update` | `Permissions.ClassSessions.Manage` | Replaces/updates details of an existing class session. |
 | `DELETE` | `api/ClassSessions/{id}` | `Delete` | `Permissions.ClassSessions.Delete` | Deletes a specific class session by its ID. |
-| `GET` | `api/ClassSessions/magic-link/{token}` | `MagicLink` | *None (Public)* | Marks attendance via single-click email link, returning styled HTML. |
+| `GET` | `api/ClassSessions/magic-link/{token}` | `MagicLink` | *None (Public)* | Marks attendance via single-click email link (Rate limited: 10 req/min), returning styled HTML. |
 | `POST` | `api/ClassSessions/attendance` | `MarkAttendance` | `Permissions.ClassSessions.Manage` | Marks or updates attendance status from the dashboard. |
 
 ---
