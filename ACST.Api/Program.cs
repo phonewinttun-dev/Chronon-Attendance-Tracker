@@ -1,4 +1,6 @@
 using ACST.Api.Extensions;
+using ACST.Api.Filters;
+using ACST.Api.Middleware;
 using ACST.Domain.Features;
 using ACST.Domain.Features.Analytics;
 using ACST.Domain.Features.Notifications;
@@ -121,6 +123,11 @@ try
 
     var app = builder.Build();
 
+    // Custom Middlewares (Sann Lynn Htun style)
+    app.UseMiddleware<GlobalExceptionMiddleware>();
+    app.UseMiddleware<RequestLoggingMiddleware>();
+    app.UseMiddleware<CustomHeaderMiddleware>();
+
     // Configure the HTTP request pipeline.
     app.UseCors("AllowAll");
 
@@ -139,11 +146,17 @@ try
         };
     });
 
+    // Custom JWT Authentication Middleware (User requested to implement & not remove)
+    app.UseMiddleware<ACST.Api.Middleware.Middleware>();
+
     app.UseAuthentication();
     app.UseAuthorization();
     app.UseRateLimiter();
 
-    app.UseHangfireDashboard();
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = new[] { new HangfireAuthorizationFilter() }
+    });
 
     using (var scope = app.Services.CreateScope())
     {
