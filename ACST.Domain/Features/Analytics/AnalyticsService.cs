@@ -33,11 +33,31 @@ public class AnalyticsService : IAnalyticsService
         }
     }
 
+    private bool IsAdmin => _httpContextAccessor?.HttpContext?.User?.IsInRole("Admin") ?? false;
+
+    private async Task<bool> CanAccessSemesterAsync(long semesterId)
+    {
+        if (_httpContextAccessor?.HttpContext == null || IsAdmin) return true;
+        if (!CurrentUserId.HasValue) return false;
+        return await _context.TblSemesters.AnyAsync(s => s.Id == semesterId && s.UserId == CurrentUserId.Value && !s.IsDeleted);
+    }
+
+    private async Task<bool> CanAccessModuleAsync(long moduleId)
+    {
+        if (_httpContextAccessor?.HttpContext == null || IsAdmin) return true;
+        if (!CurrentUserId.HasValue) return false;
+        return await _context.TblModules.AnyAsync(m => m.Id == moduleId && m.UserId == CurrentUserId.Value && !m.IsDeleted);
+    }
+
     #region Get Overall Analytics for attendance 
     public async Task<Result<OverallAnalyticsDto>> GetOverallAnalyticsAsync(long semesterId)
     {
         try
         {
+            if (!await CanAccessSemesterAsync(semesterId))
+            {
+                return Result<OverallAnalyticsDto>.Failure("Semester not found.");
+            }
             var stats = await _context.TblSessions
                 .AsNoTracking()
                 .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted))
@@ -83,6 +103,10 @@ public class AnalyticsService : IAnalyticsService
     {
         try
         {
+            if (!await CanAccessSemesterAsync(semesterId) || !await CanAccessModuleAsync(moduleId))
+            {
+                return Result<ModuleAnalyticsDto>.Failure("Module or semester not found.");
+            }
             var module = await _context.TblModules.FindAsync(moduleId);
             if (module == null) return Result<ModuleAnalyticsDto>.Failure("Module not found.");
 
@@ -137,6 +161,10 @@ public class AnalyticsService : IAnalyticsService
     {
         try
         {
+            if (!await CanAccessSemesterAsync(semesterId))
+            {
+                return Result<DashboardSummaryDto>.Failure("Semester not found.");
+            }
             var cache = await _context.TblSemesterDashboardSummaries
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.SemesterId == semesterId);
@@ -221,6 +249,10 @@ public class AnalyticsService : IAnalyticsService
     {
         try
         {
+            if (!await CanAccessSemesterAsync(semesterId))
+            {
+                return Result<DashboardDailyWeeklyDto>.Failure("Semester not found.");
+            }
             var query = _context.TblSessions
                 .AsNoTracking()
                 .Where(s => s.SemesterId == semesterId && !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
@@ -364,6 +396,10 @@ public class AnalyticsService : IAnalyticsService
     {
         try
         {
+            if (!await CanAccessSemesterAsync(semesterId))
+            {
+                return Result<List<ModuleAnalyticsDto>>.Failure("Semester not found.");
+            }
             var modules = await _context.TblModules
                 .AsNoTracking()
                 .Where(m => m.SemesterId == semesterId && !m.IsDeleted)

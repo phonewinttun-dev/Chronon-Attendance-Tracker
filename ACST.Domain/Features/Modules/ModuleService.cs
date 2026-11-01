@@ -45,17 +45,28 @@ public class ModuleService : IModuleService
         }
     }
 
+    private bool IsAdmin => _httpContextAccessor?.HttpContext?.User?.IsInRole("Admin") ?? false;
+
+    private bool CanAccess(TblModule module)
+    {
+        if (_httpContextAccessor?.HttpContext == null || IsAdmin) return true;
+        return CurrentUserId.HasValue && module.UserId == CurrentUserId.Value;
+    }
+
     private IQueryable<TblModule> ActiveModuleQuery
     {
         get
         {
-            var userId = CurrentUserId;
             var query = _context.TblModules.AsNoTracking().Include(m => m.Semester).Where(m => !m.IsDeleted);
-            if (userId.HasValue)
+            if (_httpContextAccessor?.HttpContext == null || IsAdmin)
             {
-                query = query.Where(m => m.UserId == userId.Value);
+                return query;
             }
-            return query;
+            if (CurrentUserId.HasValue)
+            {
+                return query.Where(m => m.UserId == CurrentUserId.Value);
+            }
+            return query.Where(_ => false);
         }
     }
 
@@ -370,7 +381,7 @@ public class ModuleService : IModuleService
         {
             var module = await _context.TblModules.FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
 
-            if (module == null)
+            if (module == null || !CanAccess(module))
             {
                 return Result<ModuleDto>.Failure("Module not found.");
             }
@@ -534,7 +545,7 @@ public class ModuleService : IModuleService
         {
             var module = await _context.TblModules.FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
 
-            if (module == null)
+            if (module == null || !CanAccess(module))
             {
                 return Result.Failure("Module not found.");
             }

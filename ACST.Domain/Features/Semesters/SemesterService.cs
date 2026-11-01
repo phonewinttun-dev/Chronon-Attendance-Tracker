@@ -48,17 +48,28 @@ public class SemesterService : ISemesterService
         }
     }
 
+    private bool IsAdmin => _httpContextAccessor?.HttpContext?.User?.IsInRole("Admin") ?? false;
+
+    private bool CanAccess(TblSemester semester)
+    {
+        if (_httpContextAccessor?.HttpContext == null || IsAdmin) return true;
+        return CurrentUserId.HasValue && semester.UserId == CurrentUserId.Value;
+    }
+
     private IQueryable<TblSemester> ActiveSemesterQuery
     {
         get
         {
-            var userId = CurrentUserId;
             var query = _context.TblSemesters.AsNoTracking().Where(s => !s.IsDeleted);
-            if (userId.HasValue)
+            if (_httpContextAccessor?.HttpContext == null || IsAdmin)
             {
-                query = query.Where(s => s.UserId == userId.Value);
+                return query;
             }
-            return query;
+            if (CurrentUserId.HasValue)
+            {
+                return query.Where(s => s.UserId == CurrentUserId.Value);
+            }
+            return query.Where(_ => false);
         }
     }
 
@@ -206,7 +217,7 @@ public class SemesterService : ISemesterService
 
             var semester = await _context.TblSemesters.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
 
-            if (semester is null)
+            if (semester is null || !CanAccess(semester))
             {
                 return Result<SemesterDto>.Failure("Semester not found.");
             }
@@ -275,7 +286,7 @@ public class SemesterService : ISemesterService
         {
             var semester = await _context.TblSemesters.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
 
-            if (semester == null)
+            if (semester == null || !CanAccess(semester))
             {
                 return Result.Failure("Semester not found.");
             }

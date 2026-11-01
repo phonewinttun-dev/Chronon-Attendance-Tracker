@@ -48,6 +48,14 @@ public class RecurringScheduleService : IRecurringScheduleService
         }
     }
 
+    private bool IsAdmin => _httpContextAccessor?.HttpContext?.User?.IsInRole("Admin") ?? false;
+
+    private bool CanAccess(TblRecurringSchedule schedule)
+    {
+        if (_httpContextAccessor?.HttpContext == null || IsAdmin) return true;
+        return CurrentUserId.HasValue && schedule.UserId == CurrentUserId.Value;
+    }
+
     #region Get schedules by module
     public async Task<Result<IEnumerable<RecurringScheduleDto>>> GetSchedulesByModuleAsync(long moduleId)
     {
@@ -59,9 +67,16 @@ public class RecurringScheduleService : IRecurringScheduleService
                 .AsNoTracking()
                 .Where(r => r.ModuleId == moduleId && !r.IsDeleted);
 
-            if (CurrentUserId.HasValue)
+            if (_httpContextAccessor?.HttpContext != null && !IsAdmin)
             {
-                query = query.Where(r => r.UserId == CurrentUserId.Value);
+                if (CurrentUserId.HasValue)
+                {
+                    query = query.Where(r => r.UserId == CurrentUserId.Value);
+                }
+                else
+                {
+                    return Result<IEnumerable<RecurringScheduleDto>>.Failure("Unauthorized access.");
+                }
             }
 
             var schedules = await query
@@ -170,7 +185,7 @@ public class RecurringScheduleService : IRecurringScheduleService
         try
         {
             var schedule = await _context.TblRecurringSchedules.FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted);
-            if (schedule == null) return Result.Failure("Recurring schedule not found.");
+            if (schedule == null || !CanAccess(schedule)) return Result.Failure("Recurring schedule not found.");
 
             schedule.IsDeleted = true;
 

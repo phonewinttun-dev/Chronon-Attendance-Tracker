@@ -53,22 +53,33 @@ public class ClassSessionService : IClassSessionService
         }
     }
 
+    private bool IsAdmin => _httpContextAccessor?.HttpContext?.User?.IsInRole("Admin") ?? false;
+
+    private bool CanAccess(TblSession session)
+    {
+        if (_httpContextAccessor?.HttpContext == null || IsAdmin) return true;
+        return CurrentUserId.HasValue && session.UserId == CurrentUserId.Value;
+    }
+
     private IQueryable<TblSession> activeSession
     {
         get
         {
-            var userId = CurrentUserId;
             var query = _context.TblSessions
                 .Include(s => s.Module)
                 .Include(s => s.Semester)
                 .AsNoTracking()
                 .Where(s => !s.IsDeleted && (s.Module == null || !s.Module.IsDeleted) && (s.Semester == null || !s.Semester.IsDeleted));
 
-            if (userId.HasValue)
+            if (_httpContextAccessor?.HttpContext == null || IsAdmin)
             {
-                query = query.Where(s => s.UserId == userId.Value);
+                return query;
             }
-            return query;
+            if (CurrentUserId.HasValue)
+            {
+                return query.Where(s => s.UserId == CurrentUserId.Value);
+            }
+            return query.Where(_ => false);
         }
     }
 
@@ -337,7 +348,7 @@ public class ClassSessionService : IClassSessionService
         try
         {
             var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
-            if (session == null) return Result.Failure("Session not found.");
+            if (session == null || !CanAccess(session)) return Result.Failure("Session not found.");
 
             // if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
             // {
@@ -385,6 +396,18 @@ public class ClassSessionService : IClassSessionService
 
             var query = _context.TblSessions
                 .Where(s => request.SessionIds.Contains(s.Id) && !s.IsDeleted);
+
+            if (_httpContextAccessor?.HttpContext != null && !IsAdmin)
+            {
+                if (CurrentUserId.HasValue)
+                {
+                    query = query.Where(s => s.UserId == CurrentUserId.Value);
+                }
+                else
+                {
+                    return Result.Failure("Unauthorized access.");
+                }
+            }
 
             var semesterIds = await query
                 .Select(s => s.SemesterId)
@@ -478,7 +501,7 @@ public class ClassSessionService : IClassSessionService
         try
         {
             var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
-            if (session == null) return Result.Failure("Session not found.");
+            if (session == null || !CanAccess(session)) return Result.Failure("Session not found.");
 
             // if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
             // {
@@ -542,7 +565,7 @@ public class ClassSessionService : IClassSessionService
         try
         {
             var session = await _context.TblSessions.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
-            if (session == null) return Result.Failure("Session not found.");
+            if (session == null || !CanAccess(session)) return Result.Failure("Session not found.");
 
             // if (DateTime.UtcNow > session.StartDatetime.AddHours(24))
             // {
