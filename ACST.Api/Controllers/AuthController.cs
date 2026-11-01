@@ -1,6 +1,8 @@
+using ACST.Api.Middleware;
 using ACST.Domain.DTOs.Auth;
 using ACST.Domain.Features.Auth;
 using ACST.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -44,6 +46,8 @@ namespace ACST.Api.Controllers
         }
 
         [HttpGet("users")]
+        [Authorize]
+        [HasPermission(Permissions.Roles.View)]
         public async Task<IActionResult> GetUsers(CancellationToken cancellationToken = default)
         {
             var result = await _authService.GetAllUsersAsync(cancellationToken);
@@ -52,6 +56,8 @@ namespace ACST.Api.Controllers
         }
 
         [HttpDelete("users/{userId}")]
+        [Authorize]
+        [HasPermission(Permissions.Roles.Manage)]
         public async Task<IActionResult> DeleteUser(int userId, CancellationToken cancellationToken = default)
         {
             var result = await _authService.DeleteUserAsync(userId, cancellationToken);

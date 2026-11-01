@@ -2,10 +2,12 @@ using ACST.Api.Middleware;
 using ACST.Domain.DTOs.Semester;
 using ACST.Domain.Features.Semesters;
 using ACST.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ACST.Api.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class SemestersController : ControllerBase

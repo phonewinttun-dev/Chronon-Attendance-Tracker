@@ -1,10 +1,12 @@
 using ACST.Api.Middleware;
 using ACST.Domain.Features.Analytics;
 using ACST.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ACST.Api.Controllers.Analytics;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 [HasPermission(Permissions.Analytics.View)]

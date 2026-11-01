@@ -2,10 +2,12 @@ using ACST.Api.Middleware;
 using ACST.Domain.DTOs.ClassSession;
 using ACST.Domain.Features.ClassSessions;
 using ACST.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ACST.Api.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class ClassSessionsController : ControllerBase
@@ -83,6 +85,7 @@ public class ClassSessionsController : ControllerBase
 
     // Public Magic Link Endpoint
     [HttpGet("magic-link/{token}")]
+    [AllowAnonymous]
     public async Task<IActionResult> MagicLink(Guid token)
     {
         var result = await _sessionService.MarkAttendanceWithMagicLinkAsync(token);

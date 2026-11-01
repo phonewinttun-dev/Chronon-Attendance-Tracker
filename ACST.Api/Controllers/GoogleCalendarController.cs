@@ -2,10 +2,12 @@ using ACST.Api.Middleware;
 using ACST.Domain.Features.GoogleCalendar;
 using ACST.Domain.Features.Holidays;
 using ACST.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ACST.Api.Controllers;
 
+[Authorize]
 [Route("api/google-auth")]
 [Route("api/googlecalendar")]
 [ApiController]
@@ -76,6 +78,7 @@ public class GoogleCalendarController : ControllerBase
     #region Callback Endpoint
 
     [HttpGet("callback")]
+    [AllowAnonymous]
     public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string? state, [FromQuery] string? error)
     {
         bool isEnabled = _calendarService is not DisabledGoogleCalendarService;

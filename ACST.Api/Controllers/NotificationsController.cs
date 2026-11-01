@@ -1,11 +1,13 @@
 using ACST.Domain.Features.Notifications;
 using ACST.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ACST.Api.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class NotificationsController : ControllerBase
@@ -20,7 +22,7 @@ namespace ACST.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetNotifications([FromQuery] int? userId = null, [FromQuery] bool unreadOnly = false)
         {
-            var targetUserId = userId ?? GetCurrentUserId();
+            var targetUserId = ResolveTargetUserId(userId);
             if (targetUserId == 0)
             {
                 return BadRequest(Result.Failure("User ID is required."));
@@ -33,7 +35,7 @@ namespace ACST.Api.Controllers
         [HttpGet("unread-count")]
         public async Task<IActionResult> GetUnreadCount([FromQuery] int? userId = null)
         {
-            var targetUserId = userId ?? GetCurrentUserId();
+            var targetUserId = ResolveTargetUserId(userId);
             if (targetUserId == 0)
             {
                 return BadRequest(Result.Failure("User ID is required."));
@@ -46,7 +48,7 @@ namespace ACST.Api.Controllers
         [HttpPut("{id}/read")]
         public async Task<IActionResult> MarkAsRead(long id, [FromQuery] int? userId = null)
         {
-            var targetUserId = userId ?? GetCurrentUserId();
+            var targetUserId = ResolveTargetUserId(userId);
             if (targetUserId == 0)
             {
                 return BadRequest(Result.Failure("User ID is required."));
@@ -59,7 +61,7 @@ namespace ACST.Api.Controllers
         [HttpPut("read-all")]
         public async Task<IActionResult> MarkAllAsRead([FromQuery] int? userId = null)
         {
-            var targetUserId = userId ?? GetCurrentUserId();
+            var targetUserId = ResolveTargetUserId(userId);
             if (targetUserId == 0)
             {
                 return BadRequest(Result.Failure("User ID is required."));
@@ -67,6 +69,24 @@ namespace ACST.Api.Controllers
 
             var result = await _notificationService.MarkAllAsReadAsync(targetUserId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        private int ResolveTargetUserId(int? requestedUserId)
+        {
+            var currentUserId = GetCurrentUserId();
+            var isAdmin = User.IsInRole("Admin");
+
+            if (isAdmin && requestedUserId.HasValue)
+            {
+                return requestedUserId.Value;
+            }
+
+            if (currentUserId > 0)
+            {
+                return currentUserId;
+            }
+
+            return requestedUserId ?? 0;
         }
 
         private int GetCurrentUserId()

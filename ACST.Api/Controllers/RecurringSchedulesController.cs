@@ -2,10 +2,12 @@ using ACST.Api.Middleware;
 using ACST.Domain.DTOs.RecurringSchedule;
 using ACST.Domain.Features.RecurringSchedules;
 using ACST.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ACST.Api.Controllers;
 
+[Authorize]
 [Route("api/modules/{moduleId}/recurring-schedules")]
 [ApiController]
 public class RecurringSchedulesController : ControllerBase

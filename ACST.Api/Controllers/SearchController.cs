@@ -2,10 +2,12 @@ using ACST.Api.Middleware;
 using ACST.Domain.DTOs.Search;
 using ACST.Domain.Features.Search;
 using ACST.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ACST.Api.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 [HasPermission(Permissions.Search.View)]

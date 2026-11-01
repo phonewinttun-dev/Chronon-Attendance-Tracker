@@ -2,10 +2,12 @@ using ACST.Api.Middleware;
 using ACST.Domain.DTOs.Module;
 using ACST.Domain.Features.Modules;
 using ACST.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ACST.Api.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class ModulesController : ControllerBase
