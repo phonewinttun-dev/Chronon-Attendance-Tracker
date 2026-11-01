@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using ACST.Database.ApplicationDbContextModels.Models;
@@ -314,6 +314,74 @@ public class SemesterServiceTests
     {
         // Act
         var result = await _service.DeleteSemesterAsync(777);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Semester not found.", result.Message);
+    }
+
+    [Fact]
+    [Trait("Category", "security")]
+    [Trait("Category", "negative")]
+    public async Task UpdateSemesterAsync_DifferentUser_ReturnsFailure()
+    {
+        // Arrange
+        var semester = new TblSemester
+        {
+            Name = "User 2 Semester",
+            StartDate = new DateOnly(2026, 1, 1),
+            EndDate = new DateOnly(2026, 5, 31),
+            UserId = 2,
+            IsDeleted = false
+        };
+        _context.TblSemesters.Add(semester);
+        await _context.SaveChangesAsync();
+
+        var claims = new[] { new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, "1") };
+        var identity = new System.Security.Claims.ClaimsIdentity(claims, "Test");
+        var principal = new System.Security.Claims.ClaimsPrincipal(identity);
+        var httpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext { User = principal };
+        var httpContextAccessor = new Microsoft.AspNetCore.Http.HttpContextAccessor { HttpContext = httpContext };
+
+        var googleMock = new DisabledGoogleCalendarService(new NullLogger<DisabledGoogleCalendarService>());
+        var secureService = new SemesterService(_context, googleMock, null, httpContextAccessor);
+
+        // Act
+        var result = await secureService.UpdateSemesterAsync(semester.Id, new UpdateSemesterRequest { Name = "Tampered" });
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Semester not found.", result.Message);
+    }
+
+    [Fact]
+    [Trait("Category", "security")]
+    [Trait("Category", "negative")]
+    public async Task DeleteSemesterAsync_DifferentUser_ReturnsFailure()
+    {
+        // Arrange
+        var semester = new TblSemester
+        {
+            Name = "User 2 Semester",
+            StartDate = new DateOnly(2026, 1, 1),
+            EndDate = new DateOnly(2026, 5, 31),
+            UserId = 2,
+            IsDeleted = false
+        };
+        _context.TblSemesters.Add(semester);
+        await _context.SaveChangesAsync();
+
+        var claims = new[] { new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, "1") };
+        var identity = new System.Security.Claims.ClaimsIdentity(claims, "Test");
+        var principal = new System.Security.Claims.ClaimsPrincipal(identity);
+        var httpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext { User = principal };
+        var httpContextAccessor = new Microsoft.AspNetCore.Http.HttpContextAccessor { HttpContext = httpContext };
+
+        var googleMock = new DisabledGoogleCalendarService(new NullLogger<DisabledGoogleCalendarService>());
+        var secureService = new SemesterService(_context, googleMock, null, httpContextAccessor);
+
+        // Act
+        var result = await secureService.DeleteSemesterAsync(semester.Id);
 
         // Assert
         Assert.False(result.IsSuccess);

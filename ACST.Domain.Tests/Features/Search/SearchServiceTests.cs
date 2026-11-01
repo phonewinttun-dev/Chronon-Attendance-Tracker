@@ -236,5 +236,6 @@ public class SearchServiceTests
         Assert.NotNull(result.Data);
         Assert.Single(result.Data);
         Assert.Equal("Active Module", result.Data[0].ModuleName);
+        Assert.Equal(Guid.Empty, result.Data[0].MagicLinkToken);
     }
 }
