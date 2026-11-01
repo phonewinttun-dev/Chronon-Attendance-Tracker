@@ -16,8 +16,8 @@ This document lists all of the HTTP endpoints defined within the project, detail
 | `POST` | `api/Auth/register` | `Register` | *None (Public)* | Registers a new user account (Rate limited: 5 req/min). |
 | `POST` | `api/Auth/login` | `Login` | *None (Public)* | Authenticates user credentials and issues JWT access token & refresh token (Rate limited: 5 req/min). |
 | `POST` | `api/Auth/refresh-token` | `RefreshToken` | *None (Public)* | Rotates expired access token using a valid refresh token (Rate limited: 5 req/min). |
-| `GET` | `api/Auth/users` | `GetUsers` | *None (Authenticated/Admin)* | Retrieves all registered system user accounts. |
-| `DELETE` | `api/Auth/users/{userId}` | `DeleteUser` | *None (Authenticated/Admin)* | Soft deletes a registered system user account. |
+| `GET` | `api/Auth/users` | `GetUsers` | `Permissions.Roles.View` *(Authenticated)* | Retrieves all registered system user accounts. |
+| `DELETE` | `api/Auth/users/{userId}` | `DeleteUser` | `Permissions.Roles.Manage` *(Authenticated)* | Soft deletes a registered system user account. |
 
 ---
 
@@ -146,9 +146,24 @@ This document lists all of the HTTP endpoints defined within the project, detail
 ---
 
 ## 11. System & Diagnostics
-* **Base Route:** `/health`
+* **Base Route:** `/health`, `/hangfire`
 
 | HTTP Verb | Route | Method | Required Permission | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | `GET` | `/health` | `HealthCheck` | *None (Public)* | Checks status and connectivity of the Supabase PostgreSQL database (`AppDbContext`). Returns HTTP 200 (Healthy) or HTTP 503 (Unhealthy) with diagnostic JSON. |
+| `GET` | `/hangfire` | `Dashboard` | `Admin` *(Development allows all; Production requires authenticated Admin)* | Background job processing dashboard. |
+
+---
+
+## 12. Notifications
+* **Controller:** [NotificationsController.cs](file:///d:/Practice/aspdotnetcore/attendance-tracker/Chronon-Attendance-Tracker/ACST.Api/Controllers/NotificationsController.cs)
+* **Base Route:** `api/Notifications`
+* **Authorization:** `[Authorize]` (All endpoints require authentication; users can only view their own notifications unless they possess the `Admin` role).
+
+| HTTP Verb | Route | Method | Required Permission | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `api/Notifications` | `GetNotifications` | *Authenticated (Self/Admin)* | Retrieves notifications for the authenticated user (optional `unreadOnly` filter). |
+| `GET` | `api/Notifications/unread-count` | `GetUnreadCount` | *Authenticated (Self/Admin)* | Retrieves the total unread notification count. |
+| `PUT` | `api/Notifications/{id}/read` | `MarkAsRead` | *Authenticated (Self/Admin)* | Marks a single notification as read. |
+| `PUT` | `api/Notifications/read-all` | `MarkAllAsRead` | *Authenticated (Self/Admin)* | Marks all notifications as read for the authenticated user. |
 
