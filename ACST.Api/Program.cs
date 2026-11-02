@@ -96,43 +96,17 @@ try
     builder.Services.AddAuthorization();
 
     // Add CORS policy for Blazor WebApp
-    var configuredOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
-    var defaultOrigins = new[]
-    {
-        "https://localhost:7094",
-        "http://localhost:5199",
-        "http://localhost:5211",
-        "https://localhost:7019",
-        "http://localhost:5000",
-        "http://localhost:5001"
-    };
-    var allowedOrigins = configuredOrigins.Concat(defaultOrigins).Distinct().ToArray();
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+        ?? new[] { "https://localhost:7094", "http://localhost:5199" };
 
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("AllowAll", policy =>
         {
-            if (builder.Environment.IsDevelopment())
-            {
-                policy.SetIsOriginAllowed(origin =>
-                {
-                    if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
-                    {
-                        return uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) || uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase);
-                    }
-                    return false;
-                })
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-            }
-            else
-            {
-                policy.WithOrigins(allowedOrigins)
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials();
-            }
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();
         });
     });
 
@@ -160,7 +134,7 @@ try
 
     var app = builder.Build();
 
-    // Custom Middlewares (Sann Lynn Htun style)
+    // Custom Middlewares 
     app.UseMiddleware<GlobalExceptionMiddleware>();
     app.UseMiddleware<RequestLoggingMiddleware>();
     app.UseMiddleware<CustomHeaderMiddleware>();
@@ -173,6 +147,7 @@ try
         app.UseHttpsRedirection();
     }
 
+    // Enable Swagger and Scalar API Reference across all environments (including Production)
     app.UseSwagger();
     app.MapScalarApiReference(options =>
     {
@@ -183,7 +158,7 @@ try
         };
     });
 
-    // Custom JWT Authentication Middleware (User requested to implement & not remove)
+    // Custom JWT Authentication Middleware 
     app.UseMiddleware<ACST.Api.Middleware.Middleware>();
 
     app.UseAuthentication();
