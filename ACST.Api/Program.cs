@@ -96,17 +96,43 @@ try
     builder.Services.AddAuthorization();
 
     // Add CORS policy for Blazor WebApp
-    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-        ?? new[] { "http://localhost:5211", "https://localhost:7019", "http://localhost:5000", "https://localhost:5001" };
+    var configuredOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+    var defaultOrigins = new[]
+    {
+        "https://localhost:7094",
+        "http://localhost:5199",
+        "http://localhost:5211",
+        "https://localhost:7019",
+        "http://localhost:5000",
+        "http://localhost:5001"
+    };
+    var allowedOrigins = configuredOrigins.Concat(defaultOrigins).Distinct().ToArray();
 
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("AllowAll", policy =>
         {
-            policy.WithOrigins(allowedOrigins)
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials();
+            if (builder.Environment.IsDevelopment())
+            {
+                policy.SetIsOriginAllowed(origin =>
+                {
+                    if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                    {
+                        return uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) || uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase);
+                    }
+                    return false;
+                })
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+            }
+            else
+            {
+                policy.WithOrigins(allowedOrigins)
+                      .AllowAnyMethod()
+                      .AllowAnyHeader()
+                      .AllowCredentials();
+            }
         });
     });
 
