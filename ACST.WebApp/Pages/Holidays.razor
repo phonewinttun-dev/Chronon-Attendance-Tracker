@@ -128,7 +128,7 @@
                             @if (AuthState.IsAdmin)
                             {
                                 <td class="px-6 py-3.5">
-                                    <button class="neo-btn-destructive px-3 py-1 rounded-lg text-xs font-bold shadow-neo-sm cursor-pointer w-20" @onclick="() => DeleteHoliday(holiday.Id)">Delete</button>
+                                    <button class="neo-btn-destructive px-3 py-1 rounded-lg text-xs font-bold shadow-neo-sm cursor-pointer w-20" @onclick="() => RequestDeleteHoliday(holiday)">Delete</button>
                                 </td>
                             }
                         </tr>
@@ -161,12 +161,50 @@
     </div>
 }
 
+@if (_showDeleteConfirmModal && _holidayToDelete != null)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[150] animate-in fade-in duration-200 p-4" @onclick="CancelDeleteHoliday">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-6 max-w-sm w-full shadow-neo animate-in zoom-in-95 duration-200 font-mono" @onclick:stopPropagation>
+            <div class="flex items-start gap-3 mb-4">
+                <div class="p-2.5 bg-[#FF6B6B]/20 text-[#FF6B6B] border-2 border-black rounded-lg shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-foreground font-sans">Delete Holiday?</h3>
+                    <p class="text-xs text-muted-foreground mt-1 font-mono">Are you sure you want to delete this holiday? This action cannot be undone.</p>
+                </div>
+            </div>
+
+            <div class="p-3 bg-muted/40 border-2 border-border rounded-lg text-xs space-y-1 mb-5">
+                <div class="font-black text-foreground font-sans">@_holidayToDelete.Name</div>
+                <div class="text-muted-foreground">Date: <span class="font-bold text-foreground">@_holidayToDelete.HolidayDate.ToString("dd-MM-yyyy")</span></div>
+            </div>
+
+            <div class="flex justify-end gap-3 font-sans">
+                <button type="button" 
+                        class="neo-btn bg-card text-foreground border-2 border-border px-4 py-2 rounded-xl text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer" 
+                        @onclick="CancelDeleteHoliday">
+                    Cancel
+                </button>
+                <button type="button" 
+                        class="neo-btn-destructive px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer" 
+                        @onclick="ConfirmDeleteHoliday" disabled="@_isDeleting">
+                    @(_isDeleting ? "Deleting..." : "Yes, Delete")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<HolidayDto>? _holidays;
     private bool _isLoading = true;
     private string _message = string.Empty;
     private bool _isError = false;
     private bool _showErrorDialog = false;
+    private bool _showDeleteConfirmModal = false;
+    private HolidayDto? _holidayToDelete;
+    private bool _isDeleting = false;
 
     private int _pageNumber = 1;
     private int _pageSize = 10;
@@ -247,6 +285,34 @@
     }
 
 
+
+    private void RequestDeleteHoliday(HolidayDto holiday)
+    {
+        _holidayToDelete = holiday;
+        _showDeleteConfirmModal = true;
+    }
+
+    private void CancelDeleteHoliday()
+    {
+        _showDeleteConfirmModal = false;
+        _holidayToDelete = null;
+    }
+
+    private async Task ConfirmDeleteHoliday()
+    {
+        if (_holidayToDelete == null) return;
+        _isDeleting = true;
+        try
+        {
+            await DeleteHoliday(_holidayToDelete.Id);
+        }
+        finally
+        {
+            _isDeleting = false;
+            _showDeleteConfirmModal = false;
+            _holidayToDelete = null;
+        }
+    }
 
     private async Task DeleteHoliday(long id)
     {
