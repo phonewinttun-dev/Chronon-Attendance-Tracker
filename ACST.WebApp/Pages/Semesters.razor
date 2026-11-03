@@ -203,7 +203,7 @@ else if (_showEditForm)
                                 <td class="px-4 py-3.5">
                                     <div class="flex items-center gap-2">
                                         <button class="neo-btn bg-card text-foreground border-2 border-border py-1 px-3 rounded-lg text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer" @onclick="() => StartEdit(sem)">Edit</button>
-                                        <button class="neo-btn-destructive py-1 px-3 rounded-lg text-xs font-bold shadow-neo-sm cursor-pointer" @onclick="() => DeleteSemester(sem.Id)">Delete</button>
+                                        <button class="neo-btn-destructive py-1 px-3 rounded-lg text-xs font-bold shadow-neo-sm cursor-pointer" @onclick="() => RequestDeleteSemester(sem)">Delete</button>
                                     </div>
                                 </td>
                             </tr>
@@ -312,7 +312,7 @@ else
                     
                     <div class="flex justify-end gap-2 border-t border-border pt-4 mt-2">
                         <button class="bg-primary/10 hover:bg-primary text-primary hover:text-white border border-primary/20 px-4 py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => StartEdit(sem)">Edit</button>
-                        <button class="bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/20 px-4 py-1.5 rounded text-xs font-semibold transition-all" @onclick="() => DeleteSemester(sem.Id)">Delete</button>
+                        <button class="bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/20 px-4 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer" @onclick="() => RequestDeleteSemester(sem)">Delete</button>
                     </div>
                 </div>
             }
@@ -376,6 +376,41 @@ else
     </div>
 }
 
+@if (_showDeleteConfirmModal && _semesterToDelete != null)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[150] animate-in fade-in duration-200 p-4" @onclick="CancelDeleteSemester">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-6 max-w-sm w-full shadow-neo animate-in zoom-in-95 duration-200 font-mono" @onclick:stopPropagation>
+            <div class="flex items-start gap-3 mb-4">
+                <div class="p-2.5 bg-[#FF6B6B]/20 text-[#FF6B6B] border-2 border-black rounded-lg shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-foreground font-sans">Delete Semester?</h3>
+                    <p class="text-xs text-muted-foreground mt-1 font-mono">Are you sure you want to delete this semester? This action cannot be undone.</p>
+                </div>
+            </div>
+
+            <div class="p-3 bg-muted/40 border-2 border-border rounded-lg text-xs space-y-1 mb-5">
+                <div class="font-black text-foreground font-sans">@_semesterToDelete.Name</div>
+                <div class="text-muted-foreground">Period: <span class="font-bold text-foreground">@_semesterToDelete.StartDate.ToString("dd-MM-yyyy") - @_semesterToDelete.EndDate.ToString("dd-MM-yyyy")</span></div>
+            </div>
+
+            <div class="flex justify-end gap-3 font-sans">
+                <button type="button" 
+                        class="neo-btn bg-card text-foreground border-2 border-border px-4 py-2 rounded-xl text-xs font-bold shadow-neo-sm hover:bg-muted cursor-pointer" 
+                        @onclick="CancelDeleteSemester">
+                    Cancel
+                </button>
+                <button type="button" 
+                        class="neo-btn-destructive px-4 py-2 rounded-xl text-xs font-black shadow-neo uppercase tracking-wider cursor-pointer" 
+                        @onclick="ConfirmDeleteSemester" disabled="@_isDeleting">
+                    @(_isDeleting ? "Deleting..." : "Yes, Delete")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private static string _viewMode = "table";
     private List<SemesterDto>? _semesters;
@@ -392,6 +427,9 @@ else
     private UpdateSemesterRequest _editingSemester = new();
     private SemesterDto? _originalSemester;
     private bool _showWarningModal = false;
+    private bool _showDeleteConfirmModal = false;
+    private SemesterDto? _semesterToDelete;
+    private bool _isDeleting = false;
 
     private DateOnly NewSemesterLectureEndDate
     {
@@ -644,6 +682,34 @@ else
         finally
         {
             _isSubmitting = false;
+        }
+    }
+
+    private void RequestDeleteSemester(SemesterDto sem)
+    {
+        _semesterToDelete = sem;
+        _showDeleteConfirmModal = true;
+    }
+
+    private void CancelDeleteSemester()
+    {
+        _showDeleteConfirmModal = false;
+        _semesterToDelete = null;
+    }
+
+    private async Task ConfirmDeleteSemester()
+    {
+        if (_semesterToDelete == null) return;
+        _isDeleting = true;
+        try
+        {
+            await DeleteSemester(_semesterToDelete.Id);
+        }
+        finally
+        {
+            _isDeleting = false;
+            _showDeleteConfirmModal = false;
+            _semesterToDelete = null;
         }
     }
 
