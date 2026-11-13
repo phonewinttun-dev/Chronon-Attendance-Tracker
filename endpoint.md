@@ -100,8 +100,9 @@ This document lists all of the HTTP endpoints defined within the project, detail
 | HTTP Verb | Route | Method | Required Permission | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | `GET` | `api/modules/{moduleId}/recurring-schedules` | `GetByModule` | `Permissions.RecurringSchedules.View` | Retrieves recurring schedules for a module. |
-| `POST` | `api/modules/{moduleId}/recurring-schedules/{semesterId}` | `Create` | `Permissions.RecurringSchedules.Manage` | Creates a new recurring schedule for a module. |
-| `DELETE` | `api/recurring-schedules/{id}` | `Delete` | `Permissions.RecurringSchedules.Manage` | Deletes a recurring schedule by ID (`~/api/recurring-schedules/{id}`). |
+| `POST` | `api/modules/{moduleId}/recurring-schedules/{semesterId}` | `Create` | `Permissions.RecurringSchedules.Manage` | Creates a new recurring schedule for a module with optional effective date range (`EffectiveStartDate`, `EffectiveEndDate`). |
+| `PUT` | `api/recurring-schedules/{id}` | `Update` | `Permissions.RecurringSchedules.Manage` | Updates details and effective dates of an existing recurring schedule (`~/api/recurring-schedules/{id}`). |
+| `DELETE` | `api/recurring-schedules/{id}` | `Delete` | `Permissions.RecurringSchedules.Manage` | Deletes a recurring schedule by ID (`~/api/recurring-schedules/{id}`) and cascades soft-delete to future unmarked sessions only. |
 
 ---
 
