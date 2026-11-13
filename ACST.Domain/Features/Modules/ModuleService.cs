@@ -117,7 +117,9 @@ public class ModuleService : IModuleService
                                 SemesterName = s.Semester.Name,
                                 DayOfWeek = s.DayOfWeek,
                                 StartTime = s.StartTime,
-                                EndTime = s.EndTime
+                                EndTime = s.EndTime,
+                                EffectiveStartDate = s.EffectiveStartDate,
+                                EffectiveEndDate = s.EffectiveEndDate
                             }).ToList(),
                         m.CreatedAt,
                         m.UpdatedAt
@@ -187,7 +189,9 @@ public class ModuleService : IModuleService
                             SemesterName = s.Semester.Name,
                             DayOfWeek = s.DayOfWeek,
                             StartTime = s.StartTime,
-                            EndTime = s.EndTime
+                            EndTime = s.EndTime,
+                            EffectiveStartDate = s.EffectiveStartDate,
+                            EffectiveEndDate = s.EffectiveEndDate
                         }).ToList(),
                     m.CreatedAt,
                     m.UpdatedAt
@@ -287,6 +291,8 @@ public class ModuleService : IModuleService
                         DayOfWeek = schRequest.DayOfWeek,
                         StartTime = schRequest.StartTime,
                         EndTime = schRequest.EndTime,
+                        EffectiveStartDate = schRequest.EffectiveStartDate,
+                        EffectiveEndDate = schRequest.EffectiveEndDate,
                         IsActive = true,
                         IsDeleted = false
                     };
@@ -321,6 +327,8 @@ public class ModuleService : IModuleService
                         DayOfWeek = s.DayOfWeek,
                         StartTime = s.StartTime,
                         EndTime = s.EndTime,
+                        EffectiveStartDate = s.EffectiveStartDate,
+                        EffectiveEndDate = s.EffectiveEndDate,
                         IsActive = s.IsActive,
                         CreatedAt = s.CreatedAt,
                         UpdatedAt = s.UpdatedAt
@@ -429,7 +437,7 @@ public class ModuleService : IModuleService
                     }
 
                     var associatedSessions = await _context.TblSessions
-                        .Where(s => toDeleteIds.Contains(s.RecurringScheduleId) && !s.IsDeleted && s.StartDatetime >= DateTime.UtcNow)
+                        .Where(s => toDeleteIds.Contains(s.RecurringScheduleId) && !s.IsDeleted && s.StartDatetime >= DateTime.UtcNow && s.Status == "Not Marked")
                         .ToListAsync();
                     foreach (var session in associatedSessions)
                     {
@@ -448,6 +456,8 @@ public class ModuleService : IModuleService
                             existing.DayOfWeek = schedReq.DayOfWeek;
                             existing.StartTime = schedReq.StartTime;
                             existing.EndTime = schedReq.EndTime;
+                            existing.EffectiveStartDate = schedReq.EffectiveStartDate;
+                            existing.EffectiveEndDate = schedReq.EffectiveEndDate;
                             existing.UpdatedAt = DateTime.UtcNow;
                         }
                     }
@@ -460,6 +470,8 @@ public class ModuleService : IModuleService
                             DayOfWeek = schedReq.DayOfWeek,
                             StartTime = schedReq.StartTime,
                             EndTime = schedReq.EndTime,
+                            EffectiveStartDate = schedReq.EffectiveStartDate,
+                            EffectiveEndDate = schedReq.EffectiveEndDate,
                             IsActive = true,
                             CreatedAt = DateTime.UtcNow,
                             UpdatedAt = DateTime.UtcNow
@@ -505,6 +517,8 @@ public class ModuleService : IModuleService
                     DayOfWeek = s.DayOfWeek,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
+                    EffectiveStartDate = s.EffectiveStartDate,
+                    EffectiveEndDate = s.EffectiveEndDate,
                     IsActive = s.IsActive,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt

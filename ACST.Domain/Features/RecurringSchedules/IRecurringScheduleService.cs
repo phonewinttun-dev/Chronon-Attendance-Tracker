@@ -9,5 +9,6 @@ public interface IRecurringScheduleService
 {
     Task<Result<IEnumerable<RecurringScheduleDto>>> GetSchedulesByModuleAsync(long moduleId);
     Task<Result<RecurringScheduleDto>> CreateScheduleAsync(long moduleId, long semesterId, CreateRecurringScheduleRequest request);
+    Task<Result<RecurringScheduleDto>> UpdateScheduleAsync(long id, UpdateRecurringScheduleRequest request);
     Task<Result> DeleteScheduleAsync(long id);
 }

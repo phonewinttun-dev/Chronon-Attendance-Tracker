@@ -227,12 +227,27 @@ public class ClassSessionService : IClassSessionService
 
             foreach (var schedule in schedules)
             {
-                // Find the first date matching the day of the week constraint mathematically
-                int daysToAdd = ((int)schedule.DayOfWeek - (int)semester.StartDate.DayOfWeek + 7) % 7;
-                var firstDate = semester.StartDate.AddDays(daysToAdd);
+                // Determine effective date bounds for this schedule (with fallback to semester boundaries)
+                var scheduleStartDate = schedule.EffectiveStartDate.HasValue && schedule.EffectiveStartDate.Value > semester.StartDate
+                    ? schedule.EffectiveStartDate.Value
+                    : semester.StartDate;
 
-                // Iterate only over target weekdays up to lectureCutoffDate
-                for (var date = firstDate; date <= lectureCutoffDate; date = date.AddDays(7))
+                var scheduleEndDate = schedule.EffectiveEndDate.HasValue && schedule.EffectiveEndDate.Value < lectureCutoffDate
+                    ? schedule.EffectiveEndDate.Value
+                    : lectureCutoffDate;
+
+                // Skip if date range is invalid
+                if (scheduleStartDate > scheduleEndDate)
+                {
+                    continue;
+                }
+
+                // Find the first date matching the day of the week constraint mathematically
+                int daysToAdd = ((int)schedule.DayOfWeek - (int)scheduleStartDate.DayOfWeek + 7) % 7;
+                var firstDate = scheduleStartDate.AddDays(daysToAdd);
+
+                // Iterate only over target weekdays up to scheduleEndDate
+                for (var date = firstDate; date <= scheduleEndDate; date = date.AddDays(7))
                 {
                     if (!existingSessionsSet.Contains((schedule.Id, date)))
                     {

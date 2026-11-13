@@ -38,6 +38,17 @@ public class RecurringSchedulesController : ControllerBase
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
+    [HttpPut("~/api/recurring-schedules/{id}")]
+    [HasPermission(Permissions.RecurringSchedules.Manage)]
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateRecurringScheduleRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(Result.Failure("Invalid request parameters."));
+
+        var result = await _scheduleService.UpdateScheduleAsync(id, request);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+
     [HttpDelete("~/api/recurring-schedules/{id}")]
     [HasPermission(Permissions.RecurringSchedules.Manage)]
     public async Task<IActionResult> Delete(long id)

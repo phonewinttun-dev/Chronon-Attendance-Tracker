@@ -90,6 +90,8 @@ public class RecurringScheduleService : IRecurringScheduleService
                     DayOfWeek = r.DayOfWeek,
                     StartTime = r.StartTime,
                     EndTime = r.EndTime,
+                    EffectiveStartDate = r.EffectiveStartDate,
+                    EffectiveEndDate = r.EffectiveEndDate,
                     IsActive = r.IsActive,
                     CreatedAt = r.CreatedAt,
                     UpdatedAt = r.UpdatedAt
@@ -116,8 +118,8 @@ public class RecurringScheduleService : IRecurringScheduleService
                 return Result<RecurringScheduleDto>.Failure("Module not found.");
             }
 
-            var semesterExists = await _context.TblSemesters.AnyAsync(s => s.Id == semesterId && !s.IsDeleted);
-            if (!semesterExists)
+            var semester = await _context.TblSemesters.FirstOrDefaultAsync(s => s.Id == semesterId && !s.IsDeleted);
+            if (semester == null)
             {
                 return Result<RecurringScheduleDto>.Failure("Semester not found.");
             }
@@ -127,6 +129,21 @@ public class RecurringScheduleService : IRecurringScheduleService
                 return Result<RecurringScheduleDto>.Failure("Start time must be before end time.");
             }
 
+            if (request.EffectiveStartDate.HasValue && request.EffectiveEndDate.HasValue && request.EffectiveStartDate.Value > request.EffectiveEndDate.Value)
+            {
+                return Result<RecurringScheduleDto>.Failure("Effective start date must be on or before effective end date.");
+            }
+
+            if (request.EffectiveStartDate.HasValue && request.EffectiveStartDate.Value < semester.StartDate)
+            {
+                return Result<RecurringScheduleDto>.Failure("Effective start date cannot be before semester start date.");
+            }
+
+            if (request.EffectiveEndDate.HasValue && request.EffectiveEndDate.Value > semester.EndDate)
+            {
+                return Result<RecurringScheduleDto>.Failure("Effective end date cannot be after semester end date.");
+            }
+
             var schedule = new TblRecurringSchedule
             {
                 ModuleId = moduleId,
@@ -134,6 +151,8 @@ public class RecurringScheduleService : IRecurringScheduleService
                 DayOfWeek = request.DayOfWeek,
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
+                EffectiveStartDate = request.EffectiveStartDate,
+                EffectiveEndDate = request.EffectiveEndDate,
                 IsActive = true,
                 UserId = CurrentUserId,
                 IsDeleted = false
@@ -167,6 +186,8 @@ public class RecurringScheduleService : IRecurringScheduleService
                 DayOfWeek = created.DayOfWeek,
                 StartTime = created.StartTime,
                 EndTime = created.EndTime,
+                EffectiveStartDate = created.EffectiveStartDate,
+                EffectiveEndDate = created.EffectiveEndDate,
                 IsActive = created.IsActive,
                 CreatedAt = created.CreatedAt,
                 UpdatedAt = created.UpdatedAt
@@ -175,6 +196,74 @@ public class RecurringScheduleService : IRecurringScheduleService
         catch (Exception ex)
         {
             return Result<RecurringScheduleDto>.Failure($"Failed to create recurring schedule: {ex.Message}");
+        }
+    }
+    #endregion
+
+    #region Update schedule
+    public async Task<Result<RecurringScheduleDto>> UpdateScheduleAsync(long id, UpdateRecurringScheduleRequest request)
+    {
+        try
+        {
+            var schedule = await _context.TblRecurringSchedules
+                .Include(r => r.Module)
+                .Include(r => r.Semester)
+                .FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted);
+
+            if (schedule == null || !CanAccess(schedule))
+            {
+                return Result<RecurringScheduleDto>.Failure("Recurring schedule not found.");
+            }
+
+            if (request.StartTime >= request.EndTime)
+            {
+                return Result<RecurringScheduleDto>.Failure("Start time must be before end time.");
+            }
+
+            if (request.EffectiveStartDate.HasValue && request.EffectiveEndDate.HasValue && request.EffectiveStartDate.Value > request.EffectiveEndDate.Value)
+            {
+                return Result<RecurringScheduleDto>.Failure("Effective start date must be on or before effective end date.");
+            }
+
+            if (request.EffectiveStartDate.HasValue && request.EffectiveStartDate.Value < schedule.Semester.StartDate)
+            {
+                return Result<RecurringScheduleDto>.Failure("Effective start date cannot be before semester start date.");
+            }
+
+            if (request.EffectiveEndDate.HasValue && request.EffectiveEndDate.Value > schedule.Semester.EndDate)
+            {
+                return Result<RecurringScheduleDto>.Failure("Effective end date cannot be after semester end date.");
+            }
+
+            schedule.DayOfWeek = request.DayOfWeek;
+            schedule.StartTime = request.StartTime;
+            schedule.EndTime = request.EndTime;
+            schedule.EffectiveStartDate = request.EffectiveStartDate;
+            schedule.EffectiveEndDate = request.EffectiveEndDate;
+            schedule.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Result<RecurringScheduleDto>.Success(new RecurringScheduleDto
+            {
+                Id = schedule.Id,
+                ModuleId = schedule.ModuleId,
+                ModuleName = schedule.Module.Name,
+                SemesterId = schedule.SemesterId,
+                SemesterName = schedule.Semester.Name,
+                DayOfWeek = schedule.DayOfWeek,
+                StartTime = schedule.StartTime,
+                EndTime = schedule.EndTime,
+                EffectiveStartDate = schedule.EffectiveStartDate,
+                EffectiveEndDate = schedule.EffectiveEndDate,
+                IsActive = schedule.IsActive,
+                CreatedAt = schedule.CreatedAt,
+                UpdatedAt = schedule.UpdatedAt
+            }, "Recurring schedule updated successfully.");
+        }
+        catch (Exception ex)
+        {
+            return Result<RecurringScheduleDto>.Failure($"Failed to update recurring schedule: {ex.Message}");
         }
     }
     #endregion
@@ -189,9 +278,10 @@ public class RecurringScheduleService : IRecurringScheduleService
 
             schedule.IsDeleted = true;
 
-            // Cascade soft-delete future class sessions for this deleted schedule
+            // Cascade soft-delete future unmarked class sessions for this deleted schedule
+            // Retain any session that has already been marked (Present or Absent) to preserve attendance records
             var associatedSessions = await _context.TblSessions
-                .Where(s => s.RecurringScheduleId == id && !s.IsDeleted && s.StartDatetime >= DateTime.UtcNow)
+                .Where(s => s.RecurringScheduleId == id && !s.IsDeleted && s.StartDatetime >= DateTime.UtcNow && s.Status == "Not Marked")
                 .ToListAsync();
             foreach (var s in associatedSessions)
             {
