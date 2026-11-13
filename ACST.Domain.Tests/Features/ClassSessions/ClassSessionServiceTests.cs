@@ -425,4 +425,193 @@ public class ClassSessionServiceTests
         Assert.Contains(sessions, s => s.SessionDate == new DateOnly(2026, 9, 2));
         Assert.Contains(sessions, s => s.SessionDate == new DateOnly(2026, 9, 9));
     }
+
+    [Fact]
+    [Trait("Category", "positive")]
+    public async Task GenerateSessionsAsync_WithTimeBoundSchedule_ShouldGenerateOnlyWithinEffectiveRange()
+    {
+        // Arrange
+        var semester = new TblSemester
+        {
+            Name = "Fall 2026",
+            StartDate = new DateOnly(2026, 9, 1),
+            EndDate = new DateOnly(2026, 9, 30),
+            IsDeleted = false
+        };
+        _context.TblSemesters.Add(semester);
+
+        var module = new TblModule
+        {
+            Name = "Algorithms",
+            ModuleCode = "CS-201",
+            IsDeleted = false
+        };
+        _context.TblModules.Add(module);
+        await _context.SaveChangesAsync();
+
+        // Wednesdays in Sept 2026 are: Sep 2, Sep 9, Sep 16, Sep 23, Sep 30
+        // Effective range: Sep 7 to Sep 20 -> Only Sep 9 and Sep 16 should be generated
+        var schedule = new TblRecurringSchedule
+        {
+            ModuleId = module.Id,
+            SemesterId = semester.Id,
+            DayOfWeek = (short)DayOfWeek.Wednesday,
+            StartTime = new TimeOnly(10, 0),
+            EndTime = new TimeOnly(12, 0),
+            EffectiveStartDate = new DateOnly(2026, 9, 7),
+            EffectiveEndDate = new DateOnly(2026, 9, 20),
+            IsActive = true,
+            IsDeleted = false
+        };
+        _context.TblRecurringSchedules.Add(schedule);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.GenerateSessionsAsync(new GenerateSessionsRequest
+        {
+            SemesterId = semester.Id
+        });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var sessions = await _context.TblSessions
+            .Where(s => s.SemesterId == semester.Id && !s.IsDeleted)
+            .OrderBy(s => s.SessionDate)
+            .ToListAsync();
+
+        Assert.Equal(2, sessions.Count);
+        Assert.Contains(sessions, s => s.SessionDate == new DateOnly(2026, 9, 9));
+        Assert.Contains(sessions, s => s.SessionDate == new DateOnly(2026, 9, 16));
+    }
+
+    [Fact]
+    [Trait("Category", "positive")]
+    public async Task GenerateSessionsAsync_WithMultipleTimeBoundSchedules_ShouldGenerateNonOverlappingSessions()
+    {
+        // Arrange (User scenario: Schedule changes after initial weeks)
+        var semester = new TblSemester
+        {
+            Name = "Fall 2026",
+            StartDate = new DateOnly(2026, 9, 1),
+            EndDate = new DateOnly(2026, 9, 30),
+            IsDeleted = false
+        };
+        _context.TblSemesters.Add(semester);
+
+        var module = new TblModule
+        {
+            Name = "Database Systems",
+            ModuleCode = "CS-301",
+            IsDeleted = false
+        };
+        _context.TblModules.Add(module);
+        await _context.SaveChangesAsync();
+
+        // Schedule 1 (Initial 2 weeks): Wednesdays 9:00 - 11:00 (Sep 2, Sep 9)
+        var schedule1 = new TblRecurringSchedule
+        {
+            ModuleId = module.Id,
+            SemesterId = semester.Id,
+            DayOfWeek = (short)DayOfWeek.Wednesday,
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            EffectiveStartDate = new DateOnly(2026, 9, 1),
+            EffectiveEndDate = new DateOnly(2026, 9, 15),
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        // Schedule 2 (Permanent from week 3): Fridays 14:00 - 16:00 (Sep 18, Sep 25)
+        var schedule2 = new TblRecurringSchedule
+        {
+            ModuleId = module.Id,
+            SemesterId = semester.Id,
+            DayOfWeek = (short)DayOfWeek.Friday,
+            StartTime = new TimeOnly(14, 0),
+            EndTime = new TimeOnly(16, 0),
+            EffectiveStartDate = new DateOnly(2026, 9, 16),
+            EffectiveEndDate = new DateOnly(2026, 9, 30),
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        _context.TblRecurringSchedules.AddRange(schedule1, schedule2);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.GenerateSessionsAsync(new GenerateSessionsRequest
+        {
+            SemesterId = semester.Id
+        });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var sessions = await _context.TblSessions
+            .Where(s => s.SemesterId == semester.Id && !s.IsDeleted)
+            .OrderBy(s => s.SessionDate)
+            .ToListAsync();
+
+        Assert.Equal(4, sessions.Count);
+        // Schedule 1 sessions
+        Assert.Contains(sessions, s => s.SessionDate == new DateOnly(2026, 9, 2) && s.RecurringScheduleId == schedule1.Id);
+        Assert.Contains(sessions, s => s.SessionDate == new DateOnly(2026, 9, 9) && s.RecurringScheduleId == schedule1.Id);
+        // Schedule 2 sessions
+        Assert.Contains(sessions, s => s.SessionDate == new DateOnly(2026, 9, 18) && s.RecurringScheduleId == schedule2.Id);
+        Assert.Contains(sessions, s => s.SessionDate == new DateOnly(2026, 9, 25) && s.RecurringScheduleId == schedule2.Id);
+    }
+
+    [Fact]
+    [Trait("Category", "positive")]
+    public async Task GenerateSessionsAsync_WithoutEffectiveDates_ShouldFallbackToFullSemester()
+    {
+        // Arrange (Backward compatibility test for existing records with NULL effective dates)
+        var semester = new TblSemester
+        {
+            Name = "Fall 2026",
+            StartDate = new DateOnly(2026, 9, 1),
+            EndDate = new DateOnly(2026, 9, 30),
+            IsDeleted = false
+        };
+        _context.TblSemesters.Add(semester);
+
+        var module = new TblModule
+        {
+            Name = "Networks",
+            ModuleCode = "CS-401",
+            IsDeleted = false
+        };
+        _context.TblModules.Add(module);
+        await _context.SaveChangesAsync();
+
+        var legacySchedule = new TblRecurringSchedule
+        {
+            ModuleId = module.Id,
+            SemesterId = semester.Id,
+            DayOfWeek = (short)DayOfWeek.Wednesday,
+            StartTime = new TimeOnly(10, 0),
+            EndTime = new TimeOnly(12, 0),
+            EffectiveStartDate = null, // Legacy null value
+            EffectiveEndDate = null,   // Legacy null value
+            IsActive = true,
+            IsDeleted = false
+        };
+        _context.TblRecurringSchedules.Add(legacySchedule);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.GenerateSessionsAsync(new GenerateSessionsRequest
+        {
+            SemesterId = semester.Id
+        });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var sessions = await _context.TblSessions
+            .Where(s => s.SemesterId == semester.Id && !s.IsDeleted)
+            .OrderBy(s => s.SessionDate)
+            .ToListAsync();
+
+        // All 5 Wednesdays in Sept 2026 (2, 9, 16, 23, 30)
+        Assert.Equal(5, sessions.Count);
+    }
 }

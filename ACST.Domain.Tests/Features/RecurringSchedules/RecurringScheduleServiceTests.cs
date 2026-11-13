@@ -146,4 +146,205 @@ public class RecurringScheduleServiceTests
         Assert.NotNull(dbFutureSession);
         Assert.True(dbFutureSession.IsDeleted); // Soft-deleted
     }
+
+    [Fact]
+    [Trait("Category", "positive")]
+    public async Task CreateScheduleAsync_WithEffectiveDates_ShouldSaveCorrectly()
+    {
+        // Arrange
+        var semester = new TblSemester
+        {
+            Name = "Fall 2026",
+            StartDate = new DateOnly(2026, 9, 1),
+            EndDate = new DateOnly(2026, 12, 31)
+        };
+        _context.TblSemesters.Add(semester);
+
+        var module = new TblModule { Name = "Calculus II", ModuleCode = "CALC-102" };
+        _context.TblModules.Add(module);
+        await _context.SaveChangesAsync();
+
+        var request = new CreateRecurringScheduleRequest
+        {
+            DayOfWeek = (short)DayOfWeek.Monday,
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            EffectiveStartDate = new DateOnly(2026, 9, 1),
+            EffectiveEndDate = new DateOnly(2026, 9, 30),
+            GenerateSessions = false
+        };
+
+        // Act
+        var result = await _service.CreateScheduleAsync(module.Id, semester.Id, request);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal(new DateOnly(2026, 9, 1), result.Data.EffectiveStartDate);
+        Assert.Equal(new DateOnly(2026, 9, 30), result.Data.EffectiveEndDate);
+
+        var dbSchedule = await _context.TblRecurringSchedules.FindAsync(result.Data.Id);
+        Assert.NotNull(dbSchedule);
+        Assert.Equal(new DateOnly(2026, 9, 1), dbSchedule.EffectiveStartDate);
+        Assert.Equal(new DateOnly(2026, 9, 30), dbSchedule.EffectiveEndDate);
+    }
+
+    [Fact]
+    [Trait("Category", "negative")]
+    public async Task CreateScheduleAsync_WithInvertedEffectiveDates_ShouldFail()
+    {
+        // Arrange
+        var semester = new TblSemester
+        {
+            Name = "Fall 2026",
+            StartDate = new DateOnly(2026, 9, 1),
+            EndDate = new DateOnly(2026, 12, 31)
+        };
+        _context.TblSemesters.Add(semester);
+
+        var module = new TblModule { Name = "Physics", ModuleCode = "PHYS-101" };
+        _context.TblModules.Add(module);
+        await _context.SaveChangesAsync();
+
+        var request = new CreateRecurringScheduleRequest
+        {
+            DayOfWeek = (short)DayOfWeek.Monday,
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            EffectiveStartDate = new DateOnly(2026, 10, 1),
+            EffectiveEndDate = new DateOnly(2026, 9, 1), // Inverted
+            GenerateSessions = false
+        };
+
+        // Act
+        var result = await _service.CreateScheduleAsync(module.Id, semester.Id, request);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains("Effective start date must be on or before effective end date", result.Message);
+    }
+
+    [Fact]
+    [Trait("Category", "positive")]
+    public async Task UpdateScheduleAsync_ShouldUpdateScheduleDetails()
+    {
+        // Arrange
+        var semester = new TblSemester
+        {
+            Name = "Fall 2026",
+            StartDate = new DateOnly(2026, 9, 1),
+            EndDate = new DateOnly(2026, 12, 31)
+        };
+        _context.TblSemesters.Add(semester);
+
+        var module = new TblModule { Name = "Chemistry", ModuleCode = "CHEM-101" };
+        _context.TblModules.Add(module);
+        await _context.SaveChangesAsync();
+
+        var schedule = new TblRecurringSchedule
+        {
+            ModuleId = module.Id,
+            SemesterId = semester.Id,
+            DayOfWeek = (short)DayOfWeek.Monday,
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            IsActive = true,
+            IsDeleted = false
+        };
+        _context.TblRecurringSchedules.Add(schedule);
+        await _context.SaveChangesAsync();
+
+        var updateRequest = new UpdateRecurringScheduleRequest
+        {
+            DayOfWeek = (short)DayOfWeek.Friday,
+            StartTime = new TimeOnly(13, 0),
+            EndTime = new TimeOnly(15, 0),
+            EffectiveStartDate = new DateOnly(2026, 10, 1),
+            EffectiveEndDate = new DateOnly(2026, 11, 30)
+        };
+
+        // Act
+        var result = await _service.UpdateScheduleAsync(schedule.Id, updateRequest);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+        Assert.Equal((short)DayOfWeek.Friday, result.Data.DayOfWeek);
+        Assert.Equal(new TimeOnly(13, 0), result.Data.StartTime);
+        Assert.Equal(new TimeOnly(15, 0), result.Data.EndTime);
+        Assert.Equal(new DateOnly(2026, 10, 1), result.Data.EffectiveStartDate);
+        Assert.Equal(new DateOnly(2026, 11, 30), result.Data.EffectiveEndDate);
+    }
+
+    [Fact]
+    [Trait("Category", "positive")]
+    public async Task DeleteScheduleAsync_ShouldPreserveMarkedFutureSessions()
+    {
+        // Arrange
+        var semester = new TblSemester
+        {
+            Name = "Fall 2026",
+            StartDate = new DateOnly(2026, 9, 1),
+            EndDate = new DateOnly(2026, 9, 30)
+        };
+        _context.TblSemesters.Add(semester);
+
+        var module = new TblModule { Name = "Biology", ModuleCode = "BIO-101" };
+        _context.TblModules.Add(module);
+        await _context.SaveChangesAsync();
+
+        var schedule = new TblRecurringSchedule
+        {
+            ModuleId = module.Id,
+            SemesterId = semester.Id,
+            DayOfWeek = (short)DayOfWeek.Wednesday,
+            StartTime = new TimeOnly(14, 0),
+            EndTime = new TimeOnly(16, 0),
+            IsActive = true,
+            IsDeleted = false
+        };
+        _context.TblRecurringSchedules.Add(schedule);
+        await _context.SaveChangesAsync();
+
+        // Future session already marked as Present (must NOT be deleted)
+        var markedFutureSession = new TblSession
+        {
+            ModuleId = module.Id,
+            SemesterId = semester.Id,
+            RecurringScheduleId = schedule.Id,
+            SessionDate = new DateOnly(2026, 9, 23),
+            StartDatetime = DateTime.UtcNow.AddDays(2),
+            EndDatetime = DateTime.UtcNow.AddDays(2).AddHours(2),
+            Status = "Present",
+            IsDeleted = false
+        };
+        // Future unmarked session (SHOULD be deleted)
+        var unmarkedFutureSession = new TblSession
+        {
+            ModuleId = module.Id,
+            SemesterId = semester.Id,
+            RecurringScheduleId = schedule.Id,
+            SessionDate = new DateOnly(2026, 9, 30),
+            StartDatetime = DateTime.UtcNow.AddDays(9),
+            EndDatetime = DateTime.UtcNow.AddDays(9).AddHours(2),
+            Status = "Not Marked",
+            IsDeleted = false
+        };
+        _context.TblSessions.AddRange(markedFutureSession, unmarkedFutureSession);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.DeleteScheduleAsync(schedule.Id);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        var dbMarkedSession = await _context.TblSessions.FindAsync(markedFutureSession.Id);
+        Assert.NotNull(dbMarkedSession);
+        Assert.False(dbMarkedSession.IsDeleted); // Preserved!
+
+        var dbUnmarkedSession = await _context.TblSessions.FindAsync(unmarkedFutureSession.Id);
+        Assert.NotNull(dbUnmarkedSession);
+        Assert.True(dbUnmarkedSession.IsDeleted); // Deleted!
+    }
 }
