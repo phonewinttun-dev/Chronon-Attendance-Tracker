@@ -96,6 +96,8 @@ public partial class AppDbContext : DbContext
             entity.ToTable("TblRecurringSchedule");
 
             entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+            entity.Property(e => e.EffectiveStartDate);
+            entity.Property(e => e.EffectiveEndDate);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");

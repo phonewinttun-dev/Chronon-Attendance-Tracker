@@ -17,6 +17,10 @@ public partial class TblRecurringSchedule
 
     public TimeOnly EndTime { get; set; }
 
+    public DateOnly? EffectiveStartDate { get; set; }
+
+    public DateOnly? EffectiveEndDate { get; set; }
+
     public bool IsActive { get; set; }
 
     public bool IsDeleted { get; set; }
