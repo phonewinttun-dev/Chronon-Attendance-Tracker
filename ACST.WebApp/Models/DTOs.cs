@@ -148,6 +148,8 @@ public class RecurringScheduleDto
     public short DayOfWeek { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
+    public DateOnly? EffectiveStartDate { get; set; }
+    public DateOnly? EffectiveEndDate { get; set; }
 }
 
 // --- Requests ---
@@ -184,6 +186,8 @@ public class CreateRecurringScheduleRequest
     public short DayOfWeek { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
+    public DateOnly? EffectiveStartDate { get; set; }
+    public DateOnly? EffectiveEndDate { get; set; }
     public bool GenerateSessions { get; set; } = true;
     public bool SyncWithGoogleCalendar { get; set; } = false;
 }
@@ -194,6 +198,8 @@ public class UpdateRecurringScheduleRequest
     public short DayOfWeek { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
+    public DateOnly? EffectiveStartDate { get; set; }
+    public DateOnly? EffectiveEndDate { get; set; }
 }
 
 public class UpdateModuleRequest
