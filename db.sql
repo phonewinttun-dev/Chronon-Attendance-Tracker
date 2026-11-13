@@ -99,6 +99,8 @@ CREATE TABLE IF NOT EXISTS public."TblRecurringSchedule" (
   "DayOfWeek" smallint NOT NULL CHECK ("DayOfWeek" >= 0 AND "DayOfWeek" <= 6),
   "StartTime" time without time zone NOT NULL,
   "EndTime" time without time zone NOT NULL,
+  "EffectiveStartDate" date,
+  "EffectiveEndDate" date,
   "IsActive" boolean NOT NULL DEFAULT true,
   "IsDeleted" boolean NOT NULL DEFAULT false,
   "CreatedAt" timestamp with time zone NOT NULL DEFAULT now(),
@@ -172,3 +174,20 @@ CREATE TABLE IF NOT EXISTS public."TblNotification" (
   CONSTRAINT "FK_TblNotification_User" FOREIGN KEY ("UserId") REFERENCES public."TblUser" ON DELETE CASCADE,
   CONSTRAINT "FK_TblNotification_Session" FOREIGN KEY ("SessionId") REFERENCES public."TblSession" ON DELETE CASCADE
 );
+
+-- Migration for existing databases: Time-bound Recurring Schedules
+ALTER TABLE public."TblRecurringSchedule"
+ADD COLUMN IF NOT EXISTS "EffectiveStartDate" date,
+ADD COLUMN IF NOT EXISTS "EffectiveEndDate" date;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'check_recurring_schedule_dates'
+    ) THEN
+        ALTER TABLE public."TblRecurringSchedule"
+        ADD CONSTRAINT check_recurring_schedule_dates 
+        CHECK ("EffectiveStartDate" IS NULL OR "EffectiveEndDate" IS NULL OR "EffectiveStartDate" <= "EffectiveEndDate");
+    END IF;
+END $$;
+
