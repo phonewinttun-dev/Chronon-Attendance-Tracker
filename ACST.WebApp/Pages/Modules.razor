@@ -73,37 +73,6 @@
 }
 
 
-@if (!string.IsNullOrEmpty(_message))
-{
-    <div class="neo-scrim flex items-center justify-center z-[100] animate-in fade-in duration-200">
-        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-neo-xl text-center animate-in zoom-in duration-200 font-mono">
-            @if (_isError)
-            {
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-xl bg-destructive/20 text-destructive border-2 border-black shadow-neo-sm mb-4">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </div>
-                <h3 class="text-base font-black text-foreground mb-2 font-sans">Error</h3>
-            }
-            else
-            {
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-xl bg-primary/20 text-primary border-2 border-black shadow-neo-sm mb-4">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                <h3 class="text-base font-black text-foreground mb-2 font-sans">Success</h3>
-            }
-            <p class="text-xs text-muted-foreground mb-5 font-mono">@_message</p>
-            <button class="neo-btn-primary w-full py-2.5 rounded-xl text-xs font-black shadow-neo"
-                    @onclick="() => _message = string.Empty">
-                Close
-            </button>
-        </div>
-    </div>
-}
-
 @if (_showCreateForm)
 {
     <div class="bg-card border-2 border-black dark:border-zinc-700 p-6 rounded-xl shadow-neo mb-8 font-mono">
@@ -1217,8 +1186,6 @@
     private bool _showAddScheduleConfirm = false;
     private bool _showAddScheduleGenerateConfirm = false;
     private bool _showGenerateSessionsConfirmForAssign = false;
-    private string _message = string.Empty;
-    private bool _isError = false;
     private string _searchTerm = string.Empty;
 
     private bool _showDeleteModuleConfirm = false;
@@ -1356,7 +1323,6 @@
     private void ToggleCreateForm()
     {
         _showCreateForm = !_showCreateForm;
-        _message = string.Empty;
         if (_showCreateForm)
         {
             _selectedModuleId = 0;
@@ -1376,7 +1342,6 @@
         _showCreateForm = false;
         _showEditForm = false;
         _editingModuleId = 0;
-        _message = string.Empty;
         _assignSchedules = new();
     }
     
@@ -1404,7 +1369,6 @@
         _showCreateForm = false;
         _selectedModuleId = 0;
         _selectedModuleName = string.Empty;
-        _message = string.Empty;
     }
 
     private void CancelEditForm()
@@ -1415,12 +1379,11 @@
         _editModuleSchedules.Clear();
     }
 
-    private void AddNewModuleSchedule()
+    private async Task AddNewModuleSchedule()
     {
         if (!_newModule.SemesterId.HasValue)
         {
-            _message = "Please select a semester first before adding schedules.";
-            _isError = true;
+            await Toast.Warning("Semester Required", "Please select a semester first before adding schedules.");
             return;
         }
 
@@ -1441,12 +1404,11 @@
         }
     }
 
-    private void AddEditModuleSchedule()
+    private async Task AddEditModuleSchedule()
     {
         if (!_editModule.SemesterId.HasValue)
         {
-            _message = "Please select a semester first before adding schedules.";
-            _isError = true;
+            await Toast.Warning("Semester Required", "Please select a semester first before adding schedules.");
             return;
         }
 
@@ -1467,12 +1429,11 @@
         }
     }
 
-    private void AddAssignSchedule()
+    private async Task AddAssignSchedule()
     {
         if (_selectedSemesterId == 0)
         {
-            _message = "Please select a semester first before adding schedules.";
-            _isError = true;
+            await Toast.Warning("Semester Required", "Please select a semester first before adding schedules.");
             return;
         }
 
@@ -1587,8 +1548,7 @@
         }
         catch (Exception)
         {
-            _message = "Unexpected Error Ocurred. Please try again";
-            _isError = true;
+            await Toast.Error("Unexpected error occurred. Please try again.");
         }
         finally
         {
@@ -1602,13 +1562,11 @@
         if (valStates.Any(s => s.HasErrors))
         {
             var firstError = valStates.FirstOrDefault(s => s.HasErrors);
-            _message = firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.";
-            _isError = true;
+            await Toast.Warning("Validation Error", firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.");
             return;
         }
 
         _isSubmitting = true;
-        _message = string.Empty;
 
         _newModule.Schedules = _newModuleSchedules.Select(s => s.ToCreateRequest()).ToList();
 
@@ -1620,8 +1578,7 @@
                 var result = await response.Content.ReadFromJsonAsync<ApiResult<ModuleDto>>();
                 if (result != null && result.IsSuccess)
                 {
-                    _message = "Module created successfully.";
-                    _isError = false;
+                    await Toast.Success("Module created successfully.");
                     _showCreateForm = false;
                     _newModule = new CreateModuleRequest();
                     _newModuleSchedules.Clear();
@@ -1630,20 +1587,17 @@
                 }
                 else
                 {
-                    _message = result?.Message ?? "Unknown error creating module.";
-                    _isError = true;
+                    await Toast.Error(result?.Message ?? "Unknown error creating module.");
                 }
             }
             else
             {
-                _message = await response.GetFriendlyErrorMessageAsync("Error creating module");
-                _isError = true;
+                await Toast.Error(await response.GetFriendlyErrorMessageAsync("Error creating module"));
             }
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error creating module");
-            _isError = true;
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error creating module"));
         }
         finally
         {
@@ -1655,15 +1609,13 @@
     {
         if (string.IsNullOrWhiteSpace(_editModule.Name))
         {
-            _message = "Module name is required.";
-            _isError = true;
+            await Toast.Warning("Validation Error", "Module name is required.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(_editModule.ModuleCode))
         {
-            _message = "Module code is required.";
-            _isError = true;
+            await Toast.Warning("Validation Error", "Module code is required.");
             return;
         }
 
@@ -1671,13 +1623,11 @@
         if (valStates.Any(s => s.HasErrors))
         {
             var firstError = valStates.FirstOrDefault(s => s.HasErrors);
-            _message = firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.";
-            _isError = true;
+            await Toast.Warning("Validation Error", firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.");
             return;
         }
 
         _isSubmittingEdit = true;
-        _message = string.Empty;
 
         _editModule.Schedules = _editModuleSchedules.Select(s => s.ToUpdateRequest()).ToList();
 
@@ -1689,8 +1639,7 @@
                 var result = await response.Content.ReadFromJsonAsync<ApiResult<ModuleDto>>();
                 if (result != null && result.IsSuccess)
                 {
-                    _message = "Module updated successfully.";
-                    _isError = false;
+                    await Toast.Success("Module updated successfully.");
                     _showEditForm = false;
                     _editingModuleId = 0;
                     _editModuleSchedules.Clear();
@@ -1698,20 +1647,17 @@
                 }
                 else
                 {
-                    _message = result?.Message ?? "Unknown error updating module.";
-                    _isError = true;
+                    await Toast.Error(result?.Message ?? "Unknown error updating module.");
                 }
             }
             else
             {
-                _message = await response.GetFriendlyErrorMessageAsync("Error updating module");
-                _isError = true;
+                await Toast.Error(await response.GetFriendlyErrorMessageAsync("Error updating module"));
             }
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error updating module");
-            _isError = true;
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error updating module"));
         }
         finally
         {
@@ -1723,15 +1669,13 @@
     {
         if (_selectedSemesterId == 0)
         {
-            _message = "Please select a semester.";
-            _isError = true;
+            await Toast.Warning("Semester Required", "Please select a semester.");
             return;
         }
 
         if (!_assignSchedules.Any())
         {
-            _message = "Please add at least one schedule.";
-            _isError = true;
+            await Toast.Warning("Schedule Required", "Please add at least one schedule.");
             return;
         }
 
@@ -1739,13 +1683,11 @@
         if (valStates.Any(s => s.HasErrors))
         {
             var firstError = valStates.FirstOrDefault(s => s.HasErrors);
-            _message = firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.";
-            _isError = true;
+            await Toast.Warning("Validation Error", firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.");
             return;
         }
         
         _isSubmittingSchedule = true;
-        _message = string.Empty;
 
         try
         {
@@ -1779,8 +1721,7 @@
 
             if (allSuccess)
             {
-                _message = "Schedules added successfully.";
-                _isError = false;
+                await Toast.Success("Schedules added successfully.");
                 _selectedModuleId = 0;
                 _selectedModuleName = string.Empty;
                 _selectedModule = null;
@@ -1790,14 +1731,12 @@
             }
             else
             {
-                _message = errorDetails;
-                _isError = true;
+                await Toast.Error(errorDetails);
             }
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error adding schedules");
-            _isError = true;
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error adding schedules"));
         }
         finally
         {
@@ -1805,19 +1744,17 @@
         }
     }
 
-    private void OnAddScheduleClicked()
+    private async Task OnAddScheduleClicked()
     {
         if (_selectedSemesterId == 0)
         {
-            _message = "Please select a semester.";
-            _isError = true;
+            await Toast.Warning("Semester Required", "Please select a semester.");
             return;
         }
 
         if (!_assignSchedules.Any())
         {
-            _message = "Please add at least one schedule.";
-            _isError = true;
+            await Toast.Warning("Schedule Required", "Please add at least one schedule.");
             return;
         }
 
@@ -1825,8 +1762,7 @@
         if (valStates.Any(s => s.HasErrors))
         {
             var firstError = valStates.FirstOrDefault(s => s.HasErrors);
-            _message = firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.";
-            _isError = true;
+            await Toast.Warning("Validation Error", firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.");
             return;
         }
 
@@ -1850,19 +1786,17 @@
         _showAddScheduleGenerateConfirm = true;
     }
 
-    private void OnGenerateSessionsClickedForAssign()
+    private async Task OnGenerateSessionsClickedForAssign()
     {
         if (_selectedSemesterId == 0)
         {
-            _message = "Please select a semester.";
-            _isError = true;
+            await Toast.Warning("Semester Required", "Please select a semester.");
             return;
         }
 
         if (!_assignSchedules.Any())
         {
-            _message = "Please add at least one schedule.";
-            _isError = true;
+            await Toast.Warning("Schedule Required", "Please add at least one schedule.");
             return;
         }
 
@@ -1870,8 +1804,7 @@
         if (valStates.Any(s => s.HasErrors))
         {
             var firstError = valStates.FirstOrDefault(s => s.HasErrors);
-            _message = firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.";
-            _isError = true;
+            await Toast.Warning("Validation Error", firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.");
             return;
         }
 
@@ -1916,14 +1849,12 @@
     {
         if (_deletingModuleIds.Contains(id)) return;
         _deletingModuleIds.Add(id);
-        _message = string.Empty;
         try
         {
             var response = await Http.DeleteAsync($"api/modules/{id}");
             if (response.IsSuccessStatusCode)
             {
-                _message = "Module deleted successfully.";
-                _isError = false;
+                await Toast.Success("Module deleted successfully.");
                 if (_modules != null && _modules.Count == 1 && _pageNumber > 1)
                 {
                     _pageNumber--;
@@ -1932,14 +1863,12 @@
             }
             else
             {
-                _message = await response.GetFriendlyErrorMessageAsync("Error deleting module");
-                _isError = true;
+                await Toast.Error(await response.GetFriendlyErrorMessageAsync("Error deleting module"));
             }
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error deleting module");
-            _isError = true;
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error deleting module"));
         }
         finally
         {
@@ -1987,8 +1916,6 @@
     {
         var id = _scheduleIdToDelete;
         CancelDeleteSchedule();
-        
-        _message = string.Empty;
         _isDeletingSchedule = true;
         StateHasChanged();
         try
@@ -1997,24 +1924,21 @@
             _isDeletingSchedule = false;
             if (response.IsSuccessStatusCode)
             {
-                _message = "Timetable deleted successfully.";
-                _isError = false;
+                await Toast.Success("Timetable deleted successfully.");
                 await LoadData();
             }
             else
             {
                 var errorMsg = await response.Content.ReadAsStringAsync();
-                _message = errorMsg.Contains("Recurring schedule not found") 
+                await Toast.Error(errorMsg.Contains("Recurring schedule not found") 
                     ? "This timetable has already been deleted or could not be found." 
-                    : "Failed to delete timetable. Please try again.";
-                _isError = true;
+                    : "Failed to delete timetable. Please try again.");
             }
         }
         catch (Exception)
         {
             _isDeletingSchedule = false;
-            _message = "An error occurred while deleting the timetable.";
-            _isError = true;
+            await Toast.Error("An error occurred while deleting the timetable.");
         }
     }
 
@@ -2043,8 +1967,7 @@
         if (valStates.Any(s => s.HasErrors))
         {
             var firstError = valStates.FirstOrDefault(s => s.HasErrors);
-            _message = firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.";
-            _isError = true;
+            await Toast.Warning("Validation Error", firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.");
             return;
         }
 
@@ -2079,14 +2002,13 @@
         await CreateModule();
     }
 
-    private void OnGenerateSessionsClicked()
+    private async Task OnGenerateSessionsClicked()
     {
         var valStates = GetNewModuleValidationStates();
         if (valStates.Any(s => s.HasErrors))
         {
             var firstError = valStates.FirstOrDefault(s => s.HasErrors);
-            _message = firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.";
-            _isError = true;
+            await Toast.Warning("Validation Error", firstError?.TimeErrorMessage ?? firstError?.DateErrorMessage ?? firstError?.ConflictMessage ?? "Please resolve schedule validation errors.");
             return;
         }
         _showGenerateSessionsConfirm = true;

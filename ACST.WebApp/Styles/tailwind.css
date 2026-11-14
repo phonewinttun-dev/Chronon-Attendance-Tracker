@@ -287,4 +287,55 @@
     @apply neo-badge text-black font-mono font-bold;
     background-color: var(--accent-purple);
   }
+
+  /* Ding Neobrutalism Morphing Toast */
+  .tst-viewport {
+    font-family: 'Space Grotesk', system-ui, sans-serif !important;
+    --tst-radius: 0.75rem !important;
+    --tst-bg: var(--bg-surface) !important;
+    --tst-fg: var(--text-primary) !important;
+    --tst-ring: var(--border-color) !important;
+    --tst-shadow: var(--shadow-neo) !important;
+    --tst-success: #A6FA53 !important;
+    --tst-error: #FF6B6B !important;
+    --tst-warning: #FFD026 !important;
+    --tst-info: #00E5FF !important;
+    z-index: 9999 !important;
+  }
+
+  .night-light .tst-viewport {
+    --tst-success: #9EE547 !important;
+    --tst-error: #EF4444 !important;
+    --tst-warning: #F59E0B !important;
+    --tst-info: #00D0E8 !important;
+  }
+
+  .tst {
+    border: 2px solid var(--border-color) !important;
+    border-radius: 0.75rem !important;
+    background: var(--bg-surface) !important;
+    color: var(--text-primary) !important;
+    box-shadow: var(--shadow-neo) !important;
+  }
+
+  .tst-title {
+    font-family: 'Space Grotesk', system-ui, sans-serif !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em !important;
+    color: var(--text-primary) !important;
+  }
+
+  .tst-desc {
+    font-family: 'Space Mono', monospace !important;
+    font-size: 0.75rem !important;
+    color: var(--text-muted) !important;
+  }
+
+  .tst-btn {
+    border: 2px solid var(--border-color) !important;
+    border-radius: 0.5rem !important;
+    font-family: 'Space Mono', monospace !important;
+    font-weight: 700 !important;
+    box-shadow: var(--shadow-sm) !important;
+  }
 }

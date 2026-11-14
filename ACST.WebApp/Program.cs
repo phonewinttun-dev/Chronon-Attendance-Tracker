@@ -36,5 +36,6 @@ builder.Services.AddScoped(sp =>
     sp.GetRequiredService<IHttpClientFactory>().CreateClient("ChrononApi"));
 
 builder.Services.AddScoped<AuthStateService>();
+builder.Services.AddScoped<IToastService, ToastService>();
 
 await builder.Build().RunAsync();

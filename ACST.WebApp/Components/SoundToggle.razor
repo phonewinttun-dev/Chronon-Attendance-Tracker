@@ -1,0 +1,60 @@
+@inject IJSRuntime JS
+
+<button @onclick="ToggleSound" 
+        class="relative p-2 rounded-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary border-2 border-border shadow-neo-sm cursor-pointer active:translate-x-0.5 active:translate-y-0.5 inline-flex items-center justify-center @(_isSoundEnabled ? "bg-card text-foreground hover:bg-accent hover:text-black" : "bg-card text-muted-foreground/60 border-dashed hover:text-foreground")"
+        title="@(_isSoundEnabled ? "Mute notification sounds" : "Enable notification sounds")"
+        aria-label="@(_isSoundEnabled ? "Mute notification sounds" : "Enable notification sounds")"
+        aria-pressed="@_isSoundEnabled">
+    @if (_isSoundEnabled)
+    {
+        <!-- Lucide Volume-2 Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-foreground hover:text-black transition-colors" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
+    }
+    else
+    {
+        <!-- Lucide Volume-X Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-muted-foreground transition-colors" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="22" x2="16" y1="9" y2="15"/>
+            <line x1="16" x2="22" y1="9" y2="15"/>
+        </svg>
+    }
+</button>
+
+@code {
+    private bool _isSoundEnabled = true;
+    private bool _isInitialized = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_isInitialized)
+        {
+            _isInitialized = true;
+            try
+            {
+                _isSoundEnabled = await JS.InvokeAsync<bool>("chrononDing.isSoundEnabled");
+                StateHasChanged();
+            }
+            catch
+            {
+                // Fallback default
+            }
+        }
+    }
+
+    private async Task ToggleSound()
+    {
+        try
+        {
+            _isSoundEnabled = await JS.InvokeAsync<bool>("chrononDing.toggleSound");
+        }
+        catch
+        {
+            _isSoundEnabled = !_isSoundEnabled;
+        }
+    }
+}

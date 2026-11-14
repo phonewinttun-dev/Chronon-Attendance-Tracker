@@ -30,4 +30,8 @@
     <Exec Command="npm run build:css" />
   </Target>
 
+  <Target Name="DingBundle" BeforeTargets="Build" Inputs="Scripts\ding-bridge.js;package.json" Outputs="wwwroot\js\dingInterop.js">
+    <Exec Command="npm run build:js" />
+  </Target>
+
 </Project>

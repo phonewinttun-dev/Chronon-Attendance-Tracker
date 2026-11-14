@@ -4,11 +4,17 @@
   "description": "Tailwind CSS build for Blazor WebApp",
   "scripts": {
     "build:css": "tailwindcss -i ./Styles/tailwind.css -o ./wwwroot/css/tailwind.css --minify",
-    "watch:css": "tailwindcss -i ./Styles/tailwind.css -o ./wwwroot/css/tailwind.css --watch"
+    "watch:css": "tailwindcss -i ./Styles/tailwind.css -o ./wwwroot/css/tailwind.css --watch",
+    "build:js": "esbuild ./Scripts/ding-bridge.js --bundle --minify --format=iife --outfile=./wwwroot/js/dingInterop.js",
+    "build": "npm run build:css && npm run build:js"
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.1",
     "autoprefixer": "^10.4.18",
-    "postcss": "^8.4.35"
+    "esbuild": "^0.28.2",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1"
+  },
+  "dependencies": {
+    "@yusufceng1z/ding": "^0.0.6"
   }
 }

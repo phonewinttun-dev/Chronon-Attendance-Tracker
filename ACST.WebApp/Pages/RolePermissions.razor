@@ -77,25 +77,6 @@ else
         </div>
     </div>
 
-    <!-- Alert / Toast Banner -->
-    @if (!string.IsNullOrEmpty(_message))
-    {
-        <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all animate-in fade-in duration-150 @(_isError ? "bg-destructive/20 text-destructive border-destructive" : "bg-primary/20 text-foreground border-primary")">
-            <div class="flex items-center gap-2.5">
-                @if (_isError)
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                }
-                else
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
-                }
-                <span>@_message</span>
-            </div>
-            <button class="text-muted-foreground hover:text-foreground text-sm font-black cursor-pointer" @onclick="() => _message = null">×</button>
-        </div>
-    }
-
     <!-- Create Role Modal -->
     @if (_showCreateRoleModal)
     {
@@ -421,8 +402,6 @@ else
     private string _newRoleName = string.Empty;
     private string _roleSearchTerm = string.Empty;
     private string _permissionSearchTerm = string.Empty;
-    private string? _message;
-    private bool _isError = false;
 
     private class PermissionCategoryGroup
     {
@@ -719,8 +698,14 @@ else
 
     private void SetMessage(string msg, bool error)
     {
-        _message = msg;
-        _isError = error;
+        if (error)
+        {
+            _ = Toast.Error(msg);
+        }
+        else
+        {
+            _ = Toast.Success(msg);
+        }
     }
 }
 

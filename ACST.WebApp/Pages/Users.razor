@@ -153,7 +153,10 @@ else
                 _users = res.Data;
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            await Toast.Error(ex.GetFriendlyErrorMessage("Failed to load user accounts."));
+        }
         finally
         {
             _isLoading = false;

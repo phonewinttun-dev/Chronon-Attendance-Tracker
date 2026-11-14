@@ -22,34 +22,6 @@
             <p class="text-xs text-muted-foreground font-mono">Register your new account to access the attendance tracking hub</p>
         </div>
 
-        <!-- Alert Message -->
-        @if (!string.IsNullOrEmpty(_message))
-        {
-            <div role="@(_isError ? "alert" : "status")" 
-                 aria-live="polite" 
-                 class="p-3.5 rounded-xl border-2 border-black text-xs font-mono font-bold flex items-center justify-between gap-2.5 shadow-neo-sm @(_isError ? "bg-destructive/20 text-destructive" : "bg-primary/20 text-foreground")">
-                <div class="flex items-center gap-2.5">
-                    @if (_isError)
-                    {
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    }
-                    else
-                    {
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
-                    }
-                    <span>@_message</span>
-                </div>
-                @if (_canManualRetry && !_isSubmitting)
-                {
-                    <button type="button" 
-                            class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-destructive text-black border border-black shadow-neo-sm transition-all hover:scale-105 shrink-0 cursor-pointer" 
-                            @onclick="HandleRegister">
-                        Retry Now
-                    </button>
-                }
-            </div>
-        }
-
         <!-- Form -->
         <EditForm Model="@_registerModel" OnValidSubmit="HandleRegister" class="mt-6 space-y-4">
             <DataAnnotationsValidator />
@@ -153,9 +125,6 @@
     private bool _isRetrying = false;
     private int _retryAttempt = 1;
     private int _maxRetryAttempts = 3;
-    private bool _canManualRetry = false;
-    private string? _message;
-    private bool _isError = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -198,8 +167,6 @@
         _isSubmitting = true;
         _isRetrying = false;
         _retryAttempt = 1;
-        _canManualRetry = false;
-        _message = null;
 
         try
         {
@@ -208,33 +175,23 @@
 
             if (result?.IsSuccess == true && result.Data != null)
             {
-                _message = "Account registered successfully! Redirecting to Dashboard...";
-                _isError = false;
-                _canManualRetry = false;
+                await Toast.Success("Registration Successful", "Account registered successfully! Redirecting...");
                 
                 await AuthState.SetSessionAsync(result.Data);
-                await Task.Delay(800);
+                await Task.Delay(500);
                 Navigation.NavigateTo("dashboard");
             }
             else
             {
-                _message = result?.Message ?? "Registration failed.";
-                _isError = true;
-                _canManualRetry = false;
+                await Toast.Error("Registration Failed", result?.Message ?? "Registration failed.");
             }
         }
         catch (Exception ex)
         {
-            if (ex.Message.Contains("Failed to fetch", StringComparison.OrdinalIgnoreCase) || ex is HttpRequestException || ex is TimeoutException)
-            {
-                _message = "Unable to connect to the server after multiple attempts. Please check your connection.";
-            }
-            else
-            {
-                _message = $"Error: {ex.Message}";
-            }
-            _isError = true;
-            _canManualRetry = true;
+            var errorText = (ex.Message.Contains("Failed to fetch", StringComparison.OrdinalIgnoreCase) || ex is HttpRequestException || ex is TimeoutException)
+                ? "Unable to connect to the server after multiple attempts. Please check your connection."
+                : $"Error: {ex.Message}";
+            await Toast.Error("Connection Error", errorText);
         }
         finally
         {

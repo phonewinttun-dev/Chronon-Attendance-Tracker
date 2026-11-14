@@ -75,15 +75,6 @@
     </div>
 </div>
 
-<!-- Toast Message -->
-@if (!string.IsNullOrEmpty(_message))
-{
-    <div class="mb-4 px-4 py-3 rounded-xl text-xs font-mono font-bold border-2 border-black shadow-neo-sm animate-in fade-in slide-in-from-top duration-300 @(_isError ? "bg-destructive/20 text-destructive border-destructive" : "bg-primary/20 text-primary border-primary")">
-        @_message
-        <button class="float-right text-current opacity-70 hover:opacity-100 transition-opacity ml-3 font-black cursor-pointer" @onclick='() => _message = ""'>×</button>
-    </div>
-}
-
 <!-- Loading State -->
 @if (_isLoading)
 {
@@ -316,8 +307,6 @@ else
     private List<ModuleDto>? _modules;
     private bool _isLoading = true;
     private bool _isUpdating = false;
-    private string _message = string.Empty;
-    private bool _isError = false;
 
     // Selection
     private HashSet<long> _selectedIds = new();
@@ -441,8 +430,7 @@ else
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error loading sessions");
-            _isError = true;
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error loading sessions"));
         }
         finally
         {
@@ -552,25 +540,21 @@ else
                     {
                         session.Status = _pendingStatus;
                     }
-                    _message = "Status updated successfully.";
-                    _isError = false;
+                    await Toast.Success("Status updated successfully.");
                 }
                 else
                 {
-                    _message = result?.Message ?? "Failed to update status.";
-                    _isError = true;
+                    await Toast.Error(result?.Message ?? "Failed to update status.");
                 }
             }
             else
             {
-                _message = await response.GetFriendlyErrorMessageAsync("Error updating status");
-                _isError = true;
+                await Toast.Error(await response.GetFriendlyErrorMessageAsync("Error updating status"));
             }
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error updating status");
-            _isError = true;
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error updating status"));
         }
         finally
         {
@@ -617,25 +601,21 @@ else
                             }
                         }
                     }
-                    _message = $"Successfully updated {_selectedIds.Count} session(s) to {_pendingStatus}.";
-                    _isError = false;
+                    await Toast.Success($"Successfully updated {_selectedIds.Count} session(s) to {_pendingStatus}.");
                 }
                 else
                 {
-                    _message = result?.Message ?? "Failed to update status.";
-                    _isError = true;
+                    await Toast.Error(result?.Message ?? "Failed to update status.");
                 }
             }
             else
             {
-                _message = await response.GetFriendlyErrorMessageAsync("Error updating status");
-                _isError = true;
+                await Toast.Error(await response.GetFriendlyErrorMessageAsync("Error updating status"));
             }
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error updating status");
-            _isError = true;
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error updating status"));
         }
         finally
         {
@@ -699,25 +679,21 @@ else
                     {
                         session.Status = status;
                     }
-                    _message = "Status updated successfully.";
-                    _isError = false;
+                    await Toast.Success("Status updated successfully.");
                 }
                 else
                 {
-                    _message = result?.Message ?? "Failed to update status.";
-                    _isError = true;
+                    await Toast.Error(result?.Message ?? "Failed to update status.");
                 }
             }
             else
             {
-                _message = await response.GetFriendlyErrorMessageAsync("Error updating status");
-                _isError = true;
+                await Toast.Error(await response.GetFriendlyErrorMessageAsync("Error updating status"));
             }
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error updating status");
-            _isError = true;
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error updating status"));
         }
         finally
         {

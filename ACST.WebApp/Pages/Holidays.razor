@@ -52,24 +52,6 @@
     </div>
 }
 
-@if (!string.IsNullOrEmpty(_message))
-{
-    <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/20 text-destructive border-destructive" : "bg-primary/20 text-primary border-primary")">
-        <div class="flex items-center gap-2.5">
-            @if (_isError)
-            {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12"/><line x1="12" y1="8" x2="12.01" y2="16"/></svg>
-            }
-            else
-            {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
-            }
-            <span>@_message</span>
-        </div>
-        <button class="hover:opacity-80 focus:outline-none text-base font-black px-1.5 py-0.5 rounded cursor-pointer" @onclick="() => _message = string.Empty" title="Dismiss">×</button>
-    </div>
-}
-
 <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl shadow-neo-lg overflow-hidden font-mono">
     @if (_isLoading)
     {
@@ -199,8 +181,6 @@
 @code {
     private List<HolidayDto>? _holidays;
     private bool _isLoading = true;
-    private string _message = string.Empty;
-    private bool _isError = false;
     private bool _showErrorDialog = false;
     private bool _showDeleteConfirmModal = false;
     private HolidayDto? _holidayToDelete;
@@ -274,8 +254,7 @@
         }
         catch (Exception)
         {
-            _message = "Unexpected Error Ocurred. Please try again";
-            _isError = true;
+            await Toast.Error("Unexpected error occurred. Please try again.");
             _showErrorDialog = true;
         }
         finally
@@ -316,14 +295,12 @@
 
     private async Task DeleteHoliday(long id)
     {
-        _message = string.Empty;
         try
         {
             var response = await Http.DeleteAsync($"api/holidays/{id}");
             if (response.IsSuccessStatusCode)
             {
-                _message = "Holiday deleted successfully.";
-                _isError = false;
+                await Toast.Success("Holiday deleted successfully.");
                 if (_holidays != null && _holidays.Count == 1 && _pageNumber > 1)
                 {
                     _pageNumber--;
@@ -332,41 +309,35 @@
             }
             else
             {
-                _message = await response.GetFriendlyErrorMessageAsync("Error deleting holiday");
-                _isError = true;
+                await Toast.Error(await response.GetFriendlyErrorMessageAsync("Error deleting holiday"));
             }
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error deleting holiday");
-            _isError = true;
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error deleting holiday"));
         }
     }
 
     private void ToggleFetchPanel()
     {
         _showFetchPanel = !_showFetchPanel;
-        _message = string.Empty;
     }
 
     private async Task FetchGoogleHolidays()
     {
         if (string.IsNullOrWhiteSpace(_calendarId))
         {
-            _message = "Google Calendar ID is required.";
-            _isError = true;
+            await Toast.Warning("Validation Error", "Google Calendar ID is required.");
             return;
         }
 
         if (_startDate > _endDate)
         {
-            _message = "Start date must be before or equal to end date.";
-            _isError = true;
+            await Toast.Warning("Validation Error", "Start date must be before or equal to end date.");
             return;
         }
 
         _isFetching = true;
-        _message = string.Empty;
 
         try
         {
@@ -383,28 +354,24 @@
                 var result = await response.Content.ReadFromJsonAsync<ApiResult<int>>();
                 if (result != null && result.IsSuccess)
                 {
-                    _message = result.Message;
-                    _isError = false;
+                    await Toast.Success(result.Message);
                     _showFetchPanel = false;
                     _pageNumber = 1;
                     await LoadHolidays();
                 }
                 else
                 {
-                    _message = result?.Message ?? "Unknown error fetching holidays.";
-                    _isError = true;
+                    await Toast.Error(result?.Message ?? "Unknown error fetching holidays.");
                 }
             }
             else
             {
-                _message = await response.GetFriendlyErrorMessageAsync("Error fetching holidays");
-                _isError = true;
+                await Toast.Error(await response.GetFriendlyErrorMessageAsync("Error fetching holidays"));
             }
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error fetching holidays");
-            _isError = true;
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error fetching holidays"));
         }
         finally
         {

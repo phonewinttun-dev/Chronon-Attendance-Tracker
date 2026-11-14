@@ -605,7 +605,6 @@ else
     private bool _isLoadingDailyWeekly = true;
     private bool _isLoadingModules = true;
     private bool _isError = false;
-    private string _message = string.Empty;
     private List<SemesterDto>? _semesters;
     public class MonthFilterOption
     {
@@ -635,7 +634,6 @@ else
     {
         _isLoadingSemesters = true;
         _isError = false;
-        _message = string.Empty;
         try
         {
             var semestersResult = await Http.GetFromJsonAsync<PagedResult<SemesterDto>>("api/semesters");
@@ -664,12 +662,12 @@ else
             else
             {
                 _isError = true;
-                _message = semestersResult?.Message ?? "Failed to retrieve semesters.";
+                await Toast.Error(semestersResult?.Message ?? "Failed to retrieve semesters.");
             }
         }
         catch (Exception ex)
         {
-            _message = ex.GetFriendlyErrorMessage("Error loading semesters");
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error loading semesters"));
             _isError = true;
         }
         finally
@@ -710,7 +708,7 @@ else
                 _isLoadingDailyWeekly = false;
                 _isLoadingModules = false;
                 _isError = true;
-                _message = summaryResult?.Message ?? "Failed to load dashboard summary.";
+                await Toast.Error(summaryResult?.Message ?? "Failed to load dashboard summary.");
             }
         }
         catch (Exception ex)
@@ -719,7 +717,7 @@ else
             _isLoadingSummary = false;
             _isLoadingDailyWeekly = false;
             _isLoadingModules = false;
-            _message = ex.GetFriendlyErrorMessage("Error loading dashboard summary");
+            await Toast.Error(ex.GetFriendlyErrorMessage("Error loading dashboard summary"));
             _isError = true;
         }
     }
