@@ -15,7 +15,7 @@
         
         <!-- Header -->
         <div class="text-center space-y-2">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#A6FA53] text-black mb-2 border-2 border-black shadow-neo-sm">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary text-black mb-2 border-2 border-black shadow-neo-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-6 h-6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
             </div>
             <h2 class="text-2xl font-black tracking-tight text-foreground font-sans">Create Your Account</h2>
@@ -27,7 +27,7 @@
         {
             <div role="@(_isError ? "alert" : "status")" 
                  aria-live="polite" 
-                 class="p-3.5 rounded-xl border-2 border-black text-xs font-mono font-bold flex items-center justify-between gap-2.5 shadow-neo-sm @(_isError ? "bg-[#FF6B6B]/20 text-[#FF6B6B]" : "bg-[#A6FA53]/20 text-[#A6FA53]")">
+                 class="p-3.5 rounded-xl border-2 border-black text-xs font-mono font-bold flex items-center justify-between gap-2.5 shadow-neo-sm @(_isError ? "bg-destructive/20 text-destructive" : "bg-primary/20 text-foreground")">
                 <div class="flex items-center gap-2.5">
                     @if (_isError)
                     {
@@ -42,7 +42,7 @@
                 @if (_canManualRetry && !_isSubmitting)
                 {
                     <button type="button" 
-                            class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-[#FF6B6B] text-black border border-black shadow-neo-sm transition-all hover:scale-105 shrink-0 cursor-pointer" 
+                            class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-destructive text-black border border-black shadow-neo-sm transition-all hover:scale-105 shrink-0 cursor-pointer" 
                             @onclick="HandleRegister">
                         Retry Now
                     </button>
@@ -56,10 +56,10 @@
 
             <!-- Full Name -->
             <div>
-                <label class="block text-xs font-mono font-bold uppercase tracking-wider text-foreground mb-1.5">Full Name <span class="text-[#FF6B6B]">*</span></label>
+                <label class="block text-xs font-mono font-bold uppercase tracking-wider text-foreground mb-1.5">Full Name <span class="text-destructive">*</span></label>
                 <div class="relative">
                     <input type="text" 
-                           class="w-full pl-10 pr-4 py-2.5 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-mono font-bold transition-all placeholder:text-muted-foreground shadow-neo-sm" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-xs font-mono font-bold transition-all placeholder:text-muted-foreground shadow-neo-sm" 
                            placeholder="John Doe" 
                            @bind="_registerModel.FullName" 
                            required />
@@ -71,10 +71,10 @@
 
             <!-- Email Address -->
             <div>
-                <label class="block text-xs font-mono font-bold uppercase tracking-wider text-foreground mb-1.5">Email Address <span class="text-[#FF6B6B]">*</span></label>
+                <label class="block text-xs font-mono font-bold uppercase tracking-wider text-foreground mb-1.5">Email Address <span class="text-destructive">*</span></label>
                 <div class="relative">
                     <input type="email" 
-                           class="w-full pl-10 pr-4 py-2.5 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-mono font-bold transition-all placeholder:text-muted-foreground shadow-neo-sm" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-xs font-mono font-bold transition-all placeholder:text-muted-foreground shadow-neo-sm" 
                            placeholder="you@example.com" 
                            @bind="_registerModel.Email" 
                            required />
@@ -89,7 +89,7 @@
                 <label class="block text-xs font-mono font-bold uppercase tracking-wider text-foreground mb-1.5">Mobile Number (Optional)</label>
                 <div class="relative">
                     <input type="tel" 
-                           class="w-full pl-10 pr-4 py-2.5 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-mono font-bold transition-all placeholder:text-muted-foreground shadow-neo-sm" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-xs font-mono font-bold transition-all placeholder:text-muted-foreground shadow-neo-sm" 
                            placeholder="+95 9 1234 5678" 
                            @bind="_registerModel.MobileNum" />
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
@@ -100,10 +100,10 @@
 
             <!-- Password -->
             <div>
-                <label class="block text-xs font-mono font-bold uppercase tracking-wider text-foreground mb-1.5">Password <span class="text-[#FF6B6B]">*</span></label>
+                <label class="block text-xs font-mono font-bold uppercase tracking-wider text-foreground mb-1.5">Password <span class="text-destructive">*</span></label>
                 <div class="relative">
                     <input type="password" 
-                           class="w-full pl-10 pr-4 py-2.5 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-mono font-bold transition-all placeholder:text-muted-foreground shadow-neo-sm" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-xs font-mono font-bold transition-all placeholder:text-muted-foreground shadow-neo-sm" 
                            placeholder="Minimum 6 characters" 
                            @bind="_registerModel.Password" 
                            required />
@@ -140,7 +140,7 @@
         <div class="text-center border-t-2 border-border pt-4 font-mono">
             <p class="text-xs text-muted-foreground">
                 Already registered? 
-                <a href="login" class="font-bold text-[#A6FA53] hover:underline">Sign in here</a>
+                <a href="login" class="font-bold text-primary hover:underline">Sign in here</a>
             </p>
         </div>
     </div>
