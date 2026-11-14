@@ -2,7 +2,7 @@
 @implements IDisposable
 
 <div class="relative w-full" @onfocusout="HandleFocusOut">
-    <div class="flex items-center bg-card border-2 border-border rounded-lg shadow-neo-sm focus-within:ring-2 focus-within:ring-[#A6FA53] overflow-hidden transition-all h-9">
+    <div class="flex items-center bg-card border-2 border-border rounded-lg shadow-neo-sm focus-within:ring-2 focus-within:ring-primary overflow-hidden transition-all h-9">
         <input type="text" 
                class="w-full px-3 py-1.5 bg-transparent text-foreground focus:outline-none placeholder:text-muted-foreground font-mono font-bold text-xs"
                placeholder="dd-MM-yyyy"
@@ -12,7 +12,7 @@
                @onfocus="OnFocus"
                @onblur="OnBlur" />
         <button type="button" 
-                class="px-3 h-full bg-muted/40 hover:bg-[#A6FA53] hover:text-black text-foreground transition-colors border-l-2 border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-black cursor-pointer"
+                class="px-3 h-full bg-muted/40 hover:bg-primary hover:text-black text-foreground transition-colors border-l-2 border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-black cursor-pointer"
                 title="Toggle calendar popup"
                 aria-label="Toggle calendar popup"
                 aria-expanded="@_showCalendar"
@@ -35,14 +35,14 @@
             <!-- Header: Prev, Month/Year, Next -->
             <div class="flex justify-between items-center mb-3 pb-2 border-b-2 border-border">
                 <button type="button" 
-                        class="p-1 hover:bg-[#A6FA53] hover:text-black border border-border rounded text-foreground transition-colors focus:outline-none cursor-pointer" 
+                        class="p-1 hover:bg-primary hover:text-black border border-border rounded text-foreground transition-colors focus:outline-none cursor-pointer" 
                         aria-label="Previous month"
                         @onclick="PrevMonth">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
                 <div class="font-bold text-foreground text-xs font-mono uppercase tracking-wider" aria-live="polite">@_viewDate.ToString("MMMM yyyy")</div>
                 <button type="button" 
-                        class="p-1 hover:bg-[#A6FA53] hover:text-black border border-border rounded text-foreground transition-colors focus:outline-none cursor-pointer" 
+                        class="p-1 hover:bg-primary hover:text-black border border-border rounded text-foreground transition-colors focus:outline-none cursor-pointer" 
                         aria-label="Next month"
                         @onclick="NextMonth">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
@@ -70,9 +70,9 @@
                     
                     <button type="button" 
                             class="p-1.5 text-xs font-mono font-bold rounded transition-colors focus:outline-none cursor-pointer
-                                   @(isCurrentMonth ? "text-foreground hover:bg-[#A6FA53] hover:text-black" : "text-muted-foreground/30 hover:bg-muted")
-                                   @(isSelected ? "bg-[#A6FA53] text-black font-black border-2 border-black shadow-neo-sm hover:bg-[#A6FA53]" : "")
-                                   @(isToday && !isSelected ? "border-2 border-[#A6FA53] text-[#A6FA53]" : "")"
+                                   @(isCurrentMonth ? "text-foreground hover:bg-primary hover:text-black" : "text-muted-foreground/30 hover:bg-muted")
+                                   @(isSelected ? "bg-primary text-black font-black border-2 border-black shadow-neo-sm hover:bg-primary" : "")
+                                   @(isToday && !isSelected ? "border-2 border-primary text-primary" : "")"
                             aria-label="@day.ToString("dd MMMM yyyy")"
                             aria-selected="@isSelected.ToString().ToLowerInvariant()"
                             @onclick="() => SelectDate(day)">

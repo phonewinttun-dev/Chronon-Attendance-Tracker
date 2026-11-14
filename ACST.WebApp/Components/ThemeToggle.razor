@@ -3,13 +3,13 @@
 <div class="inline-flex items-center gap-1.5" role="group" aria-label="Theme and Display Settings">
     <!-- Light / Dark Mode Toggle -->
     <button @onclick="ToggleTheme" 
-            class="relative p-2 rounded-lg bg-card hover:bg-[#FFD026] text-foreground hover:text-black transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary border-2 border-border shadow-neo-sm cursor-pointer active:translate-x-0.5 active:translate-y-0.5 inline-flex items-center justify-center"
+            class="relative p-2 rounded-lg bg-card hover:bg-accent text-foreground hover:text-black transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary border-2 border-border shadow-neo-sm cursor-pointer active:translate-x-0.5 active:translate-y-0.5 inline-flex items-center justify-center"
             title="@(_isDark ? "Switch to Light Mode" : "Switch to Dark Mode")"
             aria-label="@(_isDark ? "Switch to Light Mode" : "Switch to Dark Mode")">
         @if (_isDark)
         {
             <!-- Sun Icon for Light Mode switch -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#FFD026] hover:text-black transition-colors" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-accent hover:text-black transition-colors" aria-hidden="true">
                 <circle cx="12" cy="12" r="4"/>
                 <path d="M12 2v2"/>
                 <path d="M12 20v2"/>
@@ -32,7 +32,7 @@
 
     <!-- Night Light (Eye-Comfort) Toggle -->
     <button @onclick="ToggleNightLight"
-            class="relative p-2 rounded-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary border-2 border-border shadow-neo-sm cursor-pointer active:translate-x-0.5 active:translate-y-0.5 inline-flex items-center justify-center @(_isNightLight ? "bg-[#A6FA53] text-black shadow-neo font-black" : "bg-card text-foreground hover:bg-[#FFD026] hover:text-black")"
+            class="relative p-2 rounded-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary border-2 border-border shadow-neo-sm cursor-pointer active:translate-x-0.5 active:translate-y-0.5 inline-flex items-center justify-center @(_isNightLight ? "bg-primary text-black shadow-neo font-black" : "bg-card text-foreground hover:bg-accent hover:text-black")"
             title="@(_isNightLight ? "Disable Eye-Comfort Night Light (Active)" : "Enable Eye-Comfort Night Light")"
             aria-label="@(_isNightLight ? "Disable Eye-Comfort Night Light (Active)" : "Enable Eye-Comfort Night Light")"
             aria-pressed="@_isNightLight">

@@ -1,8 +1,8 @@
 <nav aria-label="Pagination Navigation" class="flex items-center justify-center gap-2 py-4 select-none">
     <!-- Previous Button -->
     <button type="button" 
-            class="flex items-center px-3 py-1.5 text-xs font-mono font-bold transition-all rounded-lg border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-black
-                   @(HasPrevious ? "bg-card border-border text-foreground hover:bg-[#A6FA53] hover:text-black hover:border-black shadow-neo-sm cursor-pointer active:translate-x-0.5 active:translate-y-0.5" : "border-border/40 text-muted-foreground/40 cursor-not-allowed")"
+            class="flex items-center px-3 py-1.5 min-h-[36px] text-xs font-mono font-bold transition-all rounded-lg border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-black
+                   @(HasPrevious ? "bg-card border-border text-foreground hover:bg-primary hover:text-black hover:border-black shadow-neo-sm cursor-pointer active:translate-x-0.5 active:translate-y-0.5" : "border-border/40 text-muted-foreground/40 cursor-not-allowed")"
             disabled="@(!HasPrevious)"
             aria-disabled="@(!HasPrevious)"
             aria-label="Go to previous page"
@@ -26,10 +26,10 @@
             var p = pageNum.Value;
             var isActive = p == PageNumber;
             <button type="button"
-                    class="w-8 h-8 flex items-center justify-center text-xs font-mono font-bold rounded-lg border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-black
+                    class="min-w-[36px] min-h-[36px] flex items-center justify-center text-xs font-mono font-bold rounded-lg border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-black
                            @(isActive 
-                               ? "bg-[#FFD026] text-black border-black shadow-neo-sm font-black cursor-default" 
-                               : "bg-card border-border text-foreground hover:bg-[#A6FA53] hover:text-black hover:border-black shadow-neo-sm cursor-pointer active:translate-x-0.5 active:translate-y-0.5")"
+                               ? "bg-accent text-black border-black shadow-neo-sm font-black cursor-default" 
+                               : "bg-card border-border text-foreground hover:bg-primary hover:text-black hover:border-black shadow-neo-sm cursor-pointer active:translate-x-0.5 active:translate-y-0.5")"
                     aria-label="Page @p"
                     aria-current="@(isActive ? "page" : null)"
                     @onclick="() => SelectPage(p)">
@@ -40,8 +40,8 @@
 
     <!-- Next Button -->
     <button type="button" 
-            class="flex items-center px-3 py-1.5 text-xs font-mono font-bold transition-all rounded-lg border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-black
-                   @(HasNext ? "bg-card border-border text-foreground hover:bg-[#A6FA53] hover:text-black hover:border-black shadow-neo-sm cursor-pointer active:translate-x-0.5 active:translate-y-0.5" : "border-border/40 text-muted-foreground/40 cursor-not-allowed")"
+            class="flex items-center px-3 py-1.5 min-h-[36px] text-xs font-mono font-bold transition-all rounded-lg border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-black
+                   @(HasNext ? "bg-card border-border text-foreground hover:bg-primary hover:text-black hover:border-black shadow-neo-sm cursor-pointer active:translate-x-0.5 active:translate-y-0.5" : "border-border/40 text-muted-foreground/40 cursor-not-allowed")"
             disabled="@(!HasNext)"
             aria-disabled="@(!HasNext)"
             aria-label="Go to next page"

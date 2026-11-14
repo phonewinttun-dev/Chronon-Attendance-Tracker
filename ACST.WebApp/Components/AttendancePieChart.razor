@@ -24,7 +24,7 @@
                         var isHovered = _hoveredId == slice.Id;
                         <path d="@slice.PathD" 
                               fill="@slice.Color" 
-                              stroke="#000000" 
+                              stroke="black" 
                               stroke-width="2" 
                               class="cursor-pointer transition-transform duration-200 @(isHovered ? "scale-105" : "")"
                               style="transform-origin: 100px 100px;"
@@ -33,7 +33,7 @@
 
                         @if (slice.Percentage >= 8)
                         {
-                            @((MarkupString)$"<text x=\"{slice.LabelX.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}\" y=\"{slice.LabelY.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}\" text-anchor=\"middle\" fill=\"#000000\" font-size=\"9\" font-weight=\"900\" font-family=\"monospace\" pointer-events=\"none\">{slice.Percentage}%</text>")
+                            @((MarkupString)$"<text x=\"{slice.LabelX.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}\" y=\"{slice.LabelY.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}\" text-anchor=\"middle\" fill=\"black\" font-size=\"9\" font-weight=\"900\" font-family=\"monospace\" pointer-events=\"none\">{slice.Percentage}%</text>")
                         }
                     }
                 </svg>
@@ -73,7 +73,7 @@
                     @foreach (var slice in _activeSlices)
                     {
                         var isHovered = _hoveredId == slice.Id;
-                        <div class="flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg border-2 transition-all cursor-pointer shadow-neo-sm @(isHovered ? "border-black bg-[#A6FA53]/15" : "border-transparent hover:border-black hover:bg-muted/40")"
+                        <div class="flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg border-2 transition-all cursor-pointer shadow-neo-sm @(isHovered ? "border-black bg-primary/15" : "border-transparent hover:border-black hover:bg-muted/40")"
                              @onmouseenter="() => _hoveredId = slice.Id"
                              @onmouseleave="() => _hoveredId = null">
                             <div class="flex items-center gap-2 truncate min-w-0">
@@ -99,7 +99,7 @@
     <!-- Card Footer -->
     <div class="border-t-2 border-border/30 pt-3 mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
         <div class="flex items-center gap-2 text-foreground font-bold">
-            <svg class="w-4 h-4 text-[#A6FA53] shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-primary shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
             <span>@TrendText</span>
@@ -118,7 +118,7 @@
         public string Name { get; set; } = string.Empty;
         public int Sessions { get; set; }
         public double AttendanceRate { get; set; }
-        public string Color { get; set; } = "#A6FA53";
+        public string Color { get; set; } = "var(--accent-primary)";
         public int Percentage { get; set; }
         public string PathD { get; set; } = string.Empty;
         public double LabelX { get; set; }
@@ -131,7 +131,7 @@
     [Parameter] public string TrendText { get; set; } = "Module attendance distribution across enrolled subjects";
     [Parameter] public string FooterSummary { get; set; } = string.Empty;
 
-    private static readonly string[] Palette = new[] { "#A6FA53", "#00E5FF", "#FFD026", "#FF6B6B", "#C084FC", "#38BDF8", "#F472B6" };
+    private static readonly string[] Palette = new[] { "var(--accent-primary)", "var(--accent-cyan)", "var(--accent-gold)", "var(--accent-danger)", "var(--accent-purple)" };
     private List<PieSliceItem> _activeSlices = new();
     private int _displayTotal = 0;
     private string? _hoveredId;
@@ -208,8 +208,8 @@
 
     private string GetRateBadgeClass(double rate)
     {
-        if (rate >= 80) return "bg-[#A6FA53] text-black border-black";
-        if (rate >= 60) return "bg-[#FFD026] text-black border-black";
-        return "bg-[#FF6B6B] text-black border-black";
+        if (rate >= 80) return "bg-primary text-black border-black";
+        if (rate >= 60) return "bg-accent text-black border-black";
+        return "bg-destructive text-black border-black";
     }
 }

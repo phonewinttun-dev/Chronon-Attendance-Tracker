@@ -75,7 +75,7 @@
     <!-- Card Footer -->
     <div class="border-t-2 border-border/30 pt-3 mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
         <div class="flex items-center gap-2 text-foreground font-bold">
-            <svg class="w-4 h-4 text-[#A6FA53] shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-primary shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
             <span>@TrendText</span>
@@ -104,8 +104,8 @@
 
     private string GetBarColorClass(double rate)
     {
-        if (rate >= 80) return "bg-[#A6FA53]"; // Neo-Lime
-        if (rate >= 60) return "bg-[#FFD026]"; // Neo-Yellow
-        return "bg-[#FF6B6B]"; // Neo-Coral
+        if (rate >= 80) return "bg-primary";
+        if (rate >= 60) return "bg-accent";
+        return "bg-destructive";
     }
 }
