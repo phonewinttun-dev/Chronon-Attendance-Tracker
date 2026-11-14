@@ -19,19 +19,19 @@
 <div class="bg-card border-2 border-black dark:border-zinc-700 p-4 rounded-xl shadow-neo mb-6 flex flex-wrap justify-between items-center gap-4 font-mono">
     <!-- Month Navigation -->
     <div class="flex items-center gap-3">
-        <button class="neo-btn bg-card hover:bg-muted text-foreground p-2 border-2 border-border rounded-lg shadow-neo-sm transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A6FA53]" 
+        <button class="neo-btn bg-card hover:bg-muted text-foreground p-2 border-2 border-border rounded-lg shadow-neo-sm transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" 
                 aria-label="Previous month"
                 @onclick="PrevMonth">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <span class="text-base font-black font-mono text-foreground min-w-[160px] text-center" aria-live="polite">@_viewDate.ToString("MMMM yyyy")</span>
-        <button class="neo-btn bg-card hover:bg-muted text-foreground p-2 border-2 border-border rounded-lg shadow-neo-sm transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A6FA53]" 
+        <button class="neo-btn bg-card hover:bg-muted text-foreground p-2 border-2 border-border rounded-lg shadow-neo-sm transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" 
                 aria-label="Next month"
                 @onclick="NextMonth">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0 lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
         </button>
         
-        <button class="neo-btn bg-card hover:bg-muted text-foreground px-4 py-2 border-2 border-border rounded-lg shadow-neo-sm text-xs font-bold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A6FA53]" 
+        <button class="neo-btn bg-card hover:bg-muted text-foreground px-4 py-2 border-2 border-border rounded-lg shadow-neo-sm text-xs font-bold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" 
                 aria-label="Jump to current month"
                 @onclick="GoToToday">
             Today
@@ -60,7 +60,7 @@
 <!-- Message Notification -->
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-[#FF6B6B]/20 text-[#FF6B6B]" : "bg-[#A6FA53]/20 text-[#A6FA53]")">
+    <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/20 text-destructive border-destructive" : "bg-primary/20 text-primary border-primary")">
         <div class="flex items-center gap-2.5">
             @if (_isError)
             {
@@ -132,11 +132,11 @@
                         <div>
                             @if (dayHolidays.Any())
                             {
-                                <span class="w-2 h-2 rounded-full bg-[#FFD026] border border-black inline-block" title="Holiday today"></span>
+                                <span class="w-2 h-2 rounded-full bg-accent border border-black inline-block" title="Holiday today"></span>
                             }
                         </div>
                         <span class="font-mono text-xs font-bold rounded-md w-6 h-6 inline-flex items-center justify-center
-                                     @(isToday ? "bg-[#FFD026] text-black font-black border border-black shadow-neo-sm" : "text-muted-foreground")">
+                                     @(isToday ? "bg-accent text-black font-black border border-black shadow-neo-sm" : "text-muted-foreground")">
                             @day.Day
                         </span>
                     </div>
@@ -144,7 +144,7 @@
                     <!-- Holidays Box -->
                     @foreach (var hol in dayHolidays)
                     {
-                        <div class="mt-1 px-1.5 py-0.5 text-[9px] font-bold text-black bg-[#FFD026] border border-black rounded shadow-neo-sm truncate font-mono" title="Holiday: @hol.Name">
+                        <div class="mt-1 px-1.5 py-0.5 text-[9px] font-bold text-black bg-accent border border-black rounded shadow-neo-sm truncate font-mono" title="Holiday: @hol.Name">
                             @hol.Name
                         </div>
                     }
@@ -155,15 +155,15 @@
                         {
                             <div class="group relative w-full flex items-center">
                                 <button type="button" 
-                                        class="w-full flex items-center gap-1.5 py-1 pl-1.5 pr-6 border-2 rounded-md text-left transition-all shadow-neo-sm hover:-translate-x-0.5 hover:-translate-y-0.5 cursor-pointer focus:outline-none @GetSessionStyleClass(session.Status)"
+                                        class="w-full flex items-center gap-1.5 py-1 pl-1.5 pr-6 border-2 rounded-md text-left transition-all shadow-neo-sm hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer focus:outline-none @GetSessionStyleClass(session.Status)"
                                         @onclick="() => OpenSessionDetails(session)"
                                         title="@session.ModuleCode (@FormatTime(session.StartDatetime) - @FormatTime(session.EndDatetime))">
                                     <span class="w-2 h-2 rounded-full shrink-0 @GetDotColorClass(session.Status)"></span>
                                     <span class="text-[9px] font-mono shrink-0 font-bold opacity-80">@FormatGoogleCalendarTime(session.StartDatetime)</span>
                                     <span class="font-bold text-[10px] font-sans truncate">@session.ModuleCode</span>
                                 </button>
-                                <button type="button"
-                                        class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-[#FF6B6B] hover:text-[#e05555] hover:scale-110 transition-transform rounded cursor-pointer"
+                                <button type="button" 
+                                        class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-destructive hover:opacity-80 hover:scale-110 transition-transform rounded cursor-pointer"
                                         title="Delete session"
                                         aria-label="Delete session @session.ModuleCode"
                                         @onclick="() => RequestDeleteSession(session)"
@@ -182,7 +182,7 @@
 <!-- Attendance/Status Update Modal -->
 @if (_showDetailsModal && _selectedSession != null)
 {
-    <div class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-50 animate-in fade-in duration-200" @onclick="CloseDetailsModal">
+    <div class="neo-scrim flex items-center justify-center z-50 animate-in fade-in duration-200" @onclick="CloseDetailsModal">
         <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-neo-xl animate-in zoom-in duration-200 font-mono" @onclick:stopPropagation>
             <!-- Modal Header -->
             <div class="flex justify-between items-start border-b-2 border-border pb-3 mb-4">
@@ -213,23 +213,23 @@
             <div class="flex flex-col gap-2 font-mono">
                 @if (true)
                 {
-                    <button class="neo-btn bg-[#A6FA53] text-black font-black py-2 px-4 rounded-xl text-xs shadow-neo-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all cursor-pointer" 
+                    <button class="neo-btn-primary py-2 px-4 rounded-xl text-xs" 
                             @onclick='() => RequestUpdateSessionStatus("Present")' disabled="@_isUpdating">
                         Mark Present
                     </button>
-                    <button class="neo-btn bg-[#FF6B6B] text-black font-black py-2 px-4 rounded-xl text-xs shadow-neo-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all cursor-pointer" 
+                    <button class="neo-btn-destructive py-2 px-4 rounded-xl text-xs" 
                             @onclick='() => RequestUpdateSessionStatus("Absent")' disabled="@_isUpdating">
                         Mark Absent
                     </button>
-                    <button class="neo-btn bg-[#FFD026] text-black font-black py-2 px-4 rounded-xl text-xs shadow-neo-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all cursor-pointer" 
+                    <button class="neo-btn-accent py-2 px-4 rounded-xl text-xs" 
                             @onclick='() => RequestUpdateSessionStatus("Cancelled")' disabled="@_isUpdating">
                         Mark Cancelled
                     </button>
-                    <button class="neo-btn bg-card text-foreground border-2 border-border py-2 px-4 rounded-xl text-xs font-bold shadow-neo-sm hover:bg-muted transition-all cursor-pointer" 
+                    <button class="neo-btn bg-card text-foreground border-2 border-border py-2 px-4 rounded-xl text-xs font-bold" 
                             @onclick='() => RequestUpdateSessionStatus("Not Marked")' disabled="@_isUpdating">
                         Reset to Not Marked
                     </button>
-                    <button class="neo-btn-destructive py-2 px-4 rounded-xl text-xs font-black shadow-neo-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all cursor-pointer mt-1 flex items-center justify-center gap-1.5" 
+                    <button class="neo-btn-destructive py-2 px-4 rounded-xl text-xs mt-1 flex items-center justify-center gap-1.5" 
                             @onclick="() => RequestDeleteSession(_selectedSession)" disabled="@_isUpdating">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                         Delete Session
@@ -244,16 +244,16 @@
 
 @if (_showErrorDialog)
 {
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200">
-        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in zoom-in duration-200">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
+    <div class="neo-scrim flex items-center justify-center z-[100] animate-in fade-in duration-200">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-neo-xl text-center animate-in zoom-in duration-200 font-mono">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-xl bg-destructive/20 text-destructive border-2 border-black shadow-neo-sm mb-4">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </div>
-            <h3 class="text-base font-bold text-foreground mb-2">Error</h3>
-            <p class="text-xs text-muted-foreground mb-5 font-sans">Unexpected Error Ocurred. Please try again</p>
-            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
+            <h3 class="text-base font-black text-foreground mb-2 font-sans">Error</h3>
+            <p class="text-xs text-muted-foreground mb-5 font-mono">Unexpected Error Occurred. Please try again</p>
+            <button class="neo-btn-primary w-full py-2.5 rounded-xl text-xs font-black shadow-neo"
                     @onclick="() => { _showErrorDialog = false; }">
                 Close
             </button>
@@ -263,20 +263,20 @@
 
 @if (_showStatusConfirmModal)
 {
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[150] animate-in fade-in duration-200">
-        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg animate-in zoom-in duration-200">
-            <h3 class="text-base font-bold text-foreground mb-2">Confirm Status Change</h3>
-            <p class="text-xs text-muted-foreground mb-6">
-                Are you sure you want to change the status of this class session to <span class="font-bold text-foreground">@_confirmStatus</span>?
+    <div class="neo-scrim flex items-center justify-center z-[150] animate-in fade-in duration-200">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-neo-xl animate-in zoom-in duration-200 font-mono">
+            <h3 class="text-base font-black text-foreground mb-2 font-sans">Confirm Status Change</h3>
+            <p class="text-xs text-muted-foreground mb-6 font-mono">
+                Are you sure you want to change the status of this class session to <span class="font-bold text-foreground underline">@_confirmStatus</span>?
             </p>
-            <div class="flex justify-end gap-3">
+            <div class="flex justify-end gap-3 font-mono">
                 <button type="button" 
-                        class="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold transition-all focus:outline-none" 
+                        class="neo-btn px-4 py-2 bg-card hover:bg-muted text-foreground border-2 border-border rounded-xl text-xs font-bold shadow-neo-sm" 
                         @onclick="CancelStatusChange">
                     Cancel
                 </button>
                 <button type="button" 
-                        class="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md text-xs font-semibold transition-all focus:outline-none" 
+                        class="neo-btn-primary px-4 py-2 rounded-xl text-xs font-black shadow-neo" 
                         @onclick="ConfirmStatusChange">
                     Yes, Change
                 </button>
@@ -287,12 +287,12 @@
 
 @if (_isUpdating)
 {
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-[200] animate-in fade-in duration-200">
-        <div class="bg-card border border-border rounded-lg p-6 flex flex-col items-center gap-4 shadow-xl max-w-xs text-center animate-in zoom-in duration-200">
+    <div class="neo-scrim flex flex-col items-center justify-center z-[200] animate-in fade-in duration-200">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-neo-xl max-w-xs text-center animate-in zoom-in duration-200">
             <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             <div>
-                <h4 class="text-sm font-bold text-foreground">Updating Attendance</h4>
-                <p class="text-xs text-muted-foreground mt-1">Please wait while we update the session status...</p>
+                <h4 class="text-sm font-black text-foreground font-sans">Updating Attendance</h4>
+                <p class="text-xs text-muted-foreground font-mono mt-1">Please wait while we update the session status...</p>
             </div>
         </div>
     </div>
@@ -300,16 +300,16 @@
 
 @if (_showAlertModal)
 {
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[200] animate-in fade-in duration-200">
-        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in zoom-in duration-200">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary mb-4">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <div class="neo-scrim flex items-center justify-center z-[200] animate-in fade-in duration-200">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-neo-xl text-center animate-in zoom-in duration-200 font-mono">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-xl bg-primary/20 text-primary border-2 border-black shadow-neo-sm mb-4">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
             </div>
-            <h3 class="text-base font-bold text-foreground mb-2">@_alertTitle</h3>
-            <p class="text-sm text-muted-foreground mb-5 font-sans">@_alertMessage</p>
-            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
+            <h3 class="text-base font-black text-foreground mb-2 font-sans">@_alertTitle</h3>
+            <p class="text-sm text-muted-foreground mb-5 font-mono">@_alertMessage</p>
+            <button class="neo-btn-primary w-full py-2.5 rounded-xl text-xs font-black shadow-neo"
                     @onclick="() => { _showAlertModal = false; }">
                 OK
             </button>
@@ -319,10 +319,10 @@
 
 @if (_showDeleteConfirmModal && _sessionToDelete != null)
 {
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[150] animate-in fade-in duration-200 p-4" @onclick="CancelDeleteSession">
+    <div class="neo-scrim flex items-center justify-center z-[150] animate-in fade-in duration-200 p-4" @onclick="CancelDeleteSession">
         <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-6 max-w-sm w-full shadow-neo animate-in zoom-in-95 duration-200 font-mono" @onclick:stopPropagation>
             <div class="flex items-start gap-3 mb-4">
-                <div class="p-2.5 bg-[#FF6B6B]/20 text-[#FF6B6B] border-2 border-black rounded-lg shrink-0">
+                <div class="p-2.5 bg-destructive/20 text-destructive border-2 border-black rounded-lg shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                 </div>
                 <div>
@@ -627,11 +627,11 @@
     {
         return status switch
         {
-            "Present" => "bg-[#A6FA53]/25 border-black text-foreground hover:bg-[#A6FA53]/40",
-            "Absent" => "bg-[#FF6B6B]/25 border-black text-foreground hover:bg-[#FF6B6B]/40",
-            "Late" => "bg-[#FFD026]/25 border-black text-foreground hover:bg-[#FFD026]/40",
+            "Present" => "bg-primary/25 border-black text-foreground hover:bg-primary/40",
+            "Absent" => "bg-destructive/25 border-black text-foreground hover:bg-destructive/40",
+            "Late" => "bg-accent/25 border-black text-foreground hover:bg-accent/40",
             "Cancelled" => "bg-muted/40 border-border text-muted-foreground line-through opacity-70",
-            "Holiday" => "bg-[#C084FC]/25 border-black text-foreground hover:bg-[#C084FC]/40",
+            "Holiday" => "bg-neo-lavender/25 border-black text-foreground hover:bg-neo-lavender/40",
             _ => "bg-card border-border text-foreground hover:bg-muted"
         };
     }
@@ -640,9 +640,9 @@
     {
         return status switch
         {
-            "Present" => "bg-[#A6FA53] text-black font-black font-mono border-2 border-black shadow-neo-sm px-3 py-0.5 rounded-md text-xs",
-            "Absent" => "bg-[#FF6B6B] text-black font-black font-mono border-2 border-black shadow-neo-sm px-3 py-0.5 rounded-md text-xs",
-            "Late" => "bg-[#FFD026] text-black font-black font-mono border-2 border-black shadow-neo-sm px-3 py-0.5 rounded-md text-xs",
+            "Present" => "bg-primary text-black font-black font-mono border-2 border-black shadow-neo-sm px-3 py-0.5 rounded-md text-xs",
+            "Absent" => "bg-destructive text-black font-black font-mono border-2 border-black shadow-neo-sm px-3 py-0.5 rounded-md text-xs",
+            "Late" => "bg-accent text-black font-black font-mono border-2 border-black shadow-neo-sm px-3 py-0.5 rounded-md text-xs",
             _ => "bg-card text-foreground font-bold font-mono border-2 border-border shadow-neo-sm px-3 py-0.5 rounded-md text-xs"
         };
     }
@@ -663,11 +663,11 @@
     {
         return status switch
         {
-            "Present" => "bg-[#A6FA53] border border-black",
-            "Absent" => "bg-[#FF6B6B] border border-black",
-            "Late" => "bg-[#FFD026] border border-black",
+            "Present" => "bg-primary border border-black",
+            "Absent" => "bg-destructive border border-black",
+            "Late" => "bg-accent border border-black",
             "Cancelled" => "bg-muted-foreground border border-black",
-            "Holiday" => "bg-[#C084FC] border border-black",
+            "Holiday" => "bg-neo-lavender border border-black",
             _ => "bg-foreground border border-black"
         };
     }

@@ -28,7 +28,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
                 <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Google Calendar ID</label>
-                <input type="text" class="w-full p-2 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53] h-9" @bind="_calendarId" placeholder="e.g. en.mm#holiday@group.v.calendar.google.com" />
+                <input type="text" class="w-full p-2 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-primary h-9" @bind="_calendarId" placeholder="e.g. en.mm#holiday@group.v.calendar.google.com" />
                 <p class="text-[10px] text-muted-foreground mt-1">Use <code>en.mm#holiday@group.v.calendar.google.com</code> for Myanmar, <code>en.usa#holiday@group.v.calendar.google.com</code> for US.</p>
             </div>
             <div>
@@ -54,7 +54,7 @@
 
 @if (!string.IsNullOrEmpty(_message))
 {
-    <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-[#FF6B6B]/20 text-[#FF6B6B]" : "bg-[#A6FA53]/20 text-[#A6FA53]")">
+    <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all @(_isError ? "bg-destructive/20 text-destructive border-destructive" : "bg-primary/20 text-primary border-primary")">
         <div class="flex items-center gap-2.5">
             @if (_isError)
             {
@@ -122,13 +122,13 @@
                 <tbody class="divide-y-2 divide-border/60">
                     @foreach (var holiday in _holidays)
                     {
-                        <tr class="hover:bg-[#A6FA53]/10 transition-colors">
+                        <tr class="hover:bg-primary/10 transition-colors">
                             <td class="px-6 py-3.5 text-foreground font-bold font-sans">@holiday.Name</td>
                             <td class="px-6 py-3.5 font-mono text-muted-foreground font-bold">@holiday.HolidayDate.ToString("dd-MM-yyyy")</td>
                             @if (AuthState.IsAdmin)
                             {
                                 <td class="px-6 py-3.5">
-                                    <button class="neo-btn-destructive px-3 py-1 rounded-lg text-xs font-bold shadow-neo-sm cursor-pointer w-20" @onclick="() => RequestDeleteHoliday(holiday)">Delete</button>
+                                    <button class="neo-btn-destructive px-3 py-1.5 min-h-[44px] rounded-lg text-xs font-bold shadow-neo-sm cursor-pointer w-20 flex items-center justify-center" @onclick="() => RequestDeleteHoliday(holiday)">Delete</button>
                                 </td>
                             }
                         </tr>
@@ -144,16 +144,16 @@
 
 @if (_showErrorDialog)
 {
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200">
-        <div class="bg-card border border-border rounded-lg p-6 max-w-sm w-full shadow-lg text-center animate-in zoom-in duration-200">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive mb-4">
+    <div class="neo-scrim flex items-center justify-center z-[100] animate-in fade-in duration-200">
+        <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-neo-xl text-center animate-in zoom-in duration-200 font-mono">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-xl bg-destructive/20 text-destructive border-2 border-black shadow-neo-sm mb-4">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </div>
             <h3 class="text-base font-bold text-foreground mb-2">Error</h3>
             <p class="text-xs text-muted-foreground mb-5 font-sans">Unexpected Error Ocurred. Please try again</p>
-            <button class="w-full py-2 bg-primary text-primary-foreground hover:bg-primary/95 rounded-md text-xs font-semibold transition-colors focus:outline-none"
+            <button class="neo-btn-primary w-full py-2.5 rounded-xl text-xs font-black shadow-neo"
                     @onclick="() => { _showErrorDialog = false; }">
                 Close
             </button>
@@ -163,10 +163,10 @@
 
 @if (_showDeleteConfirmModal && _holidayToDelete != null)
 {
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[150] animate-in fade-in duration-200 p-4" @onclick="CancelDeleteHoliday">
+    <div class="neo-scrim flex items-center justify-center z-[150] animate-in fade-in duration-200 p-4" @onclick="CancelDeleteHoliday">
         <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-6 max-w-sm w-full shadow-neo animate-in zoom-in-95 duration-200 font-mono" @onclick:stopPropagation>
             <div class="flex items-start gap-3 mb-4">
-                <div class="p-2.5 bg-[#FF6B6B]/20 text-[#FF6B6B] border-2 border-black rounded-lg shrink-0">
+                <div class="p-2.5 bg-destructive/20 text-destructive border-2 border-black rounded-lg shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                 </div>
                 <div>
