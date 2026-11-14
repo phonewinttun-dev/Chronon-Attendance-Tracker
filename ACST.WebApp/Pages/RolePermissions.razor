@@ -18,7 +18,7 @@ else
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 font-mono">
         <div>
             <div class="flex items-center gap-2 mb-1">
-                <span class="px-2.5 py-0.5 text-xs font-black tracking-wider uppercase rounded-md bg-[#FFD026] text-black border-2 border-black shadow-neo-sm">
+                <span class="px-2.5 py-0.5 text-xs font-black tracking-wider uppercase rounded-md bg-accent text-black border-2 border-black shadow-neo-sm">
                     Access Control
                 </span>
             </div>
@@ -37,7 +37,7 @@ else
     <!-- Stats Summary Overview Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 font-mono">
         <div class="bg-card border-2 border-black dark:border-zinc-700 p-4 rounded-xl shadow-neo flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-lg bg-[#A6FA53] text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
+            <div class="w-10 h-10 rounded-lg bg-primary text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </div>
             <div>
@@ -47,7 +47,7 @@ else
         </div>
 
         <div class="bg-card border-2 border-black dark:border-zinc-700 p-4 rounded-xl shadow-neo flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-lg bg-[#00E5FF] text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
+            <div class="w-10 h-10 rounded-lg bg-secondary text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
             </div>
             <div>
@@ -57,7 +57,7 @@ else
         </div>
 
         <div class="bg-card border-2 border-black dark:border-zinc-700 p-4 rounded-xl shadow-neo flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-lg bg-[#FFD026] text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
+            <div class="w-10 h-10 rounded-lg bg-accent text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             </div>
             <div>
@@ -67,7 +67,7 @@ else
         </div>
 
         <div class="bg-card border-2 border-black dark:border-zinc-700 p-4 rounded-xl shadow-neo flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-lg bg-[#C084FC] text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
+            <div class="w-10 h-10 rounded-lg bg-neo-lavender text-black border-2 border-black flex items-center justify-center shrink-0 shadow-neo-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
             </div>
             <div>
@@ -80,7 +80,7 @@ else
     <!-- Alert / Toast Banner -->
     @if (!string.IsNullOrEmpty(_message))
     {
-        <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all animate-in fade-in duration-150 @(_isError ? "bg-[#FF6B6B]/20 text-[#FF6B6B]" : "bg-[#A6FA53]/20 text-[#A6FA53]")">
+        <div class="border-2 border-black shadow-neo-sm p-4 rounded-xl mb-6 text-xs font-mono font-bold flex items-center justify-between gap-3 transition-all animate-in fade-in duration-150 @(_isError ? "bg-destructive/20 text-destructive border-destructive" : "bg-primary/20 text-foreground border-primary")">
             <div class="flex items-center gap-2.5">
                 @if (_isError)
                 {
@@ -99,11 +99,11 @@ else
     <!-- Create Role Modal -->
     @if (_showCreateRoleModal)
     {
-        <div class="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 font-mono" role="dialog" aria-modal="true" aria-labelledby="create-role-title" aria-describedby="create-role-desc">
+        <div class="neo-scrim z-50 flex items-center justify-center p-4 font-mono" role="dialog" aria-modal="true" aria-labelledby="create-role-title" aria-describedby="create-role-desc">
             <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-2xl shadow-neo-xl max-w-md w-full p-6 animate-in zoom-in-95 duration-150">
                 <div class="flex items-center justify-between border-b-2 border-border/60 pb-4 mb-4">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-[#FFD026] text-black border-2 border-black flex items-center justify-center shadow-neo-sm">
+                        <div class="w-8 h-8 rounded-lg bg-accent text-black border-2 border-black flex items-center justify-center shadow-neo-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         </div>
                         <div>
@@ -116,10 +116,10 @@ else
                 
                 <div class="space-y-4">
                     <div>
-                        <label for="new-role-name-input" class="block text-xs font-bold uppercase tracking-wider text-foreground mb-1.5">Role Name <span class="text-[#FF6B6B]">*</span></label>
+                        <label for="new-role-name-input" class="block text-xs font-bold uppercase tracking-wider text-foreground mb-1.5">Role Name <span class="text-destructive">*</span></label>
                         <input id="new-role-name-input"
                                 type="text" 
-                                class="w-full px-3.5 py-2 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-[#A6FA53]" 
+                                class="w-full px-3.5 py-2 bg-card border-2 border-border rounded-lg text-foreground font-mono font-bold text-xs shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-primary" 
                                 placeholder="e.g. Department Head, Registrar, TA" 
                                 @bind="_newRoleName" />
                     </div>
@@ -152,7 +152,7 @@ else
             <div class="bg-card border-2 border-black dark:border-zinc-700 rounded-xl p-5 shadow-neo space-y-4">
                 <div class="flex items-center justify-between">
                     <h2 class="text-sm font-black text-foreground tracking-tight font-sans">System Roles</h2>
-                    <span class="text-xs font-mono font-black px-2 py-0.5 rounded-md bg-[#FFD026] text-black border-2 border-black shadow-neo-sm">
+                    <span class="text-xs font-mono font-black px-2 py-0.5 rounded-md bg-accent text-black border-2 border-black shadow-neo-sm">
                         @GetFilteredRoles().Count Roles
                     </span>
                 </div>
@@ -160,7 +160,7 @@ else
                 <!-- Role Search Filter -->
                 <div class="relative">
                     <input type="text" 
-                           class="w-full pl-9 pr-7 py-2 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-bold shadow-neo-sm transition-all placeholder:text-muted-foreground" 
+                           class="w-full pl-9 pr-7 py-2 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-xs font-bold shadow-neo-sm transition-all placeholder:text-muted-foreground" 
                            placeholder="Filter roles..." 
                            @bind="_roleSearchTerm" 
                            @bind:event="oninput" />
@@ -176,7 +176,7 @@ else
                 @if (_isLoadingRoles)
                 {
                     <div class="py-12 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-                        <div class="w-4 h-4 border-2 border-[#A6FA53] border-t-transparent rounded-full animate-spin"></div>
+                        <div class="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                         Loading roles...
                     </div>
                 }
@@ -200,9 +200,9 @@ else
                                 var isAdmin = role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase);
 
                                 <div @onclick="() => SelectRole(role.RoleId)" 
-                                     class="p-3.5 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group @(isSelected ? "bg-[#A6FA53] text-black font-black border-black shadow-neo-sm" : "bg-card border-border text-foreground hover:bg-muted font-bold shadow-neo-sm")">
+                                     class="p-3.5 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group @(isSelected ? "bg-primary text-black font-black border-black shadow-neo-sm" : "bg-card border-border text-foreground hover:bg-muted font-bold shadow-neo-sm")">
                                     <div class="flex items-center gap-3 min-w-0">
-                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shrink-0 border-2 border-black @(isSelected ? "bg-black text-white" : (isAdmin ? "bg-[#FFD026] text-black shadow-neo-sm" : "bg-muted text-foreground"))">
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shrink-0 border-2 border-black @(isSelected ? "bg-black text-white" : (isAdmin ? "bg-accent text-black shadow-neo-sm" : "bg-muted text-foreground"))">
                                             @role.RoleName.Substring(0, Math.Min(2, role.RoleName.Length)).ToUpper()
                                         </div>
                                         <div class="truncate">
@@ -212,7 +212,7 @@ else
                                     <div class="flex items-center gap-2 shrink-0">
                                         @if (isAdmin)
                                         {
-                                            <span class="px-2 py-0.5 text-[10px] font-black bg-[#FFD026] text-black border-2 border-black shadow-neo-sm rounded-md">
+                                            <span class="px-2 py-0.5 text-[10px] font-black bg-accent text-black border-2 border-black shadow-neo-sm rounded-md">
                                                 Super Admin
                                             </span>
                                         }
@@ -243,12 +243,12 @@ else
                         <div>
                             <div class="flex items-center gap-2.5 flex-wrap">
                                 <h2 class="text-base font-black text-foreground font-sans">Permissions for @selectedRole?.RoleName</h2>
-                                <span class="text-xs font-mono font-black px-2.5 py-0.5 rounded-md bg-[#A6FA53] text-black border-2 border-black shadow-neo-sm">
+                                <span class="text-xs font-mono font-black px-2.5 py-0.5 rounded-md bg-primary text-black border-2 border-black shadow-neo-sm">
                                     @(_selectedPermissionIds.Count) / @(_allPermissions?.Count ?? 0) Active
                                 </span>
                                 @if (hasUnsavedChanges)
                                 {
-                                    <span class="text-[10px] font-black px-2.5 py-0.5 rounded-md bg-[#FFD026] text-black border-2 border-black shadow-neo-sm animate-pulse">
+                                    <span class="text-[10px] font-black px-2.5 py-0.5 rounded-md bg-accent text-black border-2 border-black shadow-neo-sm animate-pulse">
                                         Unsaved Changes
                                     </span>
                                 }
@@ -278,7 +278,7 @@ else
                     <!-- Search Input -->
                     <div class="relative max-w-xs">
                         <input type="text" 
-                               class="w-full pl-9 pr-7 py-2 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-bold shadow-neo-sm transition-all placeholder:text-muted-foreground" 
+                               class="w-full pl-9 pr-7 py-2 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-xs font-bold shadow-neo-sm transition-all placeholder:text-muted-foreground" 
                                placeholder="Filter permissions..." 
                                @bind="_permissionSearchTerm" 
                                @bind:event="oninput" />
@@ -295,7 +295,7 @@ else
                     @if (_isLoadingPermissions)
                     {
                         <div class="py-12 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-                            <div class="w-4 h-4 border-2 border-[#A6FA53] border-t-transparent rounded-full animate-spin"></div>
+                            <div class="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                             Loading permissions...
                         </div>
                     }
@@ -341,10 +341,10 @@ else
                                             @foreach (var perm in group.Permissions)
                                             {
                                                 var isChecked = _selectedPermissionIds.Contains(perm.PermissionId);
-                                                <label class="p-3 rounded-lg border-2 transition-all cursor-pointer flex items-center justify-between select-none @(isChecked ? "bg-[#A6FA53]/25 border-black text-foreground font-bold shadow-neo-sm" : "bg-card border-border text-foreground hover:bg-muted font-medium shadow-xs")">
+                                                <label class="p-3 rounded-lg border-2 transition-all cursor-pointer flex items-center justify-between select-none @(isChecked ? "bg-primary/25 border-black text-foreground font-bold shadow-neo-sm" : "bg-card border-border text-foreground hover:bg-muted font-medium shadow-xs")">
                                                     <div class="flex items-center gap-3 min-w-0">
                                                         <input type="checkbox" 
-                                                               class="w-4 h-4 rounded-sm border-2 border-black accent-[#A6FA53] cursor-pointer shrink-0 shadow-neo-sm" 
+                                                               class="w-4 h-4 rounded-sm border-2 border-black accent-primary cursor-pointer shrink-0 shadow-neo-sm" 
                                                                checked="@isChecked" 
                                                                @onchange="(e) => TogglePermission(perm.PermissionId, (bool)(e.Value ?? false))" />
                                                         <div class="truncate">
@@ -366,8 +366,8 @@ else
                         <div class="text-xs text-muted-foreground font-bold">
                             @if (hasUnsavedChanges)
                             {
-                                <span class="text-[#FFD026] flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-[#FFD026] animate-ping"></span>
+                                <span class="text-accent flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-accent animate-ping"></span>
                                     You have unsaved permission changes.
                                 </span>
                             }

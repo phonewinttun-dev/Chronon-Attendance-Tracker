@@ -18,7 +18,7 @@ else
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
             <div class="flex items-center gap-2 mb-1">
-                <span class="px-2.5 py-0.5 text-xs font-black tracking-wider uppercase rounded-md bg-[#FFD026] text-black border-2 border-black shadow-neo-sm font-mono">
+                <span class="px-2.5 py-0.5 text-xs font-black tracking-wider uppercase rounded-md bg-accent text-black border-2 border-black shadow-neo-sm font-mono">
                     User Management
                 </span>
             </div>
@@ -37,7 +37,7 @@ else
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 font-mono">
         <div class="relative w-full md:max-w-xs">
             <input type="text" 
-                   class="w-full pl-9 pr-8 py-2 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#A6FA53] text-xs font-bold shadow-neo-sm transition-all placeholder:text-muted-foreground" 
+                   class="w-full pl-9 pr-8 py-2 bg-card border-2 border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-xs font-bold shadow-neo-sm transition-all placeholder:text-muted-foreground" 
                    placeholder="Search name, email, or role..." 
                    aria-label="Search users by name, email, or role"
                    @bind="_searchTerm" 
@@ -57,7 +57,7 @@ else
         @if (_isLoading)
         {
             <div class="py-16 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-                <div class="w-5 h-5 border-2 border-[#A6FA53] border-t-transparent rounded-full animate-spin"></div>
+                <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                 Loading user accounts...
             </div>
         }
@@ -86,20 +86,20 @@ else
                         <tbody class="divide-y-2 divide-border/60">
                             @foreach (var user in filteredUsers)
                             {
-                                <tr class="hover:bg-[#A6FA53]/10 transition-colors">
+                                <tr class="hover:bg-primary/10 transition-colors">
                                     <td class="py-3.5 px-4 font-sans font-bold text-foreground">@user.FullName</td>
                                     <td class="py-3.5 px-4 text-muted-foreground font-bold">@user.Email</td>
                                     <td class="py-3.5 px-4 text-muted-foreground font-bold">@(user.MobileNum ?? "—")</td>
                                     <td class="py-3.5 px-4">
                                         @if (user.RoleName?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true)
                                         {
-                                            <span class="px-2.5 py-0.5 text-xs font-black font-mono bg-[#FFD026] text-black border-2 border-black shadow-neo-sm rounded-md">
+                                            <span class="px-2.5 py-0.5 text-xs font-black font-mono bg-accent text-black border-2 border-black shadow-neo-sm rounded-md">
                                                 Admin
                                             </span>
                                         }
                                         else
                                         {
-                                            <span class="px-2.5 py-0.5 text-xs font-black font-mono bg-[#A6FA53] text-black border-2 border-black shadow-neo-sm rounded-md">
+                                            <span class="px-2.5 py-0.5 text-xs font-black font-mono bg-primary text-black border-2 border-black shadow-neo-sm rounded-md">
                                                 @(user.RoleName ?? "No Role")
                                             </span>
                                         }
@@ -108,7 +108,7 @@ else
                                         @(user.CreatedAt.HasValue ? user.CreatedAt.Value.ToLocalTime().ToString("MMM dd, yyyy") : "—")
                                     </td>
                                     <td class="py-3.5 px-4">
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-mono font-black bg-[#A6FA53] text-black border-2 border-black shadow-neo-sm rounded-md">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-mono font-black bg-primary text-black border-2 border-black shadow-neo-sm rounded-md">
                                             <span class="w-2 h-2 rounded-full bg-black"></span>
                                             Active
                                         </span>
