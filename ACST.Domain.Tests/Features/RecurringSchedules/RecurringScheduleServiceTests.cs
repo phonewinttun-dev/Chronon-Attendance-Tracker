@@ -225,6 +225,41 @@ public class RecurringScheduleServiceTests
     }
 
     [Fact]
+    [Trait("Category", "negative")]
+    public async Task CreateScheduleAsync_WhenStartDateBeforeSemester_ShouldFail()
+    {
+        // Arrange
+        var semester = new TblSemester
+        {
+            Name = "Fall 2026",
+            StartDate = new DateOnly(2026, 9, 1),
+            EndDate = new DateOnly(2026, 12, 31)
+        };
+        _context.TblSemesters.Add(semester);
+
+        var module = new TblModule { Name = "Calculus", ModuleCode = "CALC-102" };
+        _context.TblModules.Add(module);
+        await _context.SaveChangesAsync();
+
+        var request = new CreateRecurringScheduleRequest
+        {
+            DayOfWeek = (short)DayOfWeek.Monday,
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(11, 0),
+            EffectiveStartDate = new DateOnly(2026, 8, 15), // Before semester start
+            EffectiveEndDate = new DateOnly(2026, 10, 1),
+            GenerateSessions = false
+        };
+
+        // Act
+        var result = await _service.CreateScheduleAsync(module.Id, semester.Id, request);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains("Effective start date cannot be before semester start date", result.Message);
+    }
+
+    [Fact]
     [Trait("Category", "positive")]
     public async Task UpdateScheduleAsync_ShouldUpdateScheduleDetails()
     {
