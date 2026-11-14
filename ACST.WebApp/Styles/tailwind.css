@@ -4,141 +4,106 @@
 
 @layer base {
   :root {
-    /* Crisp Light Mode (Daylight: #F4F0EA canvas, #FFFFFF card, #121212 text & border) */
-    --background: 40 25% 94%;
-    --foreground: 0 0% 7%;
+    /* Tier 1 Primitives: OKLCH Hue Families */
+    --primitive-neutral-light: oklch(0.982 0.008 70);   /* Warm Cream */
+    --primitive-neutral-dark: oklch(0.140 0.014 65);     /* Deep Charcoal */
+    --primitive-lime: oklch(0.880 0.220 135);           /* Energetic Lime */
+    --primitive-gold: oklch(0.850 0.180 85);             /* Warm Gold */
+    --primitive-coral: oklch(0.680 0.220 25);            /* Coral / Red */
+    --primitive-cyan: oklch(0.860 0.160 210);            /* Crisp Cyan */
+    --primitive-purple: oklch(0.720 0.190 300);          /* Lavender */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 7%;
+    /* Tier 2 Semantic: Light Mode (Daylight Crisp Neo-Brutalism) */
+    --bg-page: oklch(0.982 0.008 70);
+    --bg-surface: oklch(1 0 0);
+    --bg-muted: oklch(0.940 0.010 70);
+    --text-primary: oklch(0.120 0.010 70);
+    --text-muted: oklch(0.450 0.015 70);
+    --border-color: oklch(0.120 0.010 70);
+    --focus-ring: var(--primitive-lime);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 7%;
+    --accent-primary: var(--primitive-lime);
+    --accent-gold: var(--primitive-gold);
+    --accent-danger: var(--primitive-coral);
+    --accent-cyan: var(--primitive-cyan);
+    --accent-purple: var(--primitive-purple);
 
-    --primary: 89 94% 65%;
-    --primary-foreground: 0 0% 0%;
+    --shadow-sm: 2px 2px 0px 0px var(--border-color);
+    --shadow-neo: 4px 4px 0px 0px var(--border-color);
+    --shadow-md: 4px 4px 0px 0px var(--border-color);
+    --shadow-lg: 6px 6px 0px 0px var(--border-color);
+    --shadow-xl: 8px 8px 0px 0px var(--border-color);
 
-    --secondary: 186 100% 50%;
-    --secondary-foreground: 0 0% 0%;
-
-    --muted: 240 5% 92%;
-    --muted-foreground: 240 4% 46%;
-
-    --accent: 47 100% 57%;
-    --accent-foreground: 0 0% 0%;
-
-    --destructive: 0 100% 71%;
-    --destructive-foreground: 0 0% 0%;
-
-    --error: 0 100% 71%;
-    --error-foreground: 0 0% 0%;
-
-    --border: 0 0% 7%;
-    --input: 240 5% 90%;
-    --ring: 89 94% 65%;
-
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 
   :root.night-light {
-    /* Eye-comfort warm light mode (warm linen/cream paper canvas: #F7F4EB, #FAF8F5 card, #1C1917 text & border) */
-    --background: 40 33% 96%;
-    --foreground: 24 10% 10%;
+    /* Tier 2 Semantic: Eye-Comfort Light Mode (Warm Linen / Amber Paper) */
+    --bg-page: oklch(0.965 0.016 75);
+    --bg-surface: oklch(0.985 0.012 75);
+    --bg-muted: oklch(0.925 0.018 75);
+    --text-primary: oklch(0.140 0.015 65);
+    --text-muted: oklch(0.480 0.018 70);
+    --border-color: oklch(0.140 0.015 65);
+    --focus-ring: var(--primitive-lime);
 
-    --card: 45 29% 98%;
-    --card-foreground: 24 10% 10%;
+    --accent-primary: var(--primitive-lime);
+    --accent-gold: var(--primitive-gold);
+    --accent-danger: var(--primitive-coral);
+    --accent-cyan: var(--primitive-cyan);
+    --accent-purple: var(--primitive-purple);
 
-    --popover: 45 29% 98%;
-    --popover-foreground: 24 10% 10%;
-
-    --primary: 89 77% 59%;
-    --primary-foreground: 0 0% 0%;
-
-    --secondary: 186 100% 45%;
-    --secondary-foreground: 0 0% 0%;
-
-    --muted: 36 20% 90%;
-    --muted-foreground: 25 6% 45%;
-
-    --accent: 38 92% 50%;
-    --accent-foreground: 0 0% 0%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 0%;
-
-    --error: 0 84% 60%;
-    --error-foreground: 0 0% 0%;
-
-    --border: 24 10% 10%;
-    --input: 36 20% 88%;
-    --ring: 89 77% 59%;
+    --shadow-sm: 2px 2px 0px 0px var(--border-color);
+    --shadow-neo: 4px 4px 0px 0px var(--border-color);
+    --shadow-md: 4px 4px 0px 0px var(--border-color);
+    --shadow-lg: 6px 6px 0px 0px var(--border-color);
+    --shadow-xl: 8px 8px 0px 0px var(--border-color);
   }
 
   .dark {
-    /* Crisp Cyber Dark Mode (#121214 canvas, #1C1C21 card, #F4F4F5 text, #3F3F46 border) */
-    --background: 240 6% 7%;
-    --foreground: 240 5% 96%;
+    /* Tier 2 Semantic: Dark Mode (Crisp Cyber Neo-Brutalism) */
+    --bg-page: oklch(0.140 0.014 65);
+    --bg-surface: oklch(0.200 0.012 65);
+    --bg-muted: oklch(0.240 0.012 65);
+    --text-primary: oklch(0.960 0.008 65);
+    --text-muted: oklch(0.680 0.012 65);
+    --border-color: oklch(0.350 0.015 65);
+    --focus-ring: var(--primitive-lime);
 
-    --card: 240 8% 12%;
-    --card-foreground: 240 5% 96%;
+    --accent-primary: var(--primitive-lime);
+    --accent-gold: var(--primitive-gold);
+    --accent-danger: var(--primitive-coral);
+    --accent-cyan: var(--primitive-cyan);
+    --accent-purple: var(--primitive-purple);
 
-    --popover: 240 8% 12%;
-    --popover-foreground: 240 5% 96%;
-
-    --primary: 89 94% 65%;
-    --primary-foreground: 0 0% 0%;
-
-    --secondary: 186 100% 50%;
-    --secondary-foreground: 0 0% 0%;
-
-    --muted: 240 6% 16%;
-    --muted-foreground: 240 5% 65%;
-
-    --accent: 47 100% 57%;
-    --accent-foreground: 0 0% 0%;
-
-    --destructive: 0 100% 71%;
-    --destructive-foreground: 0 0% 0%;
-
-    --error: 0 100% 71%;
-    --error-foreground: 0 0% 0%;
-
-    --border: 240 5% 26%;
-    --input: 240 5% 26%;
-    --ring: 89 94% 65%;
+    --shadow-sm: 2px 2px 0px 0px #000000;
+    --shadow-neo: 4px 4px 0px 0px #000000;
+    --shadow-md: 4px 4px 0px 0px #000000;
+    --shadow-lg: 6px 6px 0px 0px #000000;
+    --shadow-xl: 8px 8px 0px 0px #000000;
   }
 
   .dark.night-light {
-    /* Eye-comfort warm dark mode (deep warm charcoal/espresso canvas: #181716, #201E1C card, #F5F2EB text, #3F3B37 border) */
-    --background: 30 6% 9%;
-    --foreground: 40 25% 94%;
+    /* Tier 2 Semantic: Eye-Comfort Dark Mode (Deep Warm Espresso) */
+    --bg-page: oklch(0.120 0.012 55);
+    --bg-surface: oklch(0.180 0.014 55);
+    --bg-muted: oklch(0.220 0.014 55);
+    --text-primary: oklch(0.940 0.016 75);
+    --text-muted: oklch(0.650 0.018 70);
+    --border-color: oklch(0.320 0.018 55);
+    --focus-ring: var(--primitive-lime);
 
-    --card: 30 7% 12%;
-    --card-foreground: 40 25% 94%;
+    --accent-primary: var(--primitive-lime);
+    --accent-gold: var(--primitive-gold);
+    --accent-danger: var(--primitive-coral);
+    --accent-cyan: var(--primitive-cyan);
+    --accent-purple: var(--primitive-purple);
 
-    --popover: 30 7% 12%;
-    --popover-foreground: 40 25% 94%;
-
-    --primary: 89 77% 59%;
-    --primary-foreground: 0 0% 0%;
-
-    --secondary: 187 92% 53%;
-    --secondary-foreground: 0 0% 0%;
-
-    --muted: 30 6% 16%;
-    --muted-foreground: 30 5% 65%;
-
-    --accent: 42 96% 56%;
-    --accent-foreground: 0 0% 0%;
-
-    --destructive: 0 91% 71%;
-    --destructive-foreground: 0 0% 0%;
-
-    --error: 0 91% 71%;
-    --error-foreground: 0 0% 0%;
-
-    --border: 30 6% 24%;
-    --input: 30 6% 24%;
-    --ring: 89 77% 59%;
+    --shadow-sm: 2px 2px 0px 0px #000000;
+    --shadow-neo: 4px 4px 0px 0px #000000;
+    --shadow-md: 4px 4px 0px 0px #000000;
+    --shadow-lg: 6px 6px 0px 0px #000000;
+    --shadow-xl: 8px 8px 0px 0px #000000;
   }
 }
 
@@ -147,7 +112,9 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-[#A6FA53] selection:text-black;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    @apply antialiased selection:bg-[#A6FA53] selection:text-black;
   }
   input[type="time"],
   input[type="date"] {
@@ -175,50 +142,149 @@
     background-size: 16px !important;
     padding-right: 32px !important;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      transform: none !important;
+    }
+  }
 }
 
 @layer utilities {
   .neo-box {
-    @apply border-2 border-border shadow-neo rounded-xl bg-card transition-all;
+    background-color: var(--bg-surface);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-neo);
+    transition: transform 100ms ease, box-shadow 100ms ease;
   }
   .neo-card {
-    @apply bg-card border-2 border-black dark:border-zinc-700 rounded-xl shadow-neo transition-all;
+    background-color: var(--bg-surface);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-neo);
+    transition: transform 150ms ease, box-shadow 150ms ease;
   }
   .neo-card-interactive {
-    @apply hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg;
+    cursor: pointer;
+    transition: transform 150ms ease, box-shadow 150ms ease;
+  }
+  .neo-card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  .neo-card-interactive:active {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-sm);
   }
   .neo-modal {
-    @apply bg-card border-2 border-black dark:border-zinc-700 rounded-2xl shadow-neo-xl;
+    background-color: var(--bg-surface);
+    border: 2px solid var(--border-color);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-xl);
+  }
+  .neo-scrim {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .neo-btn {
-    @apply border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 100ms ease, box-shadow 100ms ease, background-color 150ms ease;
+  }
+  .neo-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .neo-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 transparent;
+  }
+  .neo-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none !important;
+    box-shadow: var(--shadow-sm) !important;
   }
   .neo-btn-primary {
-    @apply bg-[#A6FA53] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer;
+    @apply neo-btn text-black font-extrabold;
+    background-color: var(--accent-primary);
   }
   .neo-btn-secondary {
-    @apply bg-[#00E5FF] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer;
+    @apply neo-btn text-black font-extrabold;
+    background-color: var(--accent-cyan);
   }
   .neo-btn-accent {
-    @apply bg-[#FFD026] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer;
+    @apply neo-btn text-black font-extrabold;
+    background-color: var(--accent-gold);
   }
   .neo-btn-destructive {
-    @apply bg-[#FF6B6B] text-black border-2 border-border shadow-neo font-bold transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-neo-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-neo-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer;
+    @apply neo-btn text-black font-extrabold;
+    background-color: var(--accent-danger);
   }
   .neo-input {
-    @apply border-2 border-border shadow-neo-sm font-bold bg-card text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A6FA53] focus:shadow-neo transition-all;
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-sm);
+    font-weight: 700;
+    transition: border-color 150ms ease, box-shadow 100ms ease;
+  }
+  .neo-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 4px 4px 0 var(--accent-primary);
+  }
+  .neo-input-error {
+    border-color: var(--accent-danger);
+    box-shadow: 4px 4px 0 var(--accent-danger);
   }
   .neo-badge {
-    @apply border-2 border-border font-bold uppercase text-[11px] px-2.5 py-0.5 rounded-full shadow-neo-sm;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border: 2px solid var(--border-color);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 11px;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    box-shadow: var(--shadow-sm);
   }
   .neo-badge-healthy {
-    @apply bg-[#A6FA53] text-black border-2 border-border font-mono font-bold uppercase text-[11px] px-2.5 py-0.5 rounded-full shadow-neo-sm;
+    @apply neo-badge text-black font-mono font-bold;
+    background-color: var(--accent-primary);
   }
   .neo-badge-caution {
-    @apply bg-[#FFD026] text-black border-2 border-border font-mono font-bold uppercase text-[11px] px-2.5 py-0.5 rounded-full shadow-neo-sm;
+    @apply neo-badge text-black font-mono font-bold;
+    background-color: var(--accent-gold);
   }
   .neo-badge-critical {
-    @apply bg-[#FF6B6B] text-black border-2 border-border font-mono font-bold uppercase text-[11px] px-2.5 py-0.5 rounded-full shadow-neo-sm;
+    @apply neo-badge text-black font-mono font-bold;
+    background-color: var(--accent-danger);
+  }
+  .neo-badge-cyan {
+    @apply neo-badge text-black font-mono font-bold;
+    background-color: var(--accent-cyan);
+  }
+  .neo-badge-purple {
+    @apply neo-badge text-black font-mono font-bold;
+    background-color: var(--accent-purple);
   }
 }
-

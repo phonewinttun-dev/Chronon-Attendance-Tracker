@@ -374,3 +374,8 @@ chronon_expansion_plan.md
 .rules
 AGENTS.md
 .agents
+
+# Spec Kit artifacts and documentation
+.specify/
+specs/
+
